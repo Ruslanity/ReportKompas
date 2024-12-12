@@ -1,7 +1,7 @@
 ﻿
 namespace ReportKompas
 {
-    partial class Form1
+    partial class ReportKompas
     {
         /// <summary>
         /// Обязательная переменная конструктора.
@@ -29,7 +29,7 @@ namespace ReportKompas
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ReportKompas));
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
@@ -77,7 +77,7 @@ namespace ReportKompas
             this.dataGridView1.Size = new System.Drawing.Size(1043, 425);
             this.dataGridView1.TabIndex = 1;
             // 
-            // Form1
+            // ReportKompas
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -85,7 +85,7 @@ namespace ReportKompas
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.toolStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "Form1";
+            this.Name = "ReportKompas";
             this.Text = "ReportKompas";
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();

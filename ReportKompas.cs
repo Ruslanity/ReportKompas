@@ -1,4 +1,5 @@
-﻿using KompasAPI7;
+﻿using Kompas6API5;
+using KompasAPI7;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,13 +17,15 @@ namespace ReportKompas
     /// <summary> Пример взял тут
     /// https://allineed.ru/development/dotnet-development/charp-development/80-csharp-working-with-datagridview
     /// </summary>
-    public partial class Form1 : Form
+    public partial class ReportKompas : Form
     {
         IApplication application;
         IKompasDocument3D document3D;
+        KompasObject kompas;
+        ksDocument3D ksDocument3D;
         List<ObjectAssemblyKompas> objectsAssemblyKompas;
         private bool cancelContextMenu = false;
-        public Form1()
+        public ReportKompas()
         {
             InitializeComponent();
         }
@@ -82,15 +85,21 @@ namespace ReportKompas
             {
                 objectAssemblyKompas.Parent = Name;
             }
-            var findKompasObj = from targetObj in objectsAssemblyKompas
-                                where targetObj.Designation == objectAssemblyKompas.Designation
-                                select targetObj;
-            foreach (ObjectAssemblyKompas item in findKompasObj)
+            ObjectAssemblyKompas index = objectsAssemblyKompas.Find((ObjectAssemblyKompas)=>
+            ObjectAssemblyKompas.Designation == objectAssemblyKompas.Designation &&
+            ObjectAssemblyKompas.Name == objectAssemblyKompas.Name &&
+            ObjectAssemblyKompas.Parent == objectAssemblyKompas.Parent);
             {
-
-                MessageBox.Show("Есть такой объект");
+                if (index!=null)
+                {
+                    index.Quantity++;
+                }
+                else if (index == null)
+                {
+                    objectAssemblyKompas.Quantity++;
+                    objectsAssemblyKompas.Add(objectAssemblyKompas);
+                }
             }
-            objectsAssemblyKompas.Add(objectAssemblyKompas);
         }
 
         private void FillTable()
@@ -99,12 +108,12 @@ namespace ReportKompas
             dataGridView1.DataSource = objectsAssemblyKompas;
             dataGridView1.Columns["Designation"].HeaderText = "Обозначение";
             dataGridView1.Columns["Name"].HeaderText = "Наименование";
-            dataGridView1.Columns["Quantity"].HeaderText = "Кол-во"; 
-            dataGridView1.Columns["Material"].HeaderText = "Материал";            
-            dataGridView1.Columns["SpecificationSection"].HeaderText = "Раздел спецификации";            
-            dataGridView1.Columns["Mass"].HeaderText = "Масса";            
-            dataGridView1.Columns["Coating"].HeaderText = "Покрытие";            
-            dataGridView1.Columns["Parent"].HeaderText = "Куда входит";           
+            dataGridView1.Columns["Quantity"].HeaderText = "Кол-во";
+            dataGridView1.Columns["Material"].HeaderText = "Материал";
+            dataGridView1.Columns["SpecificationSection"].HeaderText = "Раздел спецификации";
+            dataGridView1.Columns["Mass"].HeaderText = "Масса";
+            //dataGridView1.Columns["Coating"].HeaderText = "Покрытие";
+            dataGridView1.Columns["Parent"].HeaderText = "Куда входит";
             dataGridView1.RowHeadersVisible = false;
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridView1.Columns["Designation"].Width = 200;
@@ -113,15 +122,23 @@ namespace ReportKompas
             dataGridView1.Columns["Material"].Width = 150;
             dataGridView1.Columns["SpecificationSection"].Width = 200;
             dataGridView1.Columns["Mass"].Width = 50;
-            dataGridView1.Columns["Coating"].Width = 100;
+            //dataGridView1.Columns["Coating"].Width = 100;
             dataGridView1.Columns["Parent"].Width = 200;
         }
-
-            private void toolStripButton1_Click(object sender, EventArgs e)
+        private void toolStripButton1_Click(object sender, EventArgs e)
         {
             objectsAssemblyKompas = new List<ObjectAssemblyKompas>();
-            application = (IApplication)Marshal.GetActiveObject("Kompas.Application.7");
-            document3D = (IKompasDocument3D)application.ActiveDocument;
+
+            kompas = (KompasObject)Marshal.GetActiveObject("KOMPAS.Application.5");            
+            kompas.Visible = true;
+            kompas.ActivateControllerAPI();
+            ksDocument3D = (ksDocument3D)kompas.ActiveDocument3D();
+
+            document3D = kompas.TransferInterface(ksDocument3D, 2, 0);
+            application = kompas.ksGetApplication7();
+
+            ksPartCollection _ksPartCollection = ksDocument3D.PartCollection(true);
+            
             IPart7 part7 = document3D.TopPart;
             switch (document3D.DocumentType)
             {
@@ -140,12 +157,14 @@ namespace ReportKompas
                     }
                 case Kompas6Constants.DocumentTypeEnum.ksDocumentAssembly:
                     {
-                        DisassembleObject(part7,"0");
-                        if (part7.Parts.Count > 1)
+                        DisassembleObject(part7, "0");
+                        for (int i = 0; i < _ksPartCollection.GetCount(); i++)
                         {
-                            foreach (IPart7 item in part7.Parts)
+                            ksPart ksPart = _ksPartCollection.GetByIndex(i);
+                            if (ksPart.excluded != true)
                             {
-                                DisassembleObject(item, part7.Name);
+                                IPart7 _part7 = kompas.TransferInterface(ksPart, 2, 0);
+                                DisassembleObject(_part7, part7.Marking+" - "+part7.Name);
                             }
                         }
                         FillTable();
