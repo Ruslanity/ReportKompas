@@ -16,6 +16,8 @@ namespace ReportKompas
         public double Mass { get; set; }
         public string Coating { get; set; }
         public string Parent { get; set; }
+        public string Bending { get; set; }
+        public string FullName { get; set; }
 
         public ObjectAssemblyKompas() { }        
         public ObjectAssemblyKompas(string designation,
@@ -25,7 +27,9 @@ namespace ReportKompas
                                     string material,
                                     double mass,
                                     string coating, //покрытие(краска)
-                                    string parent)
+                                    string parent,
+                                    string bending, //гибки(кол-во гибов, указание инструмента для гибки)
+                                    string fullName) 
         {
             Designation = designation;
             Name = name;
@@ -35,6 +39,8 @@ namespace ReportKompas
             Mass = mass;
             Coating = coating;
             Parent = parent;
+            Bending = bending;
+            FullName = fullName;
         }
     }
 }
