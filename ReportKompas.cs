@@ -332,15 +332,22 @@ namespace ReportKompas
             }
         }
 
-        private void MenuItemOpenBook_Click(object sender, EventArgs e)
+        private void MenuItemSelected_Click(object sender, EventArgs e)
         {
             DataGridViewSelectedRowCollection selectedRows = dataGridView1.SelectedRows;
             foreach (DataGridViewRow selectedRow in selectedRows)
             {
                 int rowIndex = selectedRow.Index;
-                if (rowIndex<0)  { continue; }
-                ObjectAssemblyKompas oAssemblyKompas = sortedListObjects[rowIndex];
-                
+
+                if (rowIndex < 0)
+                {
+                    continue;
+                }
+                ObjectAssemblyKompas objectAssemblyKompas = objectsAssemblyKompas[rowIndex];
+                IDocuments document = application.Documents;
+                document.Open(objectAssemblyKompas.FullName, true, false);
+
+
             }
         }
         private void dataGridView1_MouseDown(object sender, MouseEventArgs e)
