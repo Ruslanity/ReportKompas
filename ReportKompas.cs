@@ -5,7 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -157,6 +160,85 @@ namespace ReportKompas
             else { fileName = objectAssemblyKompas.Designation + " - " + objectAssemblyKompas.Name; }
             #endregion
 
+            #region Присваиваю путь до DXF и заполняю графу гибка
+            try
+            {
+                ISheetMetalContainer sheetMetalContainer = part7 as ISheetMetalContainer;
+                ISheetMetalBodies sheetMetalBodies = sheetMetalContainer.SheetMetalBodies;
+                ISheetMetalBody sheetMetalBody = sheetMetalBodies.SheetMetalBody[0];
+
+                if (sheetMetalBody != null) //если у детали нет свойства Толщина металла или не будет dxf в папке там же где модель то путь до DXF не будет указан
+                {
+                    string save_to_name = sheetMetalBody.Thickness.ToString(CultureInfo.CreateSpecificCulture("en-GB")) + "mm_" + part7.Marking.Remove(0, 3) + ".dxf";
+
+                    #region Заполняю свойство Гибка
+                    //тут подсчет сколько гибов теле "листовое тело"
+                    IFeature7 pFeat = sheetMetalBody.Owner;
+                    Object[] featCol = pFeat.SubFeatures[0, false, false];
+                    int featColCount = featCol.Count();
+
+                    double R = 0;
+                    string V = "";
+                    int Q;
+                    if (sheetMetalBody.Thickness < 3)
+                    { R = 1; }
+                    else if (sheetMetalBody.Thickness < 3 && sheetMetalBody.Thickness < 6)
+                    { R = 3; }
+                    else if (sheetMetalBody.Thickness < 3 && sheetMetalBody.Thickness < 6)
+                    { R = 6; }
+                    switch (sheetMetalBody.Thickness)
+                    {
+                        case 1:
+                            V = "8";
+                            break;
+                        case 1.2:
+                            V = "8";
+                            break;
+                        case 1.5:
+                            V = "12";
+                            break;
+                        case 2:
+                            V = "12";
+                            break;
+                        case 3:
+                            V = "16";
+                            break;
+                        case 4:
+                            V = "22/30";
+                            break;
+                        case 5:
+                            V = "35";
+                            break;
+                        case 6:
+                            V = "35/50";
+                            break;
+                        case 8:
+                            V = "50";
+                            break;
+                        case 10:
+                            V = "80";
+                            break;
+                    }
+                    
+                    Q = featColCount + sheetMetalContainer.SheetMetalSketchBends.Count + sheetMetalContainer.SheetMetalBends.Count;
+                    objectAssemblyKompas.Bending = "R=" + R.ToString() + "  V=" + V + "  Q=" + Q;
+
+                    #endregion
+
+
+                    FileInfo fi = new FileInfo(part7.FileName);
+                    if (File.Exists(fi.DirectoryName + "\\" + save_to_name))
+                    {
+                        objectAssemblyKompas.PathToDXF = fi.DirectoryName;
+                    }
+                }
+            }
+            catch (ArgumentException)
+            {
+                objectAssemblyKompas.PathToDXF = "";
+            }
+            #endregion
+
             #region Тут расчет кол-ва и добавление в коллекцию
             ObjectAssemblyKompas objectK = objectsAssemblyKompas.SingleOrDefault((ObjectAssemblyKompas) => ObjectAssemblyKompas.Designation == objectAssemblyKompas.Designation &&
                                                                                                            ObjectAssemblyKompas.Name == objectAssemblyKompas.Name &&
@@ -190,6 +272,7 @@ namespace ReportKompas
             dataGridView1.Columns["Parent"].HeaderText = "Куда входит";
             dataGridView1.Columns["Bending"].HeaderText = "Гибка";
             dataGridView1.Columns["FullName"].HeaderText = "Путь до файла";
+            dataGridView1.Columns["PathToDXF"].HeaderText = "Путь до DXF";
 
             dataGridView1.RowHeadersVisible = false;
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -201,6 +284,7 @@ namespace ReportKompas
             dataGridView1.Columns["Mass"].Width = 50;
             //dataGridView1.Columns["Coating"].Width = 100;
             dataGridView1.Columns["Parent"].Width = 200;
+            dataGridView1.Columns["PathToDXF"].Width = 200;
             dataGridView1.AllowUserToAddRows = false;
         }
         private void toolStripButton1_Click(object sender, EventArgs e)
@@ -332,7 +416,7 @@ namespace ReportKompas
             }
         }
 
-        private void MenuItemSelected_Click(object sender, EventArgs e)
+        private void MenuItemOpenInKompas_Click(object sender, EventArgs e)
         {
             DataGridViewSelectedRowCollection selectedRows = dataGridView1.SelectedRows;
             foreach (DataGridViewRow selectedRow in selectedRows)
@@ -343,11 +427,9 @@ namespace ReportKompas
                 {
                     continue;
                 }
-                ObjectAssemblyKompas objectAssemblyKompas = objectsAssemblyKompas[rowIndex];
+                ObjectAssemblyKompas objectAssemblyKompas = sortedListObjects[rowIndex];
                 IDocuments document = application.Documents;
                 document.Open(objectAssemblyKompas.FullName, true, false);
-
-
             }
         }
         private void dataGridView1_MouseDown(object sender, MouseEventArgs e)
@@ -366,6 +448,27 @@ namespace ReportKompas
                     cancelContextMenu = true;
                 }
             }
+        }
+
+        private void MenuItemOpenInExplorer_Click(object sender, EventArgs e)
+        {
+            DataGridViewSelectedRowCollection selectedRows = dataGridView1.SelectedRows;
+
+            string path = "";
+
+            foreach (DataGridViewRow selectedRow in selectedRows)
+            {
+                int rowIndex = selectedRow.Index;
+
+                if (rowIndex < 0)
+                {
+                    continue;
+                }
+                /*ObjectAssemblyKompas objectAssemblyKompas = objectsAssemblyKompas[rowIndex]*/;
+                path = sortedListObjects[rowIndex].PathToDXF;
+            }
+
+            Process.Start("explorer.exe", path);
         }
     }
 }

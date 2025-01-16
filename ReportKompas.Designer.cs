@@ -37,6 +37,7 @@ namespace ReportKompas
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.MenuItemSelected = new System.Windows.Forms.ToolStripMenuItem();
+            this.открытьДиректориюСФайломToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
@@ -87,18 +88,26 @@ namespace ReportKompas
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MenuItemSelected});
+            this.MenuItemSelected,
+            this.открытьДиректориюСФайломToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(187, 26);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(241, 70);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // MenuItemSelected
             // 
             this.MenuItemSelected.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.MenuItemSelected.Name = "MenuItemSelected";
-            this.MenuItemSelected.Size = new System.Drawing.Size(186, 22);
-            this.MenuItemSelected.Text = "&Открыть выбранное";
-            this.MenuItemSelected.Click += new System.EventHandler(this.MenuItemSelected_Click);
+            this.MenuItemSelected.Size = new System.Drawing.Size(240, 22);
+            this.MenuItemSelected.Text = "&Открыть выбранное в Компас";
+            this.MenuItemSelected.Click += new System.EventHandler(this.MenuItemOpenInKompas_Click);
+            // 
+            // открытьДиректориюСФайломToolStripMenuItem
+            // 
+            this.открытьДиректориюСФайломToolStripMenuItem.Name = "открытьДиректориюСФайломToolStripMenuItem";
+            this.открытьДиректориюСФайломToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.открытьДиректориюСФайломToolStripMenuItem.Text = "&Открыть в проводнике";
+            this.открытьДиректориюСФайломToolStripMenuItem.Click += new System.EventHandler(this.MenuItemOpenInExplorer_Click);
             // 
             // ReportKompas
             // 
@@ -127,6 +136,7 @@ namespace ReportKompas
         private System.Windows.Forms.ToolStripButton toolStripButton2;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem MenuItemSelected;
+        private System.Windows.Forms.ToolStripMenuItem открытьДиректориюСФайломToolStripMenuItem;
     }
 }
 

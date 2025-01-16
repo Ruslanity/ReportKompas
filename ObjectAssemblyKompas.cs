@@ -18,6 +18,7 @@ namespace ReportKompas
         public string Parent { get; set; }
         public string Bending { get; set; }
         public string FullName { get; set; }
+        public string PathToDXF { get; set; }
 
         public ObjectAssemblyKompas() { }        
         public ObjectAssemblyKompas(string designation,
@@ -29,7 +30,8 @@ namespace ReportKompas
                                     string coating, //покрытие(краска)
                                     string parent,
                                     string bending, //гибки(кол-во гибов, указание инструмента для гибки)
-                                    string fullName) 
+                                    string fullName,
+                                    string pathToDXF) 
         {
             Designation = designation;
             Name = name;
@@ -41,6 +43,7 @@ namespace ReportKompas
             Parent = parent;
             Bending = bending;
             FullName = fullName;
+            PathToDXF = pathToDXF;
         }
     }
 }
