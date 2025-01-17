@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ReportKompas
 {
-    class ObjectAssemblyKompas
+    public class ObjectAssemblyKompas
     {
         public string Designation { get; set; }
         public string Name { get; set; }

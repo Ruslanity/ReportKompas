@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -23,11 +24,12 @@ namespace ReportKompas
     /// </summary>
     public partial class ReportKompas : Form
     {
-        IApplication application;
+        public static IApplication application;
         IKompasDocument3D document3D;
         KompasObject kompas;
         ksDocument3D ksDocument3D;
-        List<ObjectAssemblyKompas> objectsAssemblyKompas;
+        
+        public static List<ObjectAssemblyKompas> objectsAssemblyKompas;
         BindingList<ObjectAssemblyKompas> sortedListObjects;
         private bool cancelContextMenu = false;
         string fileName;
@@ -56,6 +58,7 @@ namespace ReportKompas
             }
             ObjectAssemblyKompas kompasObject = objectsAssemblyKompas.SingleOrDefault((ObjectAssemblyKompas) => ObjectAssemblyKompas.Parent == null);
             sortedListObjects.Add(kompasObject);
+            objectsAssemblyKompas.Remove(kompasObject);
             void RecursionMethod(string Parent)
             {
                 var kOSpecificationSection = objectsAssemblyKompas.FindAll((ObjectAssemblyKompas) => ObjectAssemblyKompas.Parent == Parent &&
@@ -66,6 +69,7 @@ namespace ReportKompas
                 foreach (ObjectAssemblyKompas item in kOSpecificationSectionSorted)
                 {
                     sortedListObjects.Add(item);
+                    objectsAssemblyKompas.Remove(item);
                     RecursionMethod(item.Designation + " - " + item.Name);
                 }
                 var kOSpecificationSection2 = objectsAssemblyKompas.FindAll((ObjectAssemblyKompas) => ObjectAssemblyKompas.Parent == Parent &&
@@ -76,6 +80,7 @@ namespace ReportKompas
                 foreach (ObjectAssemblyKompas item in kOSpecificationSectionSorted2)
                 {
                     sortedListObjects.Add(item);
+                    objectsAssemblyKompas.Remove(item);
                 }
                 var kOSpecificationSection3 = objectsAssemblyKompas.FindAll((ObjectAssemblyKompas) => ObjectAssemblyKompas.Parent == Parent &&
                                                                                                       ObjectAssemblyKompas.SpecificationSection == "Стандартные изделия");
@@ -85,6 +90,7 @@ namespace ReportKompas
                 foreach (ObjectAssemblyKompas item in kOSpecificationSectionSorted3)
                 {
                     sortedListObjects.Add(item);
+                    objectsAssemblyKompas.Remove(item);
                 }
                 var kOSpecificationSection4 = objectsAssemblyKompas.FindAll((ObjectAssemblyKompas) => ObjectAssemblyKompas.Parent == Parent &&
                                                                                                       ObjectAssemblyKompas.SpecificationSection == "Прочие изделия");
@@ -94,6 +100,7 @@ namespace ReportKompas
                 foreach (ObjectAssemblyKompas item in kOSpecificationSectionSorted4)
                 {
                     sortedListObjects.Add(item);
+                    objectsAssemblyKompas.Remove(item);
                 }
             }
             RecursionMethod(kompasObject.Designation + " - " + kompasObject.Name);
@@ -171,20 +178,26 @@ namespace ReportKompas
                 {
                     string save_to_name = sheetMetalBody.Thickness.ToString(CultureInfo.CreateSpecificCulture("en-GB")) + "mm_" + part7.Marking.Remove(0, 3) + ".dxf";
 
+                    string save_to_name2 = sheetMetalBody.Thickness.ToString(CultureInfo.CreateSpecificCulture("en-GB")).Replace('.', ',') + "mm_" + part7.Marking.Remove(0, 3) + ".dxf";
+
                     #region Заполняю свойство Гибка
                     //тут подсчет сколько гибов теле "листовое тело"
                     IFeature7 pFeat = sheetMetalBody.Owner;
                     Object[] featCol = pFeat.SubFeatures[0, false, false];
-                    int featColCount = featCol.Count();
+                    int featColCount = 0;
+                    if (featCol != null)
+                    {
+                        featColCount = featCol.Count();
+                    }
 
                     double R = 0;
                     string V = "";
                     int Q;
                     if (sheetMetalBody.Thickness < 3)
                     { R = 1; }
-                    else if (sheetMetalBody.Thickness < 3 && sheetMetalBody.Thickness < 6)
+                    else if (sheetMetalBody.Thickness > 2 && sheetMetalBody.Thickness < 6)
                     { R = 3; }
-                    else if (sheetMetalBody.Thickness < 3 && sheetMetalBody.Thickness < 6)
+                    else if (sheetMetalBody.Thickness > 5 && sheetMetalBody.Thickness < 11)
                     { R = 6; }
                     switch (sheetMetalBody.Thickness)
                     {
@@ -219,15 +232,23 @@ namespace ReportKompas
                             V = "80";
                             break;
                     }
-                    
+
                     Q = featColCount + sheetMetalContainer.SheetMetalSketchBends.Count + sheetMetalContainer.SheetMetalBends.Count;
-                    objectAssemblyKompas.Bending = "R=" + R.ToString() + "  V=" + V + "  Q=" + Q;
+                    if (Q != 0)
+                    {
+                        objectAssemblyKompas.Bending = "R=" + R.ToString() + "  V=" + V + "  Q=" + Q;
+                    }                    
 
                     #endregion
 
+                    //обработка строки FileName
+                    //string pattern = "\\\\";
+                    //string replacement = "\\";
+                    //Regex rgx = new Regex(pattern);
+                    //string pathFull = rgx.Replace(part7.FileName, replacement);
 
                     FileInfo fi = new FileInfo(part7.FileName);
-                    if (File.Exists(fi.DirectoryName + "\\" + save_to_name))
+                    if (File.Exists(fi.DirectoryName + "\\" + save_to_name) || File.Exists(fi.DirectoryName + "\\" + save_to_name2))
                     {
                         objectAssemblyKompas.PathToDXF = fi.DirectoryName;
                     }
@@ -287,7 +308,7 @@ namespace ReportKompas
             dataGridView1.Columns["PathToDXF"].Width = 200;
             dataGridView1.AllowUserToAddRows = false;
         }
-        private void toolStripButton1_Click(object sender, EventArgs e)
+        private void toolStripButtonShowData_Click(object sender, EventArgs e)
         {
             if (objectsAssemblyKompas != null)
             {
@@ -464,11 +485,51 @@ namespace ReportKompas
                 {
                     continue;
                 }
-                /*ObjectAssemblyKompas objectAssemblyKompas = objectsAssemblyKompas[rowIndex]*/;
-                path = sortedListObjects[rowIndex].PathToDXF;
+                FileInfo fi = new FileInfo(sortedListObjects[rowIndex].FullName);
+                path = fi.DirectoryName;
             }
 
             Process.Start("explorer.exe", path);
+        }
+
+        private void toolStripButtonShowLostParts_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (objectsAssemblyKompas.Count != 0 && objectsAssemblyKompas != null)
+                {
+                    MessageBox.Show("Пропущенных компонентов нет");
+                }
+            }
+            catch (NullReferenceException)
+            {
+                MessageBox.Show("Пропущенных компонентов нет");
+            }
+            
+            LostParts lostParts = new LostParts();
+            lostParts.Show();
+            lostParts.dataGridView2.DataSource = objectsAssemblyKompas;
+            lostParts.dataGridView2.Columns["Designation"].HeaderText = "Обозначение";
+            lostParts.dataGridView2.Columns["Name"].HeaderText = "Наименование";
+            lostParts.dataGridView2.RowHeadersVisible = false;
+            //lostParts.dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            lostParts.dataGridView2.Columns["Quantity"].Visible = false;
+            lostParts.dataGridView2.Columns["Material"].Visible = false;
+            lostParts.dataGridView2.Columns["SpecificationSection"].Visible = false;
+            lostParts.dataGridView2.Columns["Mass"].Visible = false;
+            lostParts.dataGridView2.Columns["Coating"].Visible = false;
+            lostParts.dataGridView2.Columns["Parent"].Visible = false;
+            lostParts.dataGridView2.Columns["Bending"].Visible = false;
+            lostParts.dataGridView2.Columns["FullName"].HeaderText = "Путь до файла";
+            lostParts.dataGridView2.Columns["PathToDXF"].Visible = false;
+
+
+            lostParts.dataGridView2.AllowUserToAddRows = false;
+
+
+            lostParts.dataGridView2.Columns["Designation"].Width = 200;
+            lostParts.dataGridView2.Columns["Name"].Width = 200;
+            lostParts.dataGridView2.Columns["FullName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
         }
     }
 }

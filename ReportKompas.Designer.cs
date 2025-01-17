@@ -38,6 +38,7 @@ namespace ReportKompas
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.MenuItemSelected = new System.Windows.Forms.ToolStripMenuItem();
             this.открытьДиректориюСФайломToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
@@ -47,7 +48,8 @@ namespace ReportKompas
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripButton1,
-            this.toolStripButton2});
+            this.toolStripButton2,
+            this.toolStripButton3});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(1043, 25);
@@ -62,7 +64,7 @@ namespace ReportKompas
             this.toolStripButton1.Name = "toolStripButton1";
             this.toolStripButton1.Size = new System.Drawing.Size(119, 22);
             this.toolStripButton1.Text = "Отобразить данные";
-            this.toolStripButton1.Click += new System.EventHandler(this.toolStripButton1_Click);
+            this.toolStripButton1.Click += new System.EventHandler(this.toolStripButtonShowData_Click);
             // 
             // toolStripButton2
             // 
@@ -91,7 +93,7 @@ namespace ReportKompas
             this.MenuItemSelected,
             this.открытьДиректориюСФайломToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(241, 70);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(241, 48);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // MenuItemSelected
@@ -108,6 +110,16 @@ namespace ReportKompas
             this.открытьДиректориюСФайломToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
             this.открытьДиректориюСФайломToolStripMenuItem.Text = "&Открыть в проводнике";
             this.открытьДиректориюСФайломToolStripMenuItem.Click += new System.EventHandler(this.MenuItemOpenInExplorer_Click);
+            // 
+            // toolStripButton3
+            // 
+            this.toolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButton3.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton3.Image")));
+            this.toolStripButton3.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton3.Name = "toolStripButton3";
+            this.toolStripButton3.Size = new System.Drawing.Size(194, 22);
+            this.toolStripButton3.Text = "Показать пропущенные позиции";
+            this.toolStripButton3.Click += new System.EventHandler(this.toolStripButtonShowLostParts_Click);
             // 
             // ReportKompas
             // 
@@ -137,6 +149,7 @@ namespace ReportKompas
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem MenuItemSelected;
         private System.Windows.Forms.ToolStripMenuItem открытьДиректориюСФайломToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton toolStripButton3;
     }
 }
 
