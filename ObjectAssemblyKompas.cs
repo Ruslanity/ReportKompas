@@ -19,6 +19,7 @@ namespace ReportKompas
         public string Bending { get; set; }
         public string FullName { get; set; }
         public string PathToDXF { get; set; }
+        public string OverallDimensions { get; set; }
 
         public ObjectAssemblyKompas() { }        
         public ObjectAssemblyKompas(string designation,
@@ -31,7 +32,8 @@ namespace ReportKompas
                                     string parent,
                                     string bending, //гибки(кол-во гибов, указание инструмента для гибки)
                                     string fullName,
-                                    string pathToDXF) 
+                                    string pathToDXF,
+                                    string overallDimensions)
         {
             Designation = designation;
             Name = name;
@@ -44,6 +46,7 @@ namespace ReportKompas
             Bending = bending;
             FullName = fullName;
             PathToDXF = pathToDXF;
+            OverallDimensions = overallDimensions;
         }
     }
 }

@@ -28,7 +28,7 @@ namespace ReportKompas
         IKompasDocument3D document3D;
         KompasObject kompas;
         ksDocument3D ksDocument3D;
-        
+
         public static List<ObjectAssemblyKompas> objectsAssemblyKompas;
         BindingList<ObjectAssemblyKompas> sortedListObjects;
         private bool cancelContextMenu = false;
@@ -167,6 +167,26 @@ namespace ReportKompas
             else { fileName = objectAssemblyKompas.Designation + " - " + objectAssemblyKompas.Name; }
             #endregion
 
+            #region Заполняю габаритные размеры            
+            //IFeature7 featureDim = (IFeature7)part7;
+            //IBody7 bodyies = featureDim.ResultBodies;
+
+            //IModelObject modelObject = (IModelObject)part7;
+            //IFeature7 feature72 = modelObject.Owner;
+            //IBody7 body7 = feature72.ResultBodies;
+            IBody7 body7 = part7.Owner.ResultBodies;
+            ksPart ksPart = kompas.TransferInterface(part7, 1, 0);
+
+            if (ksPart != null)
+            {
+                double x1, x2, y1, y2, z1, z2;
+                ksPart.GetGabarit(true,true,out x1, out y1, out z1, out x2, out y2, out z2);
+                objectAssemblyKompas.OverallDimensions = String.Format("{0}x{1}x{2}", Math.Round(x2 - x1),
+                                                                                      Math.Round(y2 - y1),
+                                                                                      Math.Round(z2 - z1));
+            }
+            #endregion
+
             #region Присваиваю путь до DXF и заполняю графу гибка
             try
             {
@@ -232,12 +252,29 @@ namespace ReportKompas
                             V = "80";
                             break;
                     }
-
-                    Q = featColCount + sheetMetalContainer.SheetMetalSketchBends.Count + sheetMetalContainer.SheetMetalBends.Count;
+                    int Q2 = 0; //считаю сгибы
+                    for (int i = 0; i < sheetMetalContainer.SheetMetalBends.Count; i++)
+                    {
+                        IFeature7 feature7 = (IFeature7)sheetMetalContainer.SheetMetalBends[i];
+                        if (feature7.Excluded != true)
+                        {
+                            Q2 = Q2 + 1;
+                        }
+                    }
+                    int Q3 = 0; //считаю сгибы нарисованные по линии
+                    for (int i = 0; i < sheetMetalContainer.SheetMetalSketchBends.Count; i++)
+                    {
+                        IFeature7 feature7 = (IFeature7)sheetMetalContainer.SheetMetalSketchBends[i];
+                        if (feature7.Excluded != true)
+                        {
+                            Q3 = Q3 + 1;
+                        }
+                    }
+                    Q = featColCount + Q2 + Q3;
                     if (Q != 0)
                     {
                         objectAssemblyKompas.Bending = "R=" + R.ToString() + "  V=" + V + "  Q=" + Q;
-                    }                    
+                    }
 
                     #endregion
 
@@ -294,6 +331,7 @@ namespace ReportKompas
             dataGridView1.Columns["Bending"].HeaderText = "Гибка";
             dataGridView1.Columns["FullName"].HeaderText = "Путь до файла";
             dataGridView1.Columns["PathToDXF"].HeaderText = "Путь до DXF";
+            dataGridView1.Columns["OverallDimensions"].HeaderText = "Габаритные размеры";
 
             dataGridView1.RowHeadersVisible = false;
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -306,6 +344,7 @@ namespace ReportKompas
             //dataGridView1.Columns["Coating"].Width = 100;
             dataGridView1.Columns["Parent"].Width = 200;
             dataGridView1.Columns["PathToDXF"].Width = 200;
+            dataGridView1.Columns["OverallDimensions"].Width = 200;
             dataGridView1.AllowUserToAddRows = false;
         }
         private void toolStripButtonShowData_Click(object sender, EventArgs e)
@@ -350,7 +389,7 @@ namespace ReportKompas
                         DisassembleObject(part7, "0");
                         for (int i = 0; i < _ksPartCollection.GetCount(); i++)
                         {
-                            ksPart ksPart = _ksPartCollection.GetByIndex(i);
+                            ksPart ksPart = _ksPartCollection.GetByIndex(i);                            
                             if (ksPart.excluded != true)
                             {
                                 IPart7 _part7 = kompas.TransferInterface(ksPart, 2, 0);
@@ -498,6 +537,34 @@ namespace ReportKompas
             {
                 if (objectsAssemblyKompas.Count != 0 && objectsAssemblyKompas != null)
                 {
+                    LostParts lostParts = new LostParts();
+                    lostParts.Show();
+                    lostParts.dataGridView2.DataSource = objectsAssemblyKompas;
+                    lostParts.dataGridView2.Columns["Designation"].HeaderText = "Обозначение";
+                    lostParts.dataGridView2.Columns["Name"].HeaderText = "Наименование";
+                    lostParts.dataGridView2.RowHeadersVisible = false;
+                    //lostParts.dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                    lostParts.dataGridView2.Columns["Quantity"].Visible = false;
+                    lostParts.dataGridView2.Columns["Material"].Visible = false;
+                    lostParts.dataGridView2.Columns["SpecificationSection"].Visible = false;
+                    lostParts.dataGridView2.Columns["Mass"].Visible = false;
+                    lostParts.dataGridView2.Columns["Coating"].Visible = false;
+                    lostParts.dataGridView2.Columns["Parent"].Visible = false;
+                    lostParts.dataGridView2.Columns["Bending"].Visible = false;
+                    lostParts.dataGridView2.Columns["FullName"].HeaderText = "Путь до файла";
+                    lostParts.dataGridView2.Columns["PathToDXF"].Visible = false;
+                    lostParts.dataGridView2.Columns["OverallDimensions"].HeaderText = "Габаритные размеры";
+
+
+                    lostParts.dataGridView2.AllowUserToAddRows = false;
+
+
+                    lostParts.dataGridView2.Columns["Designation"].Width = 200;
+                    lostParts.dataGridView2.Columns["Name"].Width = 200;
+                    lostParts.dataGridView2.Columns["FullName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                }
+                else
+                {
                     MessageBox.Show("Пропущенных компонентов нет");
                 }
             }
@@ -505,31 +572,8 @@ namespace ReportKompas
             {
                 MessageBox.Show("Пропущенных компонентов нет");
             }
-            
-            LostParts lostParts = new LostParts();
-            lostParts.Show();
-            lostParts.dataGridView2.DataSource = objectsAssemblyKompas;
-            lostParts.dataGridView2.Columns["Designation"].HeaderText = "Обозначение";
-            lostParts.dataGridView2.Columns["Name"].HeaderText = "Наименование";
-            lostParts.dataGridView2.RowHeadersVisible = false;
-            //lostParts.dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            lostParts.dataGridView2.Columns["Quantity"].Visible = false;
-            lostParts.dataGridView2.Columns["Material"].Visible = false;
-            lostParts.dataGridView2.Columns["SpecificationSection"].Visible = false;
-            lostParts.dataGridView2.Columns["Mass"].Visible = false;
-            lostParts.dataGridView2.Columns["Coating"].Visible = false;
-            lostParts.dataGridView2.Columns["Parent"].Visible = false;
-            lostParts.dataGridView2.Columns["Bending"].Visible = false;
-            lostParts.dataGridView2.Columns["FullName"].HeaderText = "Путь до файла";
-            lostParts.dataGridView2.Columns["PathToDXF"].Visible = false;
 
 
-            lostParts.dataGridView2.AllowUserToAddRows = false;
-
-
-            lostParts.dataGridView2.Columns["Designation"].Width = 200;
-            lostParts.dataGridView2.Columns["Name"].Width = 200;
-            lostParts.dataGridView2.Columns["FullName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
         }
     }
 }
