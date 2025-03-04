@@ -33,19 +33,28 @@ namespace ReportKompas
         BindingList<ObjectAssemblyKompas> sortedListObjects;
         private bool cancelContextMenu = false;
         string fileName;
+        string pathForExcel;
+        string topParent;
+
         public ReportKompas()
         {
             InitializeComponent();
         }
+
         private void Recursion(IPart7 Part, string ParentName)
         {
             DisassembleObject(Part, ParentName);
             foreach (IPart7 item in Part.Parts)
             {
-                if (item.Detail == true) DisassembleObject(item, Part.Marking + " - " + Part.Name);
-                if (item.Detail == false) Recursion(item, Part.Marking + " - " + Part.Name);
+                ksPart ksPart2 = kompas.TransferInterface(item, 1, 0);
+                if (ksPart2.excluded != true)
+                {
+                    if (item.Detail == true) DisassembleObject(item, Part.Marking + " - " + Part.Name);
+                    if (item.Detail == false) Recursion(item, Part.Marking + " - " + Part.Name);
+                }
             }
         }
+
         private void GetSortedObjectsKompas()
         {
             if (sortedListObjects != null)
@@ -105,6 +114,7 @@ namespace ReportKompas
             }
             RecursionMethod(kompasObject.Designation + " - " + kompasObject.Name);
         }
+
         private void DisassembleObject(IPart7 part7, string Name)
         {
             ObjectAssemblyKompas objectAssemblyKompas = new ObjectAssemblyKompas();
@@ -163,27 +173,33 @@ namespace ReportKompas
             if (Name != "0")
             {
                 objectAssemblyKompas.Parent = Name;
+                objectAssemblyKompas.TopParent = topParent;
             }
             else { fileName = objectAssemblyKompas.Designation + " - " + objectAssemblyKompas.Name; }
             #endregion
 
-            #region Заполняю габаритные размеры            
+            #region Заполняю габаритные размеры
             //IFeature7 featureDim = (IFeature7)part7;
             //IBody7 bodyies = featureDim.ResultBodies;
 
             //IModelObject modelObject = (IModelObject)part7;
             //IFeature7 feature72 = modelObject.Owner;
             //IBody7 body7 = feature72.ResultBodies;
-            IBody7 body7 = part7.Owner.ResultBodies;
+            //IBody7 body7 = (IBody7)part7.Owner.ResultBodies;
             ksPart ksPart = kompas.TransferInterface(part7, 1, 0);
 
             if (ksPart != null)
             {
                 double x1, x2, y1, y2, z1, z2;
-                ksPart.GetGabarit(true,true,out x1, out y1, out z1, out x2, out y2, out z2);
-                objectAssemblyKompas.OverallDimensions = String.Format("{0}x{1}x{2}", Math.Round(x2 - x1),
-                                                                                      Math.Round(y2 - y1),
-                                                                                      Math.Round(z2 - z1));
+                ksPart.GetGabarit(true, true, out x1, out y1, out z1, out x2, out y2, out z2);
+                string TemporaryVariable = String.Format("{0}x{1}x{2}", Math.Round(x2 - x1),
+                                                                        Math.Round(y2 - y1),
+                                                                        Math.Round(z2 - z1));
+                if (TemporaryVariable.Contains("E") != true)
+                {
+                    objectAssemblyKompas.OverallDimensions = TemporaryVariable;
+                }
+
             }
             #endregion
 
@@ -221,6 +237,9 @@ namespace ReportKompas
                     { R = 6; }
                     switch (sheetMetalBody.Thickness)
                     {
+                        case 0.7:
+                            V = "8";
+                            break;
                         case 1:
                             V = "8";
                             break;
@@ -256,24 +275,29 @@ namespace ReportKompas
                     for (int i = 0; i < sheetMetalContainer.SheetMetalBends.Count; i++)
                     {
                         IFeature7 feature7 = (IFeature7)sheetMetalContainer.SheetMetalBends[i];
+                        Object[] featCol2 = feature7.SubFeatures[0, false, false];
                         if (feature7.Excluded != true)
                         {
-                            Q2 = Q2 + 1;
+                            Q2 = Q2 + featCol2.Count();
                         }
                     }
                     int Q3 = 0; //считаю сгибы нарисованные по линии
                     for (int i = 0; i < sheetMetalContainer.SheetMetalSketchBends.Count; i++)
                     {
                         IFeature7 feature7 = (IFeature7)sheetMetalContainer.SheetMetalSketchBends[i];
+                        Object[] featCol3 = feature7.SubFeatures[0, false, false];
                         if (feature7.Excluded != true)
                         {
-                            Q3 = Q3 + 1;
+                            Q3 = Q3 + featCol3.Count();
                         }
                     }
                     Q = featColCount + Q2 + Q3;
                     if (Q != 0)
                     {
-                        objectAssemblyKompas.Bending = "R=" + R.ToString() + "  V=" + V + "  Q=" + Q;
+                        objectAssemblyKompas.R = R.ToString();
+                        objectAssemblyKompas.V = V.ToString();
+                        objectAssemblyKompas.Q = Q.ToString();
+                        //objectAssemblyKompas.Bending = "R=" + R.ToString() + "  V=" + V + "  Q=" + Q;
                     }
 
                     #endregion
@@ -318,35 +342,55 @@ namespace ReportKompas
             GetSortedObjectsKompas();
             //dataGridView1.Rows.Clear();
             //dataGridView1.Columns.Clear();
-
             dataGridView1.DataSource = sortedListObjects; /*objectsAssemblyKompas;*/
-            dataGridView1.Columns["Designation"].HeaderText = "Обозначение";
-            dataGridView1.Columns["Name"].HeaderText = "Наименование";
-            dataGridView1.Columns["Quantity"].HeaderText = "Кол-во";
-            dataGridView1.Columns["Material"].HeaderText = "Материал";
-            dataGridView1.Columns["SpecificationSection"].HeaderText = "Раздел спецификации";
-            dataGridView1.Columns["Mass"].HeaderText = "Масса";
-            dataGridView1.Columns["Coating"].HeaderText = "Покрытие";
-            dataGridView1.Columns["Parent"].HeaderText = "Куда входит";
-            dataGridView1.Columns["Bending"].HeaderText = "Гибка";
-            dataGridView1.Columns["FullName"].HeaderText = "Путь до файла";
-            dataGridView1.Columns["PathToDXF"].HeaderText = "Путь до DXF";
-            dataGridView1.Columns["OverallDimensions"].HeaderText = "Габаритные размеры";
-
-            dataGridView1.RowHeadersVisible = false;
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridView1.Columns["Designation"].HeaderText = "Обозначение";
+            dataGridView1.Columns["Designation"].DisplayIndex = 0;
             dataGridView1.Columns["Designation"].Width = 200;
+            dataGridView1.Columns["Name"].HeaderText = "Наименование";
+            dataGridView1.Columns["Name"].DisplayIndex = 1;
             dataGridView1.Columns["Name"].Width = 200;
+            dataGridView1.Columns["Quantity"].HeaderText = "Кол-во";
+            dataGridView1.Columns["Quantity"].DisplayIndex = 2;
             dataGridView1.Columns["Quantity"].Width = 50;
+            dataGridView1.Columns["SpecificationSection"].HeaderText = "Раздел спецификации";
+            dataGridView1.Columns["SpecificationSection"].DisplayIndex = 3;
+            dataGridView1.Columns["SpecificationSection"].Width = 120;
+            dataGridView1.Columns["Material"].HeaderText = "Материал";
+            dataGridView1.Columns["Material"].DisplayIndex = 4;
             dataGridView1.Columns["Material"].Width = 150;
-            dataGridView1.Columns["SpecificationSection"].Width = 200;
+            dataGridView1.Columns["Mass"].HeaderText = "Масса";
             dataGridView1.Columns["Mass"].Width = 50;
-            //dataGridView1.Columns["Coating"].Width = 100;
-            dataGridView1.Columns["Parent"].Width = 200;
+            dataGridView1.Columns["Mass"].DisplayIndex = 5;
+            dataGridView1.Columns["R"].HeaderText = "Пуансон";
+            dataGridView1.Columns["R"].DisplayIndex = 6;
+            dataGridView1.Columns["R"].Width = 50;
+            dataGridView1.Columns["V"].HeaderText = "Матрица";
+            dataGridView1.Columns["V"].DisplayIndex = 7;
+            dataGridView1.Columns["V"].Width = 50;
+            dataGridView1.Columns["Q"].HeaderText = "Кол-во гибов";
+            dataGridView1.Columns["Q"].DisplayIndex = 8;
+            dataGridView1.Columns["Q"].Width = 50;
+            dataGridView1.Columns["Parent"].HeaderText = "Узел-1";
+            dataGridView1.Columns["Parent"].DisplayIndex = 9;
+            dataGridView1.Columns["TopParent"].HeaderText = "Узел верхний";
+            dataGridView1.Columns["TopParent"].DisplayIndex = 10;
+            dataGridView1.Columns["FullName"].HeaderText = "Путь до файла";
+            dataGridView1.Columns["FullName"].DisplayIndex = 11;
+            dataGridView1.Columns["PathToDXF"].HeaderText = "Путь до DXF";
             dataGridView1.Columns["PathToDXF"].Width = 200;
+            dataGridView1.Columns["PathToDXF"].DisplayIndex = 12;
+            dataGridView1.Columns["OverallDimensions"].HeaderText = "Габаритные размеры";
             dataGridView1.Columns["OverallDimensions"].Width = 200;
+            dataGridView1.Columns["OverallDimensions"].DisplayIndex = 13;
+            dataGridView1.Columns["Coating"].HeaderText = "Покрытие";
+            dataGridView1.Columns["Coating"].Visible = false;
+            dataGridView1.Columns["Coating"].DisplayIndex = 14;
+            //dataGridView1.Columns["Coating"].Width = 100;
+            dataGridView1.RowHeadersVisible = false;
             dataGridView1.AllowUserToAddRows = false;
         }
+
         private void toolStripButtonShowData_Click(object sender, EventArgs e)
         {
             if (objectsAssemblyKompas != null)
@@ -368,6 +412,7 @@ namespace ReportKompas
             ksPartCollection _ksPartCollection = ksDocument3D.PartCollection(true);
 
             IPart7 part7 = document3D.TopPart;
+            topParent = part7.Marking + " - " + part7.Name;
             switch (document3D.DocumentType)
             {
                 case Kompas6Constants.DocumentTypeEnum.ksDocumentUnknown:
@@ -389,7 +434,7 @@ namespace ReportKompas
                         DisassembleObject(part7, "0");
                         for (int i = 0; i < _ksPartCollection.GetCount(); i++)
                         {
-                            ksPart ksPart = _ksPartCollection.GetByIndex(i);                            
+                            ksPart ksPart = _ksPartCollection.GetByIndex(i);
                             if (ksPart.excluded != true)
                             {
                                 IPart7 _part7 = kompas.TransferInterface(ksPart, 2, 0);
@@ -408,64 +453,6 @@ namespace ReportKompas
                         break;
                     }
             }
-        }
-        private void toolStripButton2_Click(object sender, EventArgs e)
-        {
-            XLWorkbook excelWorkbook = new XLWorkbook();
-            IXLWorksheet worksheet = excelWorkbook.Worksheets.Add("Тест");
-            string path = System.Reflection.Assembly.GetExecutingAssembly().Location.Remove(System.Reflection.Assembly.GetExecutingAssembly().Location.Length - 16);
-
-            #region создаю стиль заголовков
-            var myCustomStyle1 = XLWorkbook.DefaultStyle;
-            myCustomStyle1.Font.FontName = "Arial Cyr";
-            myCustomStyle1.Font.Bold = false;
-            myCustomStyle1.Font.Italic = false;
-            myCustomStyle1.Font.FontSize = 10;
-            myCustomStyle1.Border.LeftBorder = XLBorderStyleValues.Thin;
-            myCustomStyle1.Border.RightBorder = XLBorderStyleValues.Thin;
-            myCustomStyle1.Border.TopBorder = XLBorderStyleValues.Thin;
-            myCustomStyle1.Border.BottomBorder = XLBorderStyleValues.Thin;
-            myCustomStyle1.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
-            myCustomStyle1.Alignment.SetVertical(XLAlignmentVerticalValues.Center);
-            #endregion
-
-            #region создаю стиль ячеек
-            var myCustomStyle2 = XLWorkbook.DefaultStyle;
-            myCustomStyle2.Font.FontName = "Arial Cyr";
-            myCustomStyle2.Font.Bold = false;
-            myCustomStyle2.Font.Italic = false;
-            myCustomStyle2.Font.FontSize = 10;
-            myCustomStyle2.Border.LeftBorder = XLBorderStyleValues.Thin;
-            myCustomStyle2.Border.RightBorder = XLBorderStyleValues.Thin;
-            myCustomStyle2.Border.TopBorder = XLBorderStyleValues.Thin;
-            myCustomStyle2.Border.BottomBorder = XLBorderStyleValues.Thin;
-            myCustomStyle2.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Left);
-            myCustomStyle2.Alignment.SetVertical(XLAlignmentVerticalValues.Center);
-            #endregion
-            worksheet.Cell(1, 2).Value = "Обозначение";
-            worksheet.Cell(1, 3).Value = "Наименование";
-            worksheet.Cell(1, 4).Value = "Количество";
-            worksheet.Cell(1, 5).Value = "Раздел спецификации";
-            worksheet.Cell(1, 6).Value = "Материал";
-            worksheet.Cell(1, 7).Value = "Масса";
-            worksheet.Cell(1, 8).Value = "Покрытие";
-            worksheet.Cell(1, 9).Value = "Куда входит";
-            for (int i = 2; i < 10; i++)
-            {
-                worksheet.Cell(1, i).Style = myCustomStyle1;
-            }
-
-
-            for (int i = 0; i < dataGridView1.RowCount; i++)
-            {
-                for (int j = 0; j < dataGridView1.ColumnCount; j++)
-                {
-                    worksheet.Cell(i + 2, j + 2).Value = dataGridView1.Rows[i].Cells[j].Value;
-                    worksheet.Cell(i + 2, j + 2).Style = myCustomStyle2;
-                }
-            }
-            worksheet.Columns().AdjustToContents();
-            excelWorkbook.SaveAs(path + fileName + ".xlsx");
         }
 
         private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
@@ -492,6 +479,7 @@ namespace ReportKompas
                 document.Open(objectAssemblyKompas.FullName, true, false);
             }
         }
+
         private void dataGridView1_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
@@ -510,7 +498,7 @@ namespace ReportKompas
             }
         }
 
-        private void MenuItemOpenInExplorer_Click(object sender, EventArgs e)
+        private void OpenExplorer_MenuItem_Click(object sender, EventArgs e)
         {
             DataGridViewSelectedRowCollection selectedRows = dataGridView1.SelectedRows;
 
@@ -531,7 +519,7 @@ namespace ReportKompas
             Process.Start("explorer.exe", path);
         }
 
-        private void toolStripButtonShowLostParts_Click(object sender, EventArgs e)
+        private void ShowLostParts_toolStripButton_Click(object sender, EventArgs e)
         {
             try
             {
@@ -541,7 +529,9 @@ namespace ReportKompas
                     lostParts.Show();
                     lostParts.dataGridView2.DataSource = objectsAssemblyKompas;
                     lostParts.dataGridView2.Columns["Designation"].HeaderText = "Обозначение";
+                    lostParts.dataGridView2.Columns["Designation"].Width = 200;
                     lostParts.dataGridView2.Columns["Name"].HeaderText = "Наименование";
+                    lostParts.dataGridView2.Columns["Name"].Width = 200;
                     lostParts.dataGridView2.RowHeadersVisible = false;
                     //lostParts.dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
                     lostParts.dataGridView2.Columns["Quantity"].Visible = false;
@@ -549,18 +539,16 @@ namespace ReportKompas
                     lostParts.dataGridView2.Columns["SpecificationSection"].Visible = false;
                     lostParts.dataGridView2.Columns["Mass"].Visible = false;
                     lostParts.dataGridView2.Columns["Coating"].Visible = false;
-                    lostParts.dataGridView2.Columns["Parent"].Visible = false;
-                    lostParts.dataGridView2.Columns["Bending"].Visible = false;
+                    lostParts.dataGridView2.Columns["TopParent"].Visible = false;
+                    lostParts.dataGridView2.Columns["R"].Visible = false;
+                    lostParts.dataGridView2.Columns["V"].Visible = false;
+                    lostParts.dataGridView2.Columns["Q"].Visible = false;
                     lostParts.dataGridView2.Columns["FullName"].HeaderText = "Путь до файла";
+                    lostParts.dataGridView2.Columns["Parent"].HeaderText = "Узел-1";
                     lostParts.dataGridView2.Columns["PathToDXF"].Visible = false;
                     lostParts.dataGridView2.Columns["OverallDimensions"].HeaderText = "Габаритные размеры";
 
-
                     lostParts.dataGridView2.AllowUserToAddRows = false;
-
-
-                    lostParts.dataGridView2.Columns["Designation"].Width = 200;
-                    lostParts.dataGridView2.Columns["Name"].Width = 200;
                     lostParts.dataGridView2.Columns["FullName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 }
                 else
@@ -575,5 +563,80 @@ namespace ReportKompas
 
 
         }
+
+        private void SaveExcel_ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            XLWorkbook excelWorkbook = new XLWorkbook();
+            pathForExcel = System.Reflection.Assembly.GetExecutingAssembly().Location.Remove(System.Reflection.Assembly.GetExecutingAssembly().Location.Length - 16);
+            DataTable dt = new DataTable();
+            foreach (DataGridViewColumn column in dataGridView1.Columns)
+            {
+                dt.Columns.Add(column.HeaderText, column.ValueType);
+            }
+
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                dt.Rows.Add();
+                foreach (DataGridViewCell cell in row.Cells)
+                {
+                    if (cell.Value != null)
+                    {
+                        dt.Rows[dt.Rows.Count - 1][cell.ColumnIndex] = cell.Value.ToString();
+                    }
+                }
+            }
+            IXLWorksheet worksheet = excelWorkbook.Worksheets.Add(dt, "Отчет");
+            worksheet.Outline.SummaryVLocation = XLOutlineSummaryVLocation.Top;
+
+            int rowsCount = worksheet.LastRowUsed().RowNumber(); //кол-во заполненных строк
+            worksheet.Rows(3, rowsCount).Group();
+            //IXLCells cells = worksheet.CellsUsed(x => x.Value.ToString() == "Сборочные единицы");
+
+            IXLCells cells2 = worksheet.CellsUsed(x => x.Value.ToString() == "Узел-1");
+            int columnNumber = 0;
+            foreach (IXLCell item in cells2)
+            {
+                columnNumber = item.WorksheetColumn().ColumnNumber();
+            }
+            IXLCells xLCells = worksheet.CellsUsed(c => c.WorksheetColumn().ColumnNumber() == columnNumber);
+            List<int> rowNumbers = new List<int>();
+            foreach (IXLCell item in xLCells)
+            {
+
+                string temporaryName = "";
+                int iterator = 0;
+                if (item.Value.ToString() != "" && item.Value.ToString() != fileName && item.Value.ToString() != temporaryName && iterator == 0 && item.WorksheetRow().RowNumber() != 1)
+                {
+                    temporaryName = item.Value.ToString();
+                    rowNumbers.Add(item.WorksheetRow().RowNumber());
+                }
+                if (rowNumbers.Count > 1 && item.Value.ToString() == fileName && item.Value.ToString() != "" && item.WorksheetRow().RowNumber() != 1)
+                {
+
+                    //MessageBox.Show(rowNumbers[0].ToString() + rowNumbers[rowNumbers.Count-1].ToString());
+                    worksheet.Rows(rowNumbers[0], rowNumbers[rowNumbers.Count-1]).Group();
+                    rowNumbers.Clear();
+                    temporaryName = "";
+                    iterator = 0;
+                }
+            }
+
+            IXLTable xLTable = worksheet.Table(0);
+
+
+            xLTable.Theme = XLTableTheme.TableStyleLight8;
+            worksheet.Columns().AdjustToContents();
+            excelWorkbook.SaveAs(pathForExcel + fileName + ".xlsx");
+        }
+
+        private void OpenExplorer_ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (pathForExcel != "" & pathForExcel != null)
+            {
+                Process.Start(pathForExcel);
+            }
+        }
+
+
     }
 }

@@ -14,12 +14,17 @@ namespace ReportKompas
         public string SpecificationSection { get; set; }
         public string Material { get; set; }
         public double Mass { get; set; }
-        public string Coating { get; set; }
+        public string R { get; set; }
+        public string V { get; set; }
+        public string Q { get; set; }
         public string Parent { get; set; }
-        public string Bending { get; set; }
+        public string TopParent { get; set; }
+        //public string Bending { get; set; }
         public string FullName { get; set; }
         public string PathToDXF { get; set; }
         public string OverallDimensions { get; set; }
+        public string Coating { get; set; }
+
 
         public ObjectAssemblyKompas() { }        
         public ObjectAssemblyKompas(string designation,
@@ -30,7 +35,7 @@ namespace ReportKompas
                                     double mass,
                                     string coating, //покрытие(краска)
                                     string parent,
-                                    string bending, //гибки(кол-во гибов, указание инструмента для гибки)
+                                    //string bending, //гибки(кол-во гибов, указание инструмента для гибки)
                                     string fullName,
                                     string pathToDXF,
                                     string overallDimensions)
@@ -43,7 +48,7 @@ namespace ReportKompas
             Mass = mass;
             Coating = coating;
             Parent = parent;
-            Bending = bending;
+            //Bending = bending;
             FullName = fullName;
             PathToDXF = pathToDXF;
             OverallDimensions = overallDimensions;
