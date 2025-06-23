@@ -24,6 +24,10 @@ namespace ReportKompas
         public string PathToDXF { get; set; }
         public string OverallDimensions { get; set; }
         public string Coating { get; set; }
+        public string Welding { get; set; }
+        public string LocksmithWork { get; set; }
+        public string Note { get; set; }
+        public string Area { get; set; }
 
 
         public ObjectAssemblyKompas() { }        
@@ -38,6 +42,10 @@ namespace ReportKompas
                                     //string bending, //гибки(кол-во гибов, указание инструмента для гибки)
                                     string fullName,
                                     string pathToDXF,
+                                    string welding,
+                                    string locksmithwork,
+                                    string note,
+                                    string area,
                                     string overallDimensions)
         {
             Designation = designation;
@@ -48,9 +56,13 @@ namespace ReportKompas
             Mass = mass;
             Coating = coating;
             Parent = parent;
+            Welding = welding;
+            LocksmithWork = locksmithwork;
+            Note = note;
             //Bending = bending;
             FullName = fullName;
             PathToDXF = pathToDXF;
+            Area = area;
             OverallDimensions = overallDimensions;
         }
     }

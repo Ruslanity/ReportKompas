@@ -15,7 +15,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using System.Xml;
 
 namespace ReportKompas
 {
@@ -28,6 +28,7 @@ namespace ReportKompas
         IKompasDocument3D document3D;
         KompasObject kompas;
         ksDocument3D ksDocument3D;
+        private static ReportKompas instance;
 
         public static List<ObjectAssemblyKompas> objectsAssemblyKompas;
         BindingList<ObjectAssemblyKompas> sortedListObjects;
@@ -35,6 +36,15 @@ namespace ReportKompas
         string fileName;
         string pathForExcel;
         string topParent;
+
+        public static ReportKompas GetInstance()
+        {
+            if (instance == null || instance.IsDisposed)
+            {
+                instance = new ReportKompas();
+            }
+            return instance;
+        }
 
         public ReportKompas()
         {
@@ -115,6 +125,11 @@ namespace ReportKompas
             RecursionMethod(kompasObject.Designation + " - " + kompasObject.Name);
         }
 
+        /// <summary>
+        /// Вытащит все свойства модели и передаст в коллекцию если в ней такого объекта нет
+        /// </summary>
+        /// <param name="part7"></param>
+        /// <param name="Name"></param>
         private void DisassembleObject(IPart7 part7, string Name)
         {
             ObjectAssemblyKompas objectAssemblyKompas = new ObjectAssemblyKompas();
@@ -165,6 +180,27 @@ namespace ReportKompas
                     propertyKeeper.GetPropertyValue((_Property)item, out info, false, out source);
                     objectAssemblyKompas.Coating = info;
                 }
+                if (item.Name == "Сварочные работы")
+                {
+                    dynamic info;
+                    bool source;
+                    propertyKeeper.GetPropertyValue((_Property)item, out info, false, out source);
+                    objectAssemblyKompas.Welding = info;
+                }
+                if (item.Name == "Слесарные работы")
+                {
+                    dynamic info;
+                    bool source;
+                    propertyKeeper.GetPropertyValue((_Property)item, out info, false, out source);
+                    objectAssemblyKompas.LocksmithWork = info;
+                }
+                if (item.Name == "Примечание")
+                {
+                    dynamic info;
+                    bool source;
+                    propertyKeeper.GetPropertyValue((_Property)item, out info, false, out source);
+                    objectAssemblyKompas.Note = info;
+                }
             }
             //присваиваю полное имя
             objectAssemblyKompas.FullName = part7.FileName;
@@ -178,7 +214,7 @@ namespace ReportKompas
             else { fileName = objectAssemblyKompas.Designation + " - " + objectAssemblyKompas.Name; }
             #endregion
 
-            #region Заполняю габаритные размеры
+            #region Заполняю габаритные размеры и площадь поверхности
             //IFeature7 featureDim = (IFeature7)part7;
             //IBody7 bodyies = featureDim.ResultBodies;
 
@@ -200,8 +236,12 @@ namespace ReportKompas
                     objectAssemblyKompas.OverallDimensions = TemporaryVariable;
                 }
 
+                uint bitVector = 0x3;
+                ksMassInertiaParam ksMassInertiaParam = ksPart.CalcMassInertiaProperties(bitVector);
+                objectAssemblyKompas.Area = Math.Round(ksMassInertiaParam.F,2).ToString();
+
             }
-            #endregion
+            #endregion            
 
             #region Присваиваю путь до DXF и заполняю графу гибка
             try
@@ -217,7 +257,7 @@ namespace ReportKompas
                     string save_to_name2 = sheetMetalBody.Thickness.ToString(CultureInfo.CreateSpecificCulture("en-GB")).Replace('.', ',') + "mm_" + part7.Marking.Remove(0, 3) + ".dxf";
 
                     #region Заполняю свойство Гибка
-                    //тут подсчет сколько гибов теле "листовое тело"
+                    //тут подсчет сколько гибов в теле "листовое тело"
                     IFeature7 pFeat = sheetMetalBody.Owner;
                     Object[] featCol = pFeat.SubFeatures[0, false, false];
                     int featColCount = 0;
@@ -238,6 +278,9 @@ namespace ReportKompas
                     switch (sheetMetalBody.Thickness)
                     {
                         case 0.7:
+                            V = "8";
+                            break;
+                        case 0.8:
                             V = "8";
                             break;
                         case 1:
@@ -291,7 +334,17 @@ namespace ReportKompas
                             Q3 = Q3 + featCol3.Count();
                         }
                     }
-                    Q = featColCount + Q2 + Q3;
+                    int Q4 = 0; //считаю сгибы нарисованные по линии
+                    for (int i = 0; i < sheetMetalContainer.SheetMetalLineBends.Count; i++)
+                    {
+                        IFeature7 feature7 = (IFeature7)sheetMetalContainer.SheetMetalLineBends[i];
+                        Object[] featCol4 = feature7.SubFeatures[0, false, false];
+                        if (feature7.Excluded != true)
+                        {
+                            Q4 = Q4 + featCol4.Count();
+                        }
+                    }
+                    Q = featColCount + Q2 + Q3 + Q4;
                     if (Q != 0)
                     {
                         objectAssemblyKompas.R = R.ToString();
@@ -380,13 +433,25 @@ namespace ReportKompas
             dataGridView1.Columns["PathToDXF"].HeaderText = "Путь до DXF";
             dataGridView1.Columns["PathToDXF"].Width = 200;
             dataGridView1.Columns["PathToDXF"].DisplayIndex = 12;
+            dataGridView1.Columns["PathToDXF"].Visible = false;
             dataGridView1.Columns["OverallDimensions"].HeaderText = "Габаритные размеры";
             dataGridView1.Columns["OverallDimensions"].Width = 200;
             dataGridView1.Columns["OverallDimensions"].DisplayIndex = 13;
             dataGridView1.Columns["Coating"].HeaderText = "Покрытие";
-            dataGridView1.Columns["Coating"].Visible = false;
             dataGridView1.Columns["Coating"].DisplayIndex = 14;
-            //dataGridView1.Columns["Coating"].Width = 100;
+            dataGridView1.Columns["Coating"].Width = 120;
+            dataGridView1.Columns["Welding"].HeaderText = "Сварочные работы";
+            dataGridView1.Columns["Welding"].DisplayIndex = 15;
+            dataGridView1.Columns["Welding"].Width = 120;
+            dataGridView1.Columns["LocksmithWork"].HeaderText = "Слесарные работы";
+            dataGridView1.Columns["LocksmithWork"].DisplayIndex = 15;
+            dataGridView1.Columns["LocksmithWork"].Width = 120;
+            dataGridView1.Columns["Note"].HeaderText = "Примечание";
+            dataGridView1.Columns["Note"].DisplayIndex = 16;
+            dataGridView1.Columns["Note"].Width = 75;
+            dataGridView1.Columns["Area"].HeaderText = "Площадь поверхности";
+            dataGridView1.Columns["Area"].DisplayIndex = 17;
+            dataGridView1.Columns["Area"].Width = 75;
             dataGridView1.RowHeadersVisible = false;
             dataGridView1.AllowUserToAddRows = false;
         }
@@ -585,6 +650,7 @@ namespace ReportKompas
                     }
                 }
             }
+
             IXLWorksheet worksheet = excelWorkbook.Worksheets.Add(dt, "Отчет");
             worksheet.Outline.SummaryVLocation = XLOutlineSummaryVLocation.Top;
 
@@ -598,45 +664,177 @@ namespace ReportKompas
             {
                 columnNumber = item.WorksheetColumn().ColumnNumber();
             }
+
             IXLCells xLCells = worksheet.CellsUsed(c => c.WorksheetColumn().ColumnNumber() == columnNumber);
+
             List<int> rowNumbers = new List<int>();
-            foreach (IXLCell item in xLCells)
+
+            for (int i = 4; i < worksheet.LastRowUsed().RowNumber(); i++)
             {
-
-                string temporaryName = "";
-                int iterator = 0;
-                if (item.Value.ToString() != "" && item.Value.ToString() != fileName && item.Value.ToString() != temporaryName && iterator == 0 && item.WorksheetRow().RowNumber() != 1)
+                string temporaryName = worksheet.Row(i).Cell(columnNumber).Value.ToString();
+                if (temporaryName.Contains(fileName))
                 {
-                    temporaryName = item.Value.ToString();
-                    rowNumbers.Add(item.WorksheetRow().RowNumber());
+                    break;
                 }
-                if (rowNumbers.Count > 1 && item.Value.ToString() == fileName && item.Value.ToString() != "" && item.WorksheetRow().RowNumber() != 1)
+                rowNumbers.Add(worksheet.Row(i).RowNumber());
+                for (int j = i; j < worksheet.LastRowUsed().RowNumber(); j++)
                 {
-
-                    //MessageBox.Show(rowNumbers[0].ToString() + rowNumbers[rowNumbers.Count-1].ToString());
-                    worksheet.Rows(rowNumbers[0], rowNumbers[rowNumbers.Count-1]).Group();
+                    if (worksheet.Row(j).Cell(columnNumber).Value.ToString() == temporaryName)
+                    {
+                        rowNumbers.Add(worksheet.Row(j).RowNumber());
+                        if (j != worksheet.LastRowUsed().RowNumber())
+                        {
+                            i = j + 1;
+                        }
+                    }
+                }
+                if (rowNumbers.Count > 1)
+                {
+                    worksheet.Rows(rowNumbers[0], rowNumbers[rowNumbers.Count - 1]).Group();
                     rowNumbers.Clear();
                     temporaryName = "";
-                    iterator = 0;
                 }
             }
 
-            IXLTable xLTable = worksheet.Table(0);
+            //foreach (IXLCell item in xLCells)
+            //{
+            //    string temporaryName = "";
+            //    int iterator = 0;
+            //    if (item.Value.ToString() != "" && item.Value.ToString() != fileName && item.Value.ToString() != temporaryName && iterator == 0 && item.WorksheetRow().RowNumber() != 1)
+            //    {
+            //        temporaryName = item.Value.ToString();
+            //        rowNumbers.Add(item.WorksheetRow().RowNumber());
+            //    }
+            //    if (rowNumbers.Count > 1 && item.Value.ToString() == fileName && item.Value.ToString() != "" && item.WorksheetRow().RowNumber() != 1)
+            //    {
+            //        worksheet.Rows(rowNumbers[0], rowNumbers[rowNumbers.Count-1]).Group();
+            //        rowNumbers.Clear();
+            //        temporaryName = "";
+            //        iterator = 0;
+            //    }
+            //}
 
+            IXLTable xLTable = worksheet.Table(0);
 
             xLTable.Theme = XLTableTheme.TableStyleLight8;
             worksheet.Columns().AdjustToContents();
             excelWorkbook.SaveAs(pathForExcel + fileName + ".xlsx");
+            #region Сохраняю CSV файл
+            //string csvFilePath = pathForExcel + fileName + ".csv";
+            //using (var writer = new StreamWriter(csvFilePath))
+            //{
+            //    // Перебираем строки в листе
+            //    foreach (var row in worksheet.RowsUsed())
+            //    {
+            //        // Создаем массив для хранения значений ячеек
+            //        var values = new string[row.LastCellUsed().Address.ColumnNumber];
+
+            //        // Перебираем ячейки в строке
+            //        for (int i = 1; i <= row.LastCellUsed().Address.ColumnNumber; i++)
+            //        {
+            //            values[i - 1] = row.Cell(i).GetString();
+            //        }
+            //        // Записываем значения в CSV формате
+            //        writer.WriteLine(string.Join(",", values));
+            //    }
+            //}
+            #endregion
         }
 
         private void OpenExplorer_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (pathForExcel != "" & pathForExcel != null)
+            //Process.Start(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string tempPath = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
+            Process.Start(tempPath.Remove(tempPath.LastIndexOf(@"\")));
+
+            //Environment.CurrentDirectory
+            //System.Reflection.Assembly.GetExecutingAssembly().Location
+
+
+            //if (pathForExcel != "" & pathForExcel != null)
+            //{
+            //    Process.Start(pathForExcel);
+            //}
+        }
+
+        private void SaveCSV_ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string pathForCSV = System.Reflection.Assembly.GetExecutingAssembly().Location.Remove(System.Reflection.Assembly.GetExecutingAssembly().Location.Length - 16);
+            try
             {
-                Process.Start(pathForExcel);
+                StringBuilder csvContent = new StringBuilder();
+
+                // Записываем заголовки столбцов
+                for (int i = 0; i < dataGridView1.Columns.Count; i++)
+                {
+                    csvContent.Append(dataGridView1.Columns[i].HeaderText);
+                    if (i < dataGridView1.Columns.Count - 1)
+                        csvContent.Append(";");
+                }
+                csvContent.AppendLine();
+
+                // Записываем строки данных
+                foreach (DataGridViewRow row in dataGridView1.Rows)
+                {
+                    if (!row.IsNewRow) // пропускаем новую пустую строку
+                    {
+                        for (int i = 0; i < dataGridView1.Columns.Count; i++)
+                        {
+                            var cellValue = row.Cells[i].Value?.ToString() ?? "";
+                            // Оборачиваем значения, содержащие запятые, кавычками
+                            if (cellValue.Contains(",") || cellValue.Contains("\"") || cellValue.Contains("\n"))
+                            {
+                                cellValue = $"\"{cellValue.Replace("\"", "\"\"")}\"";
+                            }
+                            csvContent.Append(cellValue);
+                            if (i < dataGridView1.Columns.Count - 1)
+                                csvContent.Append(";");
+                        }
+                        csvContent.AppendLine();
+                    }
+                }
+
+                // Записываем в файл
+                File.WriteAllText(pathForCSV + fileName + ".csv", csvContent.ToString(), Encoding.UTF8);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при сохранении файла: " + ex.Message);
             }
         }
 
+        private void SaveXML_ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string pathForXML = System.Reflection.Assembly.GetExecutingAssembly().Location.Remove(System.Reflection.Assembly.GetExecutingAssembly().Location.Length - 16) + fileName + ".xml";
+            XmlWriterSettings settings = new XmlWriterSettings();
+            settings.Indent = true;
+            using (XmlWriter writer = XmlWriter.Create(pathForXML, settings))
+            {
+                writer.WriteStartDocument();
+                writer.WriteStartElement("Rows"); // корневой элемент
 
+                // Перебираем все строки DataGridView
+                foreach (DataGridViewRow row in dataGridView1.Rows)
+                {
+                    if (row.IsNewRow) continue; // пропускаем новую пустую строку
+
+                    writer.WriteStartElement("Row");
+
+                    // Перебираем все ячейки в строке
+                    foreach (DataGridViewCell cell in row.Cells)
+                    {
+                        string columnName = dataGridView1.Columns[cell.ColumnIndex].Name;
+                        string cellValue = cell.Value?.ToString() ?? "";
+
+                        writer.WriteElementString(columnName, cellValue);
+                    }
+
+                    writer.WriteEndElement(); // </Row>
+                }
+
+                writer.WriteEndElement(); // </Rows>
+                writer.WriteEndDocument();
+            }
+        }
     }
 }
