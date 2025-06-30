@@ -28,6 +28,9 @@ namespace ReportKompas
         public string LocksmithWork { get; set; }
         public string Note { get; set; }
         public string Area { get; set; }
+        public string CodeEquipment { get; set; }
+        public string CodeMaterial { get; set; }
+        public string TimeCut { get; set; }
 
 
         public ObjectAssemblyKompas() { }        
@@ -46,6 +49,9 @@ namespace ReportKompas
                                     string locksmithwork,
                                     string note,
                                     string area,
+                                    string codeequipment,
+                                    string codematerial,
+                                    string timecut,
                                     string overallDimensions)
         {
             Designation = designation;
@@ -63,6 +69,9 @@ namespace ReportKompas
             FullName = fullName;
             PathToDXF = pathToDXF;
             Area = area;
+            CodeEquipment = codeequipment;
+            CodeMaterial = codematerial;
+            CodeEquipment = timecut;
             OverallDimensions = overallDimensions;
         }
     }

@@ -1,0 +1,1017 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Dictionary>
+  <Key name="21669">
+    <Value>Анкер клиновой 6*80</Value>
+    <Value>Анкер клиновой М6х80</Value>
+  </Key>
+  <Key name="24705">
+    <Value>Анкер клиновой 8*80</Value>
+  </Key>
+  <Key name="12901">
+    <Value>Анкер-болт М12*100</Value>
+    <Value>Анкер клиновой М12х100</Value>
+  </Key>
+  <Key name="24774">
+    <Value>Болт DIN603-8.8-ZN-М6*20 мебельный</Value>
+  </Key>
+  <Key name="18644">
+    <Value>Болт DIN603-ZN-М12*30 мебельный</Value>
+  </Key>
+  <Key name="18645">
+    <Value>Болт DIN603-ZN-М16*35 мебельный</Value>
+    <Value>Болт DIN 603 М16x35-Zn</Value>
+  </Key>
+  <Key name="21205">
+    <Value>Болт DIN603-ZN-М8*20 мебельный</Value>
+  </Key>
+  <Key name="21471">
+    <Value>Болт DIN603-М10*20 мебельный</Value>
+  </Key>
+  <Key name="16319">
+    <Value>Болт DIN603-М10*25 мебельный</Value>
+  </Key>
+  <Key name="25797">
+    <Value>Болт DIN603-М6*16 мебельный</Value>
+	<Value>Болт DIN 603 М6x16-Zn</Value>
+  </Key>
+  <Key name="23626">
+    <Value>Болт DIN6921-10.9-ZN-М6*16</Value>
+  </Key>
+  <Key name="8755">
+    <Value>Болт DIN912-8.8-ZN-М10*16 с внутренним шестигранником</Value>
+  </Key>
+  <Key name="16860">
+    <Value>Болт DIN912-8.8-ZN-М12*40 с внутренним шестигранником</Value>
+  </Key>
+  <Key name="15837">
+    <Value>Болт DIN931-8.8-ZN- М12*100</Value>
+  </Key>
+  <Key name="8841">
+    <Value>Болт DIN933 М10*16 полная резьба 8.8</Value>
+  </Key>
+  <Key name="10255">
+    <Value>Болт DIN933-10.9-ZN-М20*60</Value>
+  </Key>
+  <Key name="248">
+    <Value>Болт DIN933-8.8-ZN- М6*16 </Value>
+  </Key>
+  <Key name="22968">
+    <Value>Болт DIN933-8.8-ZN-М10*16</Value>
+  </Key>
+  <Key name="622">
+    <Value>Болт DIN933-8.8-ZN-М10*20</Value>
+  </Key>
+  <Key name="8093">
+    <Value>Болт DIN933-8.8-ZN-М10*25</Value>
+    <Value>Болт DIN 933 М10x25-Zn</Value>
+  </Key>
+  <Key name="7731">
+    <Value>Болт DIN933-8.8-ZN-М10*30 </Value>
+  </Key>
+  <Key name="15624">
+    <Value>Болт DIN933-8.8-ZN-М10*40</Value>
+  </Key>
+  <Key name="22969">
+    <Value>Болт DIN933-8.8-ZN-М10*60</Value>
+  </Key>
+  <Key name="11918">
+    <Value>Болт DIN933-8.8-ZN-М12*100</Value>
+  </Key>
+  <Key name="18244">
+    <Value>Болт DIN933-8.8-ZN-М12*25</Value>
+  </Key>
+  <Key name="11756">
+    <Value>Болт DIN933-8.8-ZN-М12*25 (не используем)</Value>
+  </Key>
+  <Key name="2067">
+    <Value>Болт DIN933-8.8-ZN-М12*30</Value>
+	<Value>Болт DIN 933 М12x30-Zn</Value>
+  </Key>
+  <Key name="16294">
+    <Value>Болт DIN933-8.8-ZN-М12*35</Value>
+  </Key>
+  <Key name="11917">
+    <Value>Болт DIN933-8.8-ZN-М12*40</Value>
+  </Key>
+  <Key name="15506">
+    <Value>Болт DIN933-8.8-ZN-М12*45</Value>
+  </Key>
+  <Key name="15526">
+    <Value>Болт DIN933-8.8-ZN-М12*50</Value>
+  </Key>
+  <Key name="247">
+    <Value>Болт DIN933-8.8-ZN-М12*60</Value>
+  </Key>
+  <Key name="14917">
+    <Value>Болт DIN933-8.8-ZN-М12*70</Value>
+  </Key>
+  <Key name="15571">
+    <Value>Болт DIN933-8.8-ZN-М16*30</Value>
+  </Key>
+  <Key name="626">
+    <Value>Болт DIN933-8.8-ZN-М16*40</Value>
+  </Key>
+  <Key name="11916">
+    <Value>Болт DIN933-8.8-ZN-М16*50</Value>
+  </Key>
+  <Key name="16466">
+    <Value>Болт DIN933-8.8-ZN-М16*55</Value>
+  </Key>
+  <Key name="15530">
+    <Value>Болт DIN933-8.8-ZN-М16*65 </Value>
+  </Key>
+  <Key name="822">
+    <Value>Болт DIN933-8.8-ZN-М16*70</Value>
+  </Key>
+  <Key name="16010">
+    <Value>Болт DIN933-8.8-ZN-М16*80</Value>
+  </Key>
+  <Key name="15389">
+    <Value>Болт DIN933-8.8-ZN-М20*55</Value>
+  </Key>
+  <Key name="15683">
+    <Value>Болт DIN933-8.8-ZN-М6*10 </Value>
+  </Key>
+  <Key name="22924">
+    <Value>Болт DIN933-8.8-ZN-М6*12</Value>
+  </Key>
+  <Key name="18248">
+    <Value>Болт DIN933-8.8-ZN-М6*16</Value>
+  </Key>
+  <Key name="14080">
+    <Value>Болт DIN933-8.8-ZN-М6*20</Value>
+	<Value>Болт DIN 933 М6х20-Zn</Value>
+  </Key>
+  <Key name="21165">
+    <Value>Болт DIN933-8.8-ZN-М6*25</Value>
+  </Key>
+  <Key name="10371">
+    <Value>Болт DIN933-8.8-ZN-М6*30</Value>
+  </Key>
+  <Key name="19010">
+    <Value>Болт DIN933-8.8-ZN-М6*60</Value>
+  </Key>
+  <Key name="22323">
+    <Value>Болт DIN933-8.8-ZN-М8*100</Value>
+  </Key>
+  <Key name="15469">
+    <Value>Болт DIN933-8.8-ZN-М8*12</Value>
+  </Key>
+  <Key name="631">
+    <Value>Болт DIN933-8.8-ZN-М8*16 </Value>
+  </Key>
+  <Key name="18246">
+    <Value>Болт DIN933-8.8-ZN-М8*20</Value>
+	  <Value>Болт DIN 933 М8x20 -Zn</Value>
+    <Value>Болт DIN 933 М8x20-Zn</Value>
+  </Key>
+  <Key name="15471">
+    <Value>Болт DIN933-8.8-ZN-М8*25</Value>
+  </Key>
+  <Key name="833">
+    <Value>Болт DIN933-8.8-ZN-М8*30 АРХИВ</Value>
+  </Key>
+  <Key name="15390">
+    <Value>Болт DIN933-8.8-ZN-М8*60</Value>
+  </Key>
+  <Key name="14085">
+    <Value>Болт DIN933-М4*16 </Value>
+  </Key>
+  <Key name="15470">
+    <Value>Болт DIN933-М8*14</Value>
+  </Key>
+  <Key name="24698">
+    <Value>Болт М10х100</Value>
+  </Key>
+  <Key name="18509">
+    <Value>Болт М12х35 DIN6921 25 шт</Value>
+  </Key>
+  <Key name="20897">
+    <Value>Болт М20*100</Value>
+  </Key>
+  <Key name="21634">
+    <Value>Болт М6x14.099 ГОСТ 7802-81</Value>
+  </Key>
+  <Key name="4541">
+    <Value>Болт М8*35 полная резьба АРХИВ</Value>
+  </Key>
+  <Key name="26623">
+    <Value>Болт М8*80 </Value>
+  </Key>
+  <Key name="22828">
+    <Value>Болт М8*80 с внутренним шестигранником</Value>
+  </Key>
+  <Key name="15745">
+    <Value>Болт М8х1х20  DIN 961 8.8  Zn (ШАГ 1мм) АРХИВ</Value>
+  </Key>
+  <Key name="18245">
+    <Value>Болт с шестигранной головкой и полной резьбой М10х25</Value>
+  </Key>
+  <Key name="19664">
+    <Value>Болт с шестигранной головкой и полной рельбой М12х22</Value>
+  </Key>
+  <Key name="23518">
+    <Value>Болт с шестигранной головкой с фланцем М6х16</Value>
+  </Key>
+  <Key name="16764">
+    <Value>Болт Т-образный М3</Value>
+  </Key>
+  <Key name="18933">
+    <Value>Вибродемпфирующий материал 0,75*0,47</Value>
+	<Value>Вибродемпфирующий материал 0,75х0,47, 1,8м2</Value>
+  </Key>
+  <Key name="25021">
+    <Value>Винт  М6*30  ГОСТ 28963-91</Value>
+  </Key>
+  <Key name="24586">
+    <Value>Винт 3,5х6,5 самонарезающий</Value>
+  </Key>
+  <Key name="26770">
+    <Value>Винт DIN 7380 М6x40 с внутренним шестигранником </Value>
+	<Value>Винт ISO 7380-1 М6x40-А2</Value>
+  </Key>
+  <Key name="23556">
+    <Value>Винт DIN7985 М4х14</Value>
+	<Value>Винт DIN 7985 М4x14-Zn</Value>
+  </Key>
+  <Key name="15762">
+    <Value>Винт DIN85 М4*14</Value>
+  </Key>
+  <Key name="1779">
+    <Value>Винт DIN85-M6*16 (цилиндрическая головка) АРХИВ</Value>
+  </Key>
+  <Key name="592">
+    <Value>Винт DIN85-ZN-М5*16 цилиндрическая головка</Value>
+  </Key>
+  <Key name="15081">
+    <Value>Винт DIN912 ZN М4*40</Value>
+  </Key>
+  <Key name="19609">
+    <Value>Винт DIN912 ZN М5*10</Value>
+  </Key>
+  <Key name="19663">
+    <Value>Винт DIN912 ZN М5х16</Value>
+  </Key>
+  <Key name="18797">
+    <Value>Винт DIN912 ZN М8*80</Value>
+  </Key>
+  <Key name="23211">
+    <Value>Винт DIN965 М4х14</Value>
+  </Key>
+  <Key name="22325">
+    <Value>Винт DIN965 М4х20</Value>
+  </Key>
+  <Key name="18796">
+    <Value>Винт- ISO7380-10.9-ZN-M6x20</Value>	
+  </Key>
+  <Key name="25798">
+    <Value>Винт- ISO7380-10.9-ZN-M6x30</Value>
+	<Value>Винт DIN 7380-1 М6x30-A2</Value>
+  </Key>
+  <Key name="23567">
+    <Value>Винт ГОСТ 11650-80 М4*10</Value>
+  </Key>
+  <Key name="1451">
+    <Value>Винт М3*20</Value>
+  </Key>
+  <Key name="21294">
+    <Value>Винт М4*12 самонарезающий</Value>
+  </Key>
+  <Key name="21295">
+    <Value>Винт М4*16 самонарезающий</Value>
+  </Key>
+  <Key name="22973">
+    <Value>Винт М4*25 шестигранная головка</Value>
+  </Key>
+  <Key name="1250">
+    <Value>Винт М6*20 цилиндрическая головка</Value>
+  </Key>
+  <Key name="22570">
+    <Value>Винт М6*20 шестигранная головка</Value>
+  </Key>
+  <Key name="23001">
+    <Value>Винт самонарезающий 3.5х10</Value>
+  </Key>
+  <Key name="25008">
+    <Value>Винт самонарезающий со сверлом 4,2 x 13</Value>
+  </Key>
+  <Key name="19470">
+    <Value>Втулка АЛ.00.01.500.000.999.00</Value>
+	<Value>Втулка</Value>
+  </Key>
+  <Key name="257">
+    <Value>Гайка  DIN934 М14 ZN</Value>
+  </Key>
+  <Key name="19514">
+    <Value>Гайка - клипса U-образная М5</Value>
+  </Key>
+  <Key name="18976">
+    <Value>Гайка DIN439 М4 ZN низкая </Value>
+  </Key>
+  <Key name="21668">
+    <Value>Гайка DIN6923-TENS-ZN-М10 самокотрящаяся</Value>
+  </Key>
+  <Key name="14754">
+    <Value>Гайка DIN6923-TENS-ZN-М12 самоконтрящаяся АРХИВ</Value>
+  </Key>
+  <Key name="10904">
+    <Value>Гайка DIN6923-TENS-ZN-М8 самоконтрящаяся АРХИВ</Value>
+  </Key>
+  <Key name="258">
+    <Value>Гайка DIN934 М10 ZN</Value>
+    <Value>Гайка DIN 934 М10-Zn</Value>
+  </Key>
+  <Key name="252">
+    <Value>Гайка DIN934 М12 ZN</Value>
+	<Value>Гайка DIN 934 М12-Zn</Value>
+  </Key>
+  <Key name="256">
+    <Value>Гайка DIN934 М16 ZN</Value>
+    <Value>Шайба DIN 125-16-Zn</Value>
+  </Key>
+  <Key name="254">
+    <Value>Гайка DIN934 М20 ZN</Value>
+  </Key>
+  <Key name="16760">
+    <Value>Гайка DIN934 М3 ZN</Value>
+  </Key>
+  <Key name="636">
+    <Value>Гайка DIN934 М4 ZN</Value>
+	<Value>Гайка DIN 934 М4-Zn</Value>	
+  </Key>
+  <Key name="637">
+    <Value>Гайка DIN934 М5 ZN</Value>
+  </Key>
+  <Key name="638">
+    <Value>Гайка DIN934 М6 ZN</Value>
+	<Value>Гайка DIN 934 М6-Zn</Value>
+  </Key>
+  <Key name="27644">
+    <Value>Гайка DIN934 М8 ZN</Value>
+  </Key>
+  <Key name="253">
+    <Value>Гайка DIN934 М8 ZN</Value>
+  </Key>
+  <Key name="17147">
+    <Value>Гайка заклепка рифл. мал.фл М6</Value>
+  </Key>
+  <Key name="18288">
+    <Value>Гайка клетевая (кузовная) М10 ZN-1.8-3.2</Value>
+  </Key>
+  <Key name="17111">
+    <Value>Гайка клетевая М10</Value>
+  </Key>
+  <Key name="16206">
+    <Value>Гайка клетевая М6</Value>
+  </Key>
+  <Key name="18272">
+    <Value>Гайка М10</Value>
+  </Key>
+  <Key name="18274">
+    <Value>Гайка М8</Value>
+	<Value>Гайка DIN 934 М8-Zn</Value>
+  </Key>
+  <Key name="17101">
+    <Value>Гайка удл. DIN6334 М20*60</Value>
+  </Key>
+  <Key name="16977">
+    <Value>Гайка-заклепка рифл. мал. фл М10</Value>
+  </Key>
+  <Key name="16978">
+    <Value>Гайка-заклепка рифл. мал. фл М8</Value>
+  </Key>
+  <Key name="21327">
+    <Value>Декоративный колпачок</Value>
+  </Key>
+  <Key name="276">
+    <Value>Дюбель-гвоздь 6*40</Value>
+  </Key>
+  <Key name="277">
+    <Value>Дюбель-гвоздь 6*60 АРХИВ</Value>
+  </Key>
+  <Key name="18703">
+    <Value>Заглушка пластиковая круглая d25 с хромированной металлической шляпкой, Модель СТМ, стенка 1,0-1,5 мм</Value>
+  </Key>
+  <Key name="3779">
+    <Value>Заклепка 4*20 АРХИВ</Value>
+  </Key>
+  <Key name="19468">
+    <Value>Заклепка вытяжная потайной бортик 3,2*8</Value>
+  </Key>
+  <Key name="22409">
+    <Value>Заклепка вытяжная потайной бортик 4*12</Value>
+  </Key>
+  <Key name="7952">
+    <Value>Заклепка вытяжная потайной бортик 4,0*10</Value>
+  </Key>
+  <Key name="22947">
+    <Value>Заклепка вытяжная потайной бортик 4,0*5</Value>
+  </Key>
+  <Key name="22910">
+    <Value>Заклепка вытяжная потайной бортик 4,0*6</Value>
+  </Key>
+  <Key name="20901">
+    <Value>Заклепка вытяжная потайной бортик 4,0*8</Value>
+    <Value>Заклепка вытяжная потайной бортик 4,0х8</Value>
+  </Key>
+  <Key name="23098">
+    <Value>Заклепка вытяжная потайной бортик 4,8*10</Value>
+	<Value>Заклепка вытяжная потайной бортик 4,8х10</Value>
+  </Key>
+  <Key name="20902">
+    <Value>Заклепка вытяжная потайной бортик 4,8*12</Value>
+  </Key>
+  <Key name="23548">
+    <Value>Заклепка вытяжная потайной бортик 4,8*8</Value>
+	<Value>Blind rivet ISO 15980-4,8 x 8-St/St</Value>
+	<Value>Blind rivet ISO 15980 - 4,8 x 8 - St/St</Value>
+  </Key>
+  <Key name="22923">
+    <Value>Заклепка вытяжная потайной бортик 5,0*10</Value>
+  </Key>
+  <Key name="22915">
+    <Value>Заклепка вытяжная потайной бортик 5,0*8</Value>
+  </Key>
+  <Key name="18284">
+    <Value>Заклепка вытяжная стандартный бортик 4,0*10</Value>
+    <Value>Заклепка вытяжная стандартный бортик 4,0х10</Value>
+  </Key>
+  <Key name="19467">
+    <Value>заклепка вытяжная стандартный бортик 4,0*12</Value>
+  </Key>
+  <Key name="2090">
+    <Value>Заклепка вытяжная стандартный бортик 4,0*8</Value>
+    <Value>Заклепка вытяжная стандартный бортик 4,0х8</Value>
+  </Key>
+  <Key name="18051">
+    <Value>Заклепка вытяжная стандартный бортик 4,8*10</Value>
+	<Value>Заклепка вытяжная стандартный бортик 4,8х10</Value>
+	<Value>Blind rivet ISO 15979 - 4,8 x 10 - St/St</Value>
+  </Key>
+  <Key name="28699">
+    <Value>Заклепка вытяжная стандартный бортик 4,8*10</Value>
+  </Key>
+  <Key name="23093">
+    <Value>Заклепка вытяжная стандартный бортик 4,8*8</Value>
+	<Value>Blind rivet ISO 15976-4,8 x 8-St/St</Value>
+  </Key>
+  <Key name="18428">
+    <Value>Заклепка гаечная полушестигранная с уменьш.борт М6*14,5</Value>
+  </Key>
+  <Key name="18319">
+    <Value>Заклепка гаечная шестигранная М8х19 (16)</Value>
+  </Key>
+  <Key name="26695">
+    <Value>Заклепка-болт вытяжная 4,8х15мм  ПБ</Value>
+  </Key>
+  <Key name="26694">
+    <Value>Заклепка-болт вытяжная 4.8х14мм </Value>
+  </Key>
+  <Key name="23124">
+    <Value>Заклепка-гайка-МФ-ШГР-М6 (малый фланец)</Value>
+	<Value>Заклепка-гайка-ШГР-М6 уменьшенный буртик</Value>
+  </Key>
+  <Key name="21434">
+    <Value>Заклепка-гайка-ШГР-М4</Value>
+  </Key>
+  <Key name="21333">
+    <Value>Заклепка-гайка-ШГР-М5</Value>
+  </Key>
+  <Key name="18286">
+    <Value>Заклепка-гайка-ШГР-М8</Value>
+  </Key>
+  <Key name="21472">
+    <Value>Заклепка-гайка-ШГР-М8 с увелич. буртом</Value>
+  </Key>
+  <Key name="23872">
+    <Value>Заклепка-гайка-ШГР-М8 уменьшенный буртик</Value>
+  </Key>
+  <Key name="18704">
+    <Value>Замок мебельный мастер-ключ</Value>
+  </Key>
+  <Key name="24767">
+    <Value>Зеркало 1000х1100 мм</Value>
+  </Key>
+  <Key name="25022">
+    <Value>Зеркало 1000х1175</Value>
+  </Key>
+  <Key name="25672">
+    <Value>Зеркало 1100х1700</Value>
+  </Key>
+  <Key name="26915">
+    <Value>Зеркало 1100х2000</Value>
+  </Key>
+  <Key name="26717">
+    <Value>Зеркало 1144х600 мм</Value>
+  </Key>
+  <Key name="26745">
+    <Value>Зеркало 1175х600 мм</Value>
+  </Key>
+  <Key name="25549">
+    <Value>Зеркало 600х1175</Value>
+  </Key>
+  <Key name="24375">
+    <Value>Зеркало 600х1700</Value>
+  </Key>
+  <Key name="23633">
+    <Value>Зеркало 700х1700</Value>
+  </Key>
+  <Key name="23634">
+    <Value>Зеркало 800х1700</Value>
+  </Key>
+  <Key name="23632">
+    <Value>Зеркало 900х1700</Value>
+  </Key>
+  <Key name="26063">
+    <Value>Зеркало 900х2057 мм</Value>
+  </Key>
+  <Key name="26109">
+    <Value>Зеркало 900х2067 мм</Value>
+  </Key>
+  <Key name="24253">
+    <Value>Зеркало 900х2100</Value>
+  </Key>
+  <Key name="26026">
+    <Value>Зеркало 900х972 мм</Value>
+  </Key>
+  <Key name="26025">
+    <Value>Зеркало 900х982 мм</Value>
+  </Key>
+  <Key name="25696">
+    <Value>Зеркало на заказ по чертежу 2070х998</Value>
+  </Key>
+  <Key name="24417">
+    <Value>Изделие 688,5*20*2010 мм</Value>
+  </Key>
+  <Key name="25032">
+    <Value>Комплект изделий 1, 688,5*177*298 мм</Value>
+  </Key>
+  <Key name="25033">
+    <Value>Комплект изделий 3, 800*98*1401 мм</Value>
+  </Key>
+  <Key name="25796">
+    <Value>Комплект: изделие1-200х59х198мм(3шт) + изделие2-200х59х198мм(3шт)</Value>
+  </Key>
+  <Key name="28953">
+    <Value>Лента термоуплотнительная ОГНЕЗА ЛТУ 2х10 мм</Value>
+  </Key>
+  <Key name="25719">
+    <Value>Монолитный поликарбонат 3мм 2050х3050 мм</Value>
+  </Key>
+  <Key name="26996">
+    <Value>Напольное покрытие (998*1098)</Value>
+  </Key>
+  <Key name="26067">
+    <Value>Панель Alumoart 800x2057 мм</Value>
+  </Key>
+  <Key name="26108">
+    <Value>Панель Alumoart 800x2067 мм</Value>
+  </Key>
+  <Key name="26148">
+    <Value>Панель Alumoart 900x2057 мм</Value>
+  </Key>
+  <Key name="24594">
+    <Value>Петля рояльная 1436 х 30 х 0,7 мм</Value>
+  </Key>
+  <Key name="18915">
+    <Value>Пленка термоусадочная белая (4,0х61,0 м,190мкм)</Value>
+	<Value>Пленка термоусадочная белая, 16м2</Value>
+  </Key>
+  <Key name="26175">
+    <Value>Поручень покупной МО-1000 мм; L-1200 мм</Value>
+  </Key>
+  <Key name="26176">
+    <Value>Поручень покупной МО-1000 мм; L-1350 мм</Value>
+  </Key>
+  <Key name="26110">
+    <Value>Поручень покупной МО-1000 мм; L-1900 мм</Value>
+  </Key>
+  <Key name="26431">
+    <Value>Поручень покупной МО-1100 мм; L-1400 мм</Value>
+  </Key>
+  <Key name="26066">
+    <Value>Поручень покупной МО-1200 мм; L-1900 мм</Value>
+  </Key>
+  <Key name="26432">
+    <Value>Поручень покупной МО-1290 мм; L-1500 мм</Value>
+  </Key>
+  <Key name="26436">
+    <Value>Поручень покупной МО-1290 мм; L-1640 мм</Value>
+  </Key>
+  <Key name="27073">
+    <Value>Поручень покупной МО-550 мм; L-700 мм</Value>
+  </Key>
+  <Key name="26716">
+    <Value>Поручень покупной МО-550 мм; L-750 мм</Value>
+  </Key>
+  <Key name="26523">
+    <Value>Поручень покупной МО-560 мм; L-660 мм</Value>
+  </Key>
+  <Key name="26174">
+    <Value>Поручень покупной МО-562 мм; L-662 мм</Value>
+  </Key>
+  <Key name="26166">
+    <Value>Поручень покупной МО-600 мм; L-700 мм</Value>
+  </Key>
+  <Key name="26534">
+    <Value>Поручень покупной МО-618 мм; L-718 мм</Value>
+  </Key>
+  <Key name="26178">
+    <Value>Поручень покупной МО-800 мм; L-1000 мм</Value>
+  </Key>
+  <Key name="26177">
+    <Value>Поручень покупной МО-800 мм; L-900 мм</Value>
+  </Key>
+  <Key name="26437">
+    <Value>Поручень покупной МО-875 мм; L-1000 мм</Value>
+  </Key>
+  <Key name="26065">
+    <Value>Поручень покупной МО-900 мм; L-1000 мм</Value>
+  </Key>
+  <Key name="9646">
+    <Value>Провод ПВС 3*0,75</Value>
+	<Value>Кабель ПВС 3х0,75, 6м</Value>
+  </Key>
+  <Key name="23004">
+    <Value>Саморез 3,5*10</Value>
+  </Key>
+  <Key name="21701">
+    <Value>Саморез DIN7504 3,9*13мм</Value>
+  </Key>
+  <Key name="23212">
+    <Value>Саморез DIN7504 М4.2х13</Value>
+	<Value>Саморез с пресс-шайбой со сверлом 4,2х13</Value>
+  </Key>
+  <Key name="17378">
+    <Value>Саморез L25*4,2</Value>
+  </Key>
+  <Key name="18604">
+    <Value>Саморез гипсокартон-дерево СГД с потай.голов. 4,2х75</Value>
+  </Key>
+  <Key name="18430">
+    <Value>Саморез гипсокартон-дерево СГД с потай.голов.3,5х51</Value>
+  </Key>
+  <Key name="24766">
+    <Value>Саморез по металлу М4,2х10 с потайной головкой</Value>
+  </Key>
+  <Key name="18591">
+    <Value>Саморез с пресс-шайбой со сверлом 3,5*11мм</Value>
+  </Key>
+  <Key name="8481">
+    <Value>Саморез с пресс-шайбой со сверлом 4,2*16мм</Value>
+  </Key>
+  <Key name="21514">
+    <Value>Саморез унив ПГ 5х80</Value>
+  </Key>
+  <Key name="23426">
+    <Value>Светильник точечный, светодиодный, врезное 60мм</Value>
+  </Key>
+  <Key name="18454">
+    <Value>Скоба крепежная 35/18 мм</Value>
+  </Key>
+  <Key name="26056">
+    <Value>Спот встраиваемый круглый GU5 цвет никель</Value>
+  </Key>
+  <Key name="17797">
+    <Value>Тяговая заклепка AL 4х8</Value>
+  </Key>
+  <Key name="260">
+    <Value>Шайба DIN125-ZN-М10 плоская</Value>
+	<Value>Шайба DIN 125 10-Zn</Value>
+  </Key>
+  <Key name="261">
+    <Value>Шайба DIN125-ZN-М12 плоская</Value>
+  </Key>
+  <Key name="263">
+    <Value>Шайба DIN125-ZN-М16 плоская </Value>
+    <Value>Шайба DIN 125-16-Zn</Value>
+  </Key>
+  <Key name="348">
+    <Value>Шайба DIN125-ZN-М20 плоская</Value>
+  </Key>
+  <Key name="18978">
+    <Value>Шайба DIN125-ZN-М22 плоская</Value>
+    <Value>Шайба DIN 125-22-Zn</Value>
+  </Key>
+  <Key name="16761">
+    <Value>Шайба DIN125-ZN-М3 плоская</Value>
+  </Key>
+  <Key name="8130">
+    <Value>Шайба DIN125-ZN-М4 плоская</Value>
+	<Value>Шайба DIN 125 4-Zn</Value>
+  </Key>
+  <Key name="265">
+    <Value>Шайба DIN125-ZN-М5 плоская</Value>
+  </Key>
+  <Key name="264">
+    <Value>Шайба DIN125-ZN-М6 плоская</Value>
+	<Value>Шайба DIN 125-6-Zn</Value>
+  </Key>
+  <!-- <Key name="27643"> -->
+    <!-- <Value>Шайба DIN125-ZN-М8 плоская</Value> -->
+  <!-- </Key> -->
+  <Key name="259">
+    <Value>Шайба DIN125-ZN-М8 плоская</Value>
+  </Key>
+  <Key name="269">
+    <Value>Шайба DIN127-ZN-М10 гровер</Value>
+	<Value>Шайба DIN 127 10-Zn</Value>
+  </Key>
+  <Key name="270">
+    <Value>Шайба DIN127-ZN-М12 гровер</Value>
+	<Value>Шайба DIN 127 12-Zn</Value>
+  </Key>
+  <Key name="271">
+    <Value>Шайба DIN127-ZN-М14 гровер</Value>
+  </Key>
+  <Key name="272">
+    <Value>Шайба DIN127-ZN-М16 гровер</Value>
+    <Value>Шайба DIN 127-16-Zn</Value>
+  </Key>
+  <Key name="273">
+    <Value>Шайба DIN127-ZN-М20 гровер</Value>
+  </Key>
+  <Key name="16765">
+    <Value>Шайба DIN127-ZN-М3 гровер </Value>
+  </Key>
+  <Key name="641">
+    <Value>Шайба DIN127-ZN-М4 гровер </Value>
+  </Key>
+  <Key name="643">
+    <Value>Шайба DIN127-ZN-М5 гровер</Value>
+  </Key>
+  <Key name="267">
+    <Value>Шайба DIN127-ZN-М6 гровер</Value>
+	<Value>Шайба DIN 127 6-Zn</Value>
+  </Key>
+  <!-- <Key name="27645"> -->
+    <!-- <Value>Шайба DIN127-ZN-М8 гровер </Value>	 -->
+  <!-- </Key> -->
+  <Key name="268">
+    <Value>Шайба DIN127-ZN-М8 гровер</Value>
+	<Value>Шайба DIN 127 8-Zn</Value>
+  </Key>
+  <Key name="18282">
+    <Value>Шайба DIN128-M8</Value>
+  </Key>
+  <Key name="18281">
+    <Value>Шайба DIN128-М10</Value>
+  </Key>
+  <Key name="18280">
+    <Value>Шайба DIN128-М12</Value>
+  </Key>
+  <Key name="18283">
+    <Value>Шайба DIN128-М6</Value>
+  </Key>
+  <Key name="22324">
+    <Value>Шайба DIN433 М10</Value>
+  </Key>
+  <Key name="11920">
+    <Value>Шайба DIN434-М12 конусная АРХИВ</Value>
+  </Key>
+  <Key name="11919">
+    <Value>Шайба DIN434-М16 конусная АРХИВ</Value>
+  </Key>
+  <Key name="781">
+    <Value>Шайба DIN9021 М12 плоская кузовная</Value>
+	<Value>Шайба DIN 9021 12-Zn</Value>
+  </Key>
+  <Key name="1780">
+    <Value>Шайба DIN9021 М16 плоская кузовная</Value>
+  </Key>
+  <Key name="18975">
+    <Value>Шайба DIN9021-М4 плоская кузовная</Value>
+  </Key>
+  <Key name="266">
+    <Value>Шайба DIN9021-М6 плоская кузовная</Value>
+	<Value>Шайба DIN 9021-6-Zn</Value>
+  </Key>
+  <Key name="782">
+    <Value>Шайба DIN9021-М8 плоская кузовная</Value>
+  </Key>
+  <Key name="26892">
+    <Value>Швеллер 5П </Value>
+  </Key>
+  <Key name="16939">
+    <Value>Шпилька М8 (1м)</Value>
+  </Key>
+  <Key name="19849">
+    <Value>Шпилька-ПРИВАР  М6х20</Value>
+  </Key>
+  <Key name="26516">
+    <Value>Шпилька-ПРИВАР-А2-М12х112</Value>
+  </Key>
+  <Key name="23552">
+    <Value>Шпилька-ПРИВАР-А2-М3х10</Value>
+  </Key>
+  <Key name="20949">
+    <Value>Шпилька-ПРИВАР-А2-М3х15</Value>
+  </Key>
+  <Key name="26766">
+    <Value>Шпилька-ПРИВАР-А2-М3х16</Value>
+  </Key>
+  <Key name="22209">
+    <Value>Шпилька-ПРИВАР-А2-М3х20</Value>
+  </Key>
+  <Key name="20948">
+    <Value>Шпилька-ПРИВАР-А2-М3х25</Value>
+  </Key>
+  <Key name="17407">
+    <Value>Шпилька-ПРИВАР-А2-М3х30</Value>
+  </Key>
+  <Key name="20950">
+    <Value>Шпилька-ПРИВАР-А2-М4х10</Value>
+  </Key>
+  <Key name="18213">
+    <Value>Шпилька-ПРИВАР-А2-М4х20</Value>
+  </Key>
+  <Key name="17408">
+    <Value>Шпилька-ПРИВАР-А2-М4х30</Value>
+  </Key>
+  <Key name="21342">
+    <Value>Шпилька-ПРИВАР-А2-М5х15</Value>
+  </Key>
+  <Key name="22928">
+    <Value>Шпилька-ПРИВАР-А2-М5х20</Value>
+  </Key>
+  <Key name="17409">
+    <Value>Шпилька-ПРИВАР-А2-М5х30</Value>
+  </Key>
+  <Key name="27541">
+    <Value>Шпилька-ПРИВАР-ОМЕД-М3х10</Value>
+  </Key>
+  <Key name="27542">
+    <Value>Шпилька-ПРИВАР-ОМЕД-М3х16</Value>
+  </Key>
+  <Key name="28216">
+    <Value>Шпилька-ПРИВАР-ОМЕД-М3х25</Value>
+  </Key>
+  <Key name="27621">
+    <Value>Шпилька-ПРИВАР-ОМЕД-М4х10</Value>
+  </Key>
+  <Key name="29005">
+    <Value>Шпилька-ПРИВАР-ОМЕД-М6х20</Value>
+  </Key>
+  <Key name="22472">
+    <Value>Шуруп 3*10</Value>
+  </Key>
+  <Key name="22950">
+    <Value>Шуруп 3х13</Value>
+  </Key>
+  <Key name="17798">
+    <Value>Шуруп 4,2х13 (не используется)</Value>
+  </Key>
+  <Key name="21473">
+    <Value>Шуруп потай 4*13</Value>
+  </Key>
+  <Key name="25030">
+    <Value>Ящик 800х2240х900 мм</Value>
+  </Key>
+  <Key name="26960">
+    <Value>Арматура 20 мм 5.85  риф А500С</Value>
+  </Key>
+  <Key name="26347">
+    <Value>Арматура гладкая d10 (L-3м)</Value>
+  </Key>
+  <Key name="26881">
+    <Value>Двутавр 91х180</Value>
+  </Key>
+  <Key name="26341">
+    <Value>Полоса 40*4 (L-3м)</Value>
+  </Key>
+  <Key name="26979">
+    <Value>Труба 25*3,5 б/ш х/д ГОСТ 8734-75 ст.20 н/д</Value>
+  </Key>
+  <Key name="18691">
+    <Value>Труба нерж AISI201 25*1</Value>
+  </Key>
+  <Key name="19947">
+    <Value>Труба проф. 80х80х3</Value>
+  </Key>
+  <Key name="26875">
+    <Value>Труба профильная 100*100*4</Value>
+  </Key>
+  <Key name="25251">
+    <Value>Труба профильная 100*100*6 (L-6 м)</Value>
+  </Key>
+  <Key name="17140">
+    <Value>Труба профильная 100*100*8 (L-6 м)</Value>
+  </Key>
+  <Key name="21117">
+    <Value>Труба профильная 25*25*2 (L-6 м)</Value>
+  </Key>
+  <Key name="17800">
+    <Value>Труба профильная 25*25*3 (L-6 м)</Value>
+  </Key>
+  <Key name="19312">
+    <Value>Труба профильная 30*30*2 (L-6 м)</Value>
+  </Key>
+  <Key name="24670">
+    <Value>Труба профильная 30*30*3 (L-6 м)</Value>
+  </Key>
+  <Key name="24598">
+    <Value>Труба профильная 35*35*4</Value>
+  </Key>
+  <Key name="24678">
+    <Value>Труба профильная 40*40*1 (L-6 м)</Value>
+  </Key>
+  <Key name="24834">
+    <Value>Труба профильная 40*40*1,5 (L-6 м)</Value>
+  </Key>
+  <Key name="28765">
+    <Value>Труба профильная 40*40*2 (L-6 м)</Value>
+  </Key>
+  <Key name="28263">
+    <Value>Труба профильная 40*40*4 (L-6 м)</Value>
+  </Key>
+  <Key name="24833">
+    <Value>Труба профильная 50*50*4 (L-6 м)</Value>
+  </Key>
+  <Key name="27028">
+    <Value>Труба профильная 60*30*2 (L-6 м)</Value>
+  </Key>
+  <Key name="19505">
+    <Value>Труба профильная 60*60*4 (L-6 м)</Value>
+  </Key>
+  <Key name="17141">
+    <Value>Труба профильная 80*80*5 (L-6 м)</Value>
+  </Key>
+  <Key name="26337">
+    <Value>Уголок 40*40*4 (L-3м)</Value>
+  </Key>
+  <Key name="26333">
+    <Value>Уголок 50*50*5 (L-3м)</Value>
+  </Key>
+  <Key name="26870">
+    <Value>Уголок 75*75*5</Value>
+  </Key>
+  <Key name="20959">
+    <Value>Швеллер 5П (У) (L-6 м) </Value>
+  </Key>
+  <Key name="21904">
+    <Value>Шпилька резьбовая М12х1000</Value>
+  </Key>
+  <Key name="17434">
+    <Value>Шпилька резьбовая М16х1000</Value>
+  </Key>
+  <Key name="22099">
+    <Value>Бумага оберточная Е 1050/80</Value>
+  </Key>
+  <Key name="18458">
+    <Value>Доска 25х100х530</Value>
+  </Key>
+  <Key name="18457">
+    <Value>Доска 25х100х730</Value>
+  </Key>
+  <Key name="18460">
+    <Value>Доска 40х100х310</Value>
+  </Key>
+  <Key name="18459">
+    <Value>Доска 40х100х510</Value>
+  </Key>
+  <Key name="18461">
+    <Value>Доска 40х100х70</Value>
+  </Key>
+  <Key name="18451">
+    <Value>Короб бурый 2240х790х140</Value>
+  </Key>
+  <Key name="18450">
+    <Value>Короб оберточный 2230х580х130</Value>
+  </Key>
+  <Key name="18761">
+    <Value>Короб оберточный 2230х780х130</Value>
+  </Key>
+  <Key name="16329">
+    <Value>Монтажная двухсторонняя клейкая лента (19мм*5м)</Value>
+  </Key>
+  <Key name="18700">
+    <Value>Пакет с замком 150х220 мм (1000 шт)</Value>
+  </Key>
+  <Key name="18603">
+    <Value>Пакт с замком 150х200 мм (1000 шт)</Value>
+  </Key>
+  <Key name="18456">
+    <Value>Паллет 2240х600х130</Value>
+  </Key>
+  <Key name="18455">
+    <Value>Паллет 2240х800х130</Value>
+  </Key>
+  <Key name="18701">
+    <Value>Пленка пузырчатая 1500 мм</Value>
+  </Key>
+  <Key name="18754">
+    <Value>Поддон нестандартный 1</Value>
+  </Key>
+  <Key name="18755">
+    <Value>Поддон нестандартный 2</Value>
+  </Key>
+  <Key name="19394">
+    <Value>Поддон Нестандартный 3</Value>
+  </Key>
+  <Key name="15051">
+    <Value>Вентилятор 120x120x25 мм, 220V, (JAMICON JA1225H2B0N)</Value>
+  </Key>
+  <Key name="18887">
+    <Value>Светильник светодиодный 40W 500x200x10</Value>
+  </Key>
+</Dictionary>

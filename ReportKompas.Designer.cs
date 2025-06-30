@@ -35,14 +35,17 @@ namespace ReportKompas
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.сохранитьВExcelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.сохранитьВXMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сохранитьВCsvToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.открытьПапкуСОтчетомToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
+            this.Service = new System.Windows.Forms.ToolStripDropDownButton();
+            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.MenuItemSelected = new System.Windows.Forms.ToolStripMenuItem();
             this.открытьДиректориюСФайломToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.сохранитьВXMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
@@ -53,7 +56,9 @@ namespace ReportKompas
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripButton1,
             this.toolStripDropDownButton1,
-            this.toolStripButton3});
+            this.toolStripButton3,
+            this.Service,
+            this.toolStripButton2});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(1043, 25);
@@ -91,6 +96,13 @@ namespace ReportKompas
             this.сохранитьВExcelToolStripMenuItem.Text = "Сохранить в Excel";
             this.сохранитьВExcelToolStripMenuItem.Click += new System.EventHandler(this.SaveExcel_ToolStripMenuItem_Click);
             // 
+            // сохранитьВXMLToolStripMenuItem
+            // 
+            this.сохранитьВXMLToolStripMenuItem.Name = "сохранитьВXMLToolStripMenuItem";
+            this.сохранитьВXMLToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.сохранитьВXMLToolStripMenuItem.Text = "Сохранить в XML";
+            this.сохранитьВXMLToolStripMenuItem.Click += new System.EventHandler(this.SaveXML_ToolStripMenuItem_Click);
+            // 
             // сохранитьВCsvToolStripMenuItem
             // 
             this.сохранитьВCsvToolStripMenuItem.Name = "сохранитьВCsvToolStripMenuItem";
@@ -114,6 +126,24 @@ namespace ReportKompas
             this.toolStripButton3.Size = new System.Drawing.Size(194, 22);
             this.toolStripButton3.Text = "Показать пропущенные позиции";
             this.toolStripButton3.Click += new System.EventHandler(this.ShowLostParts_toolStripButton_Click);
+            // 
+            // Service
+            // 
+            this.Service.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.Service.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.settingsToolStripMenuItem});
+            this.Service.Image = ((System.Drawing.Image)(resources.GetObject("Service.Image")));
+            this.Service.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.Service.Name = "Service";
+            this.Service.Size = new System.Drawing.Size(60, 22);
+            this.Service.Text = "Сервис";
+            // 
+            // settingsToolStripMenuItem
+            // 
+            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
+            this.settingsToolStripMenuItem.Text = "Настроить";
+            this.settingsToolStripMenuItem.Click += new System.EventHandler(this.SettingsToolStripMenuItem_Click);
             // 
             // dataGridView1
             // 
@@ -150,12 +180,15 @@ namespace ReportKompas
             this.открытьДиректориюСФайломToolStripMenuItem.Text = "&Открыть в проводнике";
             this.открытьДиректориюСФайломToolStripMenuItem.Click += new System.EventHandler(this.OpenExplorer_MenuItem_Click);
             // 
-            // сохранитьВXMLToolStripMenuItem
+            // toolStripButton2
             // 
-            this.сохранитьВXMLToolStripMenuItem.Name = "сохранитьВXMLToolStripMenuItem";
-            this.сохранитьВXMLToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
-            this.сохранитьВXMLToolStripMenuItem.Text = "Сохранить в XML";
-            this.сохранитьВXMLToolStripMenuItem.Click += new System.EventHandler(this.SaveXML_ToolStripMenuItem_Click);
+            this.toolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton2.Image")));
+            this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton2.Name = "toolStripButton2";
+            this.toolStripButton2.Size = new System.Drawing.Size(59, 22);
+            this.toolStripButton2.Text = "Колонки";
+            this.toolStripButton2.Click += new System.EventHandler(this.toolStripButton2_Click);
             // 
             // ReportKompas
             // 
@@ -190,6 +223,9 @@ namespace ReportKompas
         private System.Windows.Forms.ToolStripMenuItem открытьПапкуСОтчетомToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem сохранитьВCsvToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem сохранитьВXMLToolStripMenuItem;
+        private System.Windows.Forms.ToolStripDropDownButton Service;
+        private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton toolStripButton2;
     }
 }
 

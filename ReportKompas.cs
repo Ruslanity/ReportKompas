@@ -36,6 +36,14 @@ namespace ReportKompas
         string fileName;
         string pathForExcel;
         string topParent;
+        public Dictionary<string, List<string>> DictionaryCodeEquip;
+        public Dictionary<string, List<string>> DictionaryCodeMaterial;
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        [DllImport("user32.dll")]
+        static extern bool SetForegroundWindow(IntPtr hWnd);
 
         public static ReportKompas GetInstance()
         {
@@ -49,6 +57,59 @@ namespace ReportKompas
         public ReportKompas()
         {
             InitializeComponent();
+            LoadSettings();
+        }
+
+        public void LoadSettings()
+        {
+            DictionaryCodeEquip = new Dictionary<string, List<string>>();
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(Properties.Settings.Default.PathSettingsEquipmenttextBox);
+            XmlNodeList keyNodes = xmlDoc.SelectNodes("/Dictionary/Key");
+            foreach (XmlNode keyNode in keyNodes)
+            {
+                // Получаем имя ключа из атрибута 'name'
+                string keyName = keyNode.Attributes["name"]?.InnerText;
+
+                if (keyName != null)
+                {
+                    var values = new List<string>();
+
+                    // Получаем все <Value> внутри текущего <Key>
+                    foreach (XmlNode valueNode in keyNode.SelectNodes("Value"))
+                    {
+                        string valueText = valueNode.InnerText;
+                        values.Add(valueText);
+                    }
+
+                    // Добавляем в словарь
+                    DictionaryCodeEquip[keyName] = values;
+                }
+            }
+            DictionaryCodeMaterial = new Dictionary<string, List<string>>();
+            XmlDocument xmlDoc2 = new XmlDocument();
+            xmlDoc2.Load(Properties.Settings.Default.PathSettingsMaterialtextBox);
+            XmlNodeList keyNodes2 = xmlDoc2.SelectNodes("/Dictionary/Key");
+            foreach (XmlNode keyNode in keyNodes2)
+            {
+                // Получаем имя ключа из атрибута 'name'
+                string keyName = keyNode.Attributes["name"]?.InnerText;
+
+                if (keyName != null)
+                {
+                    var values = new List<string>();
+
+                    // Получаем все <Value> внутри текущего <Key>
+                    foreach (XmlNode valueNode in keyNode.SelectNodes("Value"))
+                    {
+                        string valueText = valueNode.InnerText;
+                        values.Add(valueText);
+                    }
+
+                    // Добавляем в словарь
+                    DictionaryCodeMaterial[keyName] = values;
+                }
+            }
         }
 
         private void Recursion(IPart7 Part, string ParentName)
@@ -157,6 +218,7 @@ namespace ReportKompas
                     dynamic info;
                     bool source;
                     propertyKeeper.GetPropertyValue((_Property)item, out info, false, out source);
+                    info = info.Replace("$", "");
                     objectAssemblyKompas.Material = info;
                 }
                 if (item.Name == "Раздел спецификации")
@@ -171,7 +233,7 @@ namespace ReportKompas
                     dynamic info;
                     bool source;
                     propertyKeeper.GetPropertyValue((_Property)item, out info, false, out source);
-                    objectAssemblyKompas.Mass = Math.Round(info, 2);
+                    objectAssemblyKompas.Mass = Math.Round(info, 2)*1.2;
                 }
                 if (item.Name == "Покрытие")
                 {
@@ -228,6 +290,7 @@ namespace ReportKompas
             {
                 double x1, x2, y1, y2, z1, z2;
                 ksPart.GetGabarit(true, true, out x1, out y1, out z1, out x2, out y2, out z2);
+
                 string TemporaryVariable = String.Format("{0}x{1}x{2}", Math.Round(x2 - x1),
                                                                         Math.Round(y2 - y1),
                                                                         Math.Round(z2 - z1));
@@ -238,7 +301,12 @@ namespace ReportKompas
 
                 uint bitVector = 0x3;
                 ksMassInertiaParam ksMassInertiaParam = ksPart.CalcMassInertiaProperties(bitVector);
-                objectAssemblyKompas.Area = Math.Round(ksMassInertiaParam.F,2).ToString();
+                if (objectAssemblyKompas.Coating != null && objectAssemblyKompas.Coating.Contains("Рекуперат"))
+                {
+                    objectAssemblyKompas.Area = Math.Round(ksMassInertiaParam.F, 2).ToString();
+                }
+                else { objectAssemblyKompas.Area = Math.Round(ksMassInertiaParam.F / 2, 2).ToString(); }
+
 
             }
             #endregion            
@@ -299,13 +367,13 @@ namespace ReportKompas
                             V = "16";
                             break;
                         case 4:
-                            V = "22/30";
+                            V = "30";
                             break;
                         case 5:
                             V = "35";
                             break;
                         case 6:
-                            V = "35/50";
+                            V = "50";
                             break;
                         case 8:
                             V = "50";
@@ -392,11 +460,15 @@ namespace ReportKompas
 
         private void FillTable()
         {
+            ReplaceMaterial();
+            AddCodeMaterial();
+            AddCodeEquip();
+
             GetSortedObjectsKompas();
             //dataGridView1.Rows.Clear();
             //dataGridView1.Columns.Clear();
             dataGridView1.DataSource = sortedListObjects; /*objectsAssemblyKompas;*/
-            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
             dataGridView1.Columns["Designation"].HeaderText = "Обозначение";
             dataGridView1.Columns["Designation"].DisplayIndex = 0;
             dataGridView1.Columns["Designation"].Width = 200;
@@ -417,10 +489,10 @@ namespace ReportKompas
             dataGridView1.Columns["Mass"].DisplayIndex = 5;
             dataGridView1.Columns["R"].HeaderText = "Пуансон";
             dataGridView1.Columns["R"].DisplayIndex = 6;
-            dataGridView1.Columns["R"].Width = 50;
+            dataGridView1.Columns["R"].Width = 60;
             dataGridView1.Columns["V"].HeaderText = "Матрица";
             dataGridView1.Columns["V"].DisplayIndex = 7;
-            dataGridView1.Columns["V"].Width = 50;
+            dataGridView1.Columns["V"].Width = 60;
             dataGridView1.Columns["Q"].HeaderText = "Кол-во гибов";
             dataGridView1.Columns["Q"].DisplayIndex = 8;
             dataGridView1.Columns["Q"].Width = 50;
@@ -435,25 +507,42 @@ namespace ReportKompas
             dataGridView1.Columns["PathToDXF"].DisplayIndex = 12;
             dataGridView1.Columns["PathToDXF"].Visible = false;
             dataGridView1.Columns["OverallDimensions"].HeaderText = "Габаритные размеры";
-            dataGridView1.Columns["OverallDimensions"].Width = 200;
+            dataGridView1.Columns["OverallDimensions"].Width = 100;
             dataGridView1.Columns["OverallDimensions"].DisplayIndex = 13;
             dataGridView1.Columns["Coating"].HeaderText = "Покрытие";
             dataGridView1.Columns["Coating"].DisplayIndex = 14;
-            dataGridView1.Columns["Coating"].Width = 120;
+            dataGridView1.Columns["Coating"].Width = 80;
             dataGridView1.Columns["Welding"].HeaderText = "Сварочные работы";
             dataGridView1.Columns["Welding"].DisplayIndex = 15;
-            dataGridView1.Columns["Welding"].Width = 120;
+            dataGridView1.Columns["Welding"].Width = 100;
             dataGridView1.Columns["LocksmithWork"].HeaderText = "Слесарные работы";
-            dataGridView1.Columns["LocksmithWork"].DisplayIndex = 15;
-            dataGridView1.Columns["LocksmithWork"].Width = 120;
+            dataGridView1.Columns["LocksmithWork"].DisplayIndex = 16;
+            dataGridView1.Columns["LocksmithWork"].Width = 80;
             dataGridView1.Columns["Note"].HeaderText = "Примечание";
-            dataGridView1.Columns["Note"].DisplayIndex = 16;
+            dataGridView1.Columns["Note"].DisplayIndex = 17;
             dataGridView1.Columns["Note"].Width = 75;
             dataGridView1.Columns["Area"].HeaderText = "Площадь поверхности";
-            dataGridView1.Columns["Area"].DisplayIndex = 17;
+            dataGridView1.Columns["Area"].DisplayIndex = 18;
             dataGridView1.Columns["Area"].Width = 75;
+            dataGridView1.Columns["CodeEquipment"].HeaderText = "Код СИ";
+            dataGridView1.Columns["CodeEquipment"].DisplayIndex = 19;
+            dataGridView1.Columns["CodeEquipment"].Width = 50;
+            dataGridView1.Columns["CodeMaterial"].HeaderText = "Код Мат";
+            dataGridView1.Columns["CodeMaterial"].DisplayIndex = 20;
+            dataGridView1.Columns["CodeMaterial"].Width = 50;
+            dataGridView1.Columns["TimeCut"].HeaderText = "Время резки";
+            dataGridView1.Columns["TimeCut"].DisplayIndex = 21;
+            dataGridView1.Columns["TimeCut"].Width = 50;
             dataGridView1.RowHeadersVisible = false;
             dataGridView1.AllowUserToAddRows = false;
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                var cell = row.Cells["SpecificationSection"];
+                if (cell.Value != null && cell.Value.ToString().Contains("Сборочные единицы"))
+                {
+                    row.DefaultCellStyle.BackColor = Color.LightGreen;
+                }
+            }
         }
 
         private void toolStripButtonShowData_Click(object sender, EventArgs e)
@@ -543,6 +632,13 @@ namespace ReportKompas
                 IDocuments document = application.Documents;
                 document.Open(objectAssemblyKompas.FullName, true, false);
             }
+            string windowTitle = "КОМПАС-3D v18.1";
+            IntPtr hWnd = FindWindow(null, windowTitle);
+            if (hWnd != IntPtr.Zero)
+            {
+                SetForegroundWindow(hWnd);
+            }
+
         }
 
         private void dataGridView1_MouseDown(object sender, MouseEventArgs e)
@@ -609,10 +705,18 @@ namespace ReportKompas
                     lostParts.dataGridView2.Columns["V"].Visible = false;
                     lostParts.dataGridView2.Columns["Q"].Visible = false;
                     lostParts.dataGridView2.Columns["FullName"].HeaderText = "Путь до файла";
+                    lostParts.dataGridView2.Columns["FullName"].Visible = false;
                     lostParts.dataGridView2.Columns["Parent"].HeaderText = "Узел-1";
                     lostParts.dataGridView2.Columns["PathToDXF"].Visible = false;
                     lostParts.dataGridView2.Columns["OverallDimensions"].HeaderText = "Габаритные размеры";
-
+                    lostParts.dataGridView2.Columns["OverallDimensions"].Visible = false;
+                    lostParts.dataGridView2.Columns["Welding"].Visible = false;
+                    lostParts.dataGridView2.Columns["LocksmithWork"].Visible = false;
+                    lostParts.dataGridView2.Columns["Note"].Visible = false;
+                    lostParts.dataGridView2.Columns["Area"].Visible = false;
+                    lostParts.dataGridView2.Columns["CodeEquipment"].Visible = false;
+                    lostParts.dataGridView2.Columns["CodeMaterial"].Visible = false;
+                    lostParts.dataGridView2.Columns["TimeCut"].Visible = false;
                     lostParts.dataGridView2.AllowUserToAddRows = false;
                     lostParts.dataGridView2.Columns["FullName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 }
@@ -652,109 +756,66 @@ namespace ReportKompas
             }
 
             IXLWorksheet worksheet = excelWorkbook.Worksheets.Add(dt, "Отчет");
-            worksheet.Outline.SummaryVLocation = XLOutlineSummaryVLocation.Top;
+            worksheet.Outline.SummaryVLocation = XLOutlineSummaryVLocation.Top;            
 
-            int rowsCount = worksheet.LastRowUsed().RowNumber(); //кол-во заполненных строк
-            worksheet.Rows(3, rowsCount).Group();
-            //IXLCells cells = worksheet.CellsUsed(x => x.Value.ToString() == "Сборочные единицы");
-
-            IXLCells cells2 = worksheet.CellsUsed(x => x.Value.ToString() == "Узел-1");
-            int columnNumber = 0;
-            foreach (IXLCell item in cells2)
-            {
-                columnNumber = item.WorksheetColumn().ColumnNumber();
-            }
-
-            IXLCells xLCells = worksheet.CellsUsed(c => c.WorksheetColumn().ColumnNumber() == columnNumber);
-
-            List<int> rowNumbers = new List<int>();
-
-            for (int i = 4; i < worksheet.LastRowUsed().RowNumber(); i++)
-            {
-                string temporaryName = worksheet.Row(i).Cell(columnNumber).Value.ToString();
-                if (temporaryName.Contains(fileName))
-                {
-                    break;
-                }
-                rowNumbers.Add(worksheet.Row(i).RowNumber());
-                for (int j = i; j < worksheet.LastRowUsed().RowNumber(); j++)
-                {
-                    if (worksheet.Row(j).Cell(columnNumber).Value.ToString() == temporaryName)
-                    {
-                        rowNumbers.Add(worksheet.Row(j).RowNumber());
-                        if (j != worksheet.LastRowUsed().RowNumber())
-                        {
-                            i = j + 1;
-                        }
-                    }
-                }
-                if (rowNumbers.Count > 1)
-                {
-                    worksheet.Rows(rowNumbers[0], rowNumbers[rowNumbers.Count - 1]).Group();
-                    rowNumbers.Clear();
-                    temporaryName = "";
-                }
-            }
-
-            //foreach (IXLCell item in xLCells)
+            //IXLCells cells2 = worksheet.CellsUsed(x => x.Value.ToString() == "Узел-1");
+            //int columnNumber = 0;
+            //foreach (IXLCell item in cells2)
             //{
-            //    string temporaryName = "";
-            //    int iterator = 0;
-            //    if (item.Value.ToString() != "" && item.Value.ToString() != fileName && item.Value.ToString() != temporaryName && iterator == 0 && item.WorksheetRow().RowNumber() != 1)
-            //    {
-            //        temporaryName = item.Value.ToString();
-            //        rowNumbers.Add(item.WorksheetRow().RowNumber());
-            //    }
-            //    if (rowNumbers.Count > 1 && item.Value.ToString() == fileName && item.Value.ToString() != "" && item.WorksheetRow().RowNumber() != 1)
-            //    {
-            //        worksheet.Rows(rowNumbers[0], rowNumbers[rowNumbers.Count-1]).Group();
-            //        rowNumbers.Clear();
-            //        temporaryName = "";
-            //        iterator = 0;
-            //    }
+            //    columnNumber = item.WorksheetColumn().ColumnNumber();
             //}
+
+            //IXLCells xLCells = worksheet.CellsUsed(c => c.WorksheetColumn().ColumnNumber() == columnNumber);
+
+            Dictionary<string, List<int>> groups = new Dictionary<string, List<int>>();
+            // Заполняем данные и собираем группы по колонке "Parent"
+            for (int rowIndex = 0; rowIndex < dataGridView1.Rows.Count; rowIndex++)
+            {
+                var row = dataGridView1.Rows[rowIndex];
+                // Предположим, что колонка "Parent" есть и её индекс известен или по имени
+                string parentValue = "";
+                if (dataGridView1.Columns.Contains("Parent"))
+                {
+                    object val = row.Cells["Parent"].Value;
+                    parentValue = val != null ? val.ToString() : "";
+                }
+
+                // Заполняем данные в Excel
+                for (int col = 0; col < dataGridView1.Columns.Count; col++)
+                {
+                    worksheet.Cell(rowIndex + 2, col + 1).Value = row.Cells[col].Value;
+                }
+
+                // Добавляем индекс строки к группе
+                if (!groups.ContainsKey(parentValue))
+                    groups[parentValue] = new List<int>();
+                // В Excel строки начинаются с 2 (заголовки на 1-й строке)
+                groups[parentValue].Add(rowIndex + 2);
+            }
+
+            // Для каждой группы применяем группировку строк
+            foreach (var group in groups.Values)
+            {
+                if (group.Count > 1)
+                {
+                    int startRow = group[0];
+                    int endRow = group[group.Count - 1];
+                    worksheet.Rows(startRow, endRow).Group();
+                }
+            }
+
 
             IXLTable xLTable = worksheet.Table(0);
 
             xLTable.Theme = XLTableTheme.TableStyleLight8;
             worksheet.Columns().AdjustToContents();
             excelWorkbook.SaveAs(pathForExcel + fileName + ".xlsx");
-            #region Сохраняю CSV файл
-            //string csvFilePath = pathForExcel + fileName + ".csv";
-            //using (var writer = new StreamWriter(csvFilePath))
-            //{
-            //    // Перебираем строки в листе
-            //    foreach (var row in worksheet.RowsUsed())
-            //    {
-            //        // Создаем массив для хранения значений ячеек
-            //        var values = new string[row.LastCellUsed().Address.ColumnNumber];
-
-            //        // Перебираем ячейки в строке
-            //        for (int i = 1; i <= row.LastCellUsed().Address.ColumnNumber; i++)
-            //        {
-            //            values[i - 1] = row.Cell(i).GetString();
-            //        }
-            //        // Записываем значения в CSV формате
-            //        writer.WriteLine(string.Join(",", values));
-            //    }
-            //}
-            #endregion
         }
 
         private void OpenExplorer_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //Process.Start(System.Reflection.Assembly.GetExecutingAssembly().Location);
             string tempPath = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
             Process.Start(tempPath.Remove(tempPath.LastIndexOf(@"\")));
-
-            //Environment.CurrentDirectory
-            //System.Reflection.Assembly.GetExecutingAssembly().Location
-
-
-            //if (pathForExcel != "" & pathForExcel != null)
-            //{
-            //    Process.Start(pathForExcel);
-            //}
         }
 
         private void SaveCSV_ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -835,6 +896,160 @@ namespace ReportKompas
                 writer.WriteEndElement(); // </Rows>
                 writer.WriteEndDocument();
             }
+        }
+
+        private void AddCodeEquip()
+        {
+            if (objectsAssemblyKompas != null && DictionaryCodeEquip != null)
+            {
+                foreach (ObjectAssemblyKompas item in objectsAssemblyKompas)
+                {
+                    if (item.SpecificationSection == "Стандартные изделия" || item.SpecificationSection == "Прочие изделия")
+                    {
+                        if (DictionaryCodeEquip.Any(kvp => kvp.Value.Contains(item.Name)))
+                        {
+                            item.CodeEquipment = DictionaryCodeEquip.First(kvp => kvp.Value.Contains(item.Name)).Key;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void AddCodeMaterial()
+        {
+            if (objectsAssemblyKompas != null && DictionaryCodeMaterial != null)
+            {
+                foreach (ObjectAssemblyKompas item in objectsAssemblyKompas)
+                {
+                    if (item.SpecificationSection == "Детали" || item.SpecificationSection == "Прочие изделия" && item.Material != null)
+                    {
+                        if (DictionaryCodeMaterial.Any(kvp => kvp.Value.Contains(item.Material)))
+                        {
+                            item.CodeMaterial = DictionaryCodeMaterial.First(kvp => kvp.Value.Contains(item.Material)).Key;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ReplaceMaterial()
+        {
+            if (objectsAssemblyKompas != null)
+            {
+                foreach (ObjectAssemblyKompas item in objectsAssemblyKompas)
+                {
+                    if (item.SpecificationSection == "Детали" && item.Material == "")
+                    {
+                        if (item.Designation.Contains("1.5mm_") && item.Designation.Contains("_Zn"))
+                        {
+                            item.Material = @"Лист ОЦd1,5 ГОСТ 19904-90;08пс ГОСТ 14918-80";
+                        }
+                        if (item.Designation.Contains("1mm_") && item.Designation.Contains("_Zn"))
+                        {
+                            item.Material = @"Лист ОЦd1,0 ГОСТ 19904-90;08пс ГОСТ 14918-80";
+                        }
+                    }
+                }
+            }
+        }
+
+        private void SettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings equipment = new Settings();
+            #region Задаю путь и новые настройки кодов стандартных изделий
+            equipment.PathSettingsEquipmenttextBox.Text = Properties.Settings.Default.PathSettingsEquipmenttextBox;
+            DictionaryCodeEquip = new Dictionary<string, List<string>>();
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(Properties.Settings.Default.PathSettingsEquipmenttextBox);
+            XmlNodeList keyNodes = xmlDoc.SelectNodes("/Dictionary/Key");
+            foreach (XmlNode keyNode in keyNodes)
+            {
+                // Получаем имя ключа из атрибута 'name'
+                string keyName = keyNode.Attributes["name"]?.InnerText;
+
+                if (keyName != null)
+                {
+                    var values = new List<string>();
+
+                    // Получаем все <Value> внутри текущего <Key>
+                    foreach (XmlNode valueNode in keyNode.SelectNodes("Value"))
+                    {
+                        string valueText = valueNode.InnerText;
+                        values.Add(valueText);
+                    }
+
+                    // Добавляем в словарь
+                    DictionaryCodeEquip[keyName] = values;
+                }
+            }
+            #endregion
+
+            #region Задаю путь и новые настройки кодов материалов
+            equipment.PathSettingsMaterialtextBox.Text = Properties.Settings.Default.PathSettingsMaterialtextBox;
+            DictionaryCodeMaterial = new Dictionary<string, List<string>>();
+            XmlDocument xmlDoc2 = new XmlDocument();
+            xmlDoc2.Load(Properties.Settings.Default.PathSettingsMaterialtextBox);
+            XmlNodeList keyNodes2 = xmlDoc2.SelectNodes("/Dictionary/Key");
+            foreach (XmlNode keyNode in keyNodes2)
+            {
+                // Получаем имя ключа из атрибута 'name'
+                string keyName = keyNode.Attributes["name"]?.InnerText;
+
+                if (keyName != null)
+                {
+                    var values = new List<string>();
+
+                    // Получаем все <Value> внутри текущего <Key>
+                    foreach (XmlNode valueNode in keyNode.SelectNodes("Value"))
+                    {
+                        string valueText = valueNode.InnerText;
+                        values.Add(valueText);
+                    }
+
+                    // Добавляем в словарь
+                    DictionaryCodeMaterial[keyName] = values;
+                }
+            }
+            #endregion
+
+            equipment.Show();
+        }
+
+        private void toolStripButton2_Click(object sender, EventArgs e)
+        {
+            Columns columns = new Columns();
+            columns.checkedListBox1.CheckOnClick = true;
+            foreach (DataGridViewColumn column in dataGridView1.Columns)
+            {
+                if (column.Visible)
+                {
+                    columns.checkedListBox1.Items.Add(column.HeaderText, true);
+                }
+                else
+                {
+                    columns.checkedListBox1.Items.Add(column.HeaderText, false);
+                }
+                
+            }
+
+            Button btnOk = new Button();
+            btnOk.Dock = DockStyle.Fill;
+            btnOk.Text = "Применить";
+            btnOk.Click += (s, args) =>
+            {
+                // Обработка выбранных элементов (например, скрытие колонок DataGridView)
+                for (int i = 0; i < dataGridView1.Columns.Count; i++)
+                {
+                    var colHeader = dataGridView1.Columns[i].HeaderText;
+                    bool isChecked = columns.checkedListBox1.Items.Contains(colHeader) && columns.checkedListBox1.CheckedItems.Contains(colHeader);
+                    dataGridView1.Columns[i].Visible = isChecked;
+                }
+                columns.Close();
+            };
+
+            columns.tableLayoutPanel1.Controls.Add(btnOk, 0, 1);
+
+            columns.Show();
         }
     }
 }
