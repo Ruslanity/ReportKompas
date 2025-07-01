@@ -1,12 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ReportKompas.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)">
   <Profiles />
-  <Settings>
-    <Setting Name="PathSettingsEquipmenttextBox" Type="System.String" Scope="User">
-      <Value Profile="(Default)">d:\Users\Comp-User\Documents\ReportKompas\CodeEquip.xml</Value>
-    </Setting>
-    <Setting Name="PathSettingsMaterialtextBox" Type="System.String" Scope="User">
-      <Value Profile="(Default)">d:\Users\Comp-User\Documents\ReportKompas\CodeMaterial.xml</Value>
-    </Setting>
-  </Settings>
+  <Settings />
 </SettingsFile>

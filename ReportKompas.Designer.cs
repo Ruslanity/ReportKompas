@@ -41,11 +41,11 @@ namespace ReportKompas
             this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
             this.Service = new System.Windows.Forms.ToolStripDropDownButton();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.MenuItemSelected = new System.Windows.Forms.ToolStripMenuItem();
             this.открытьДиректориюСФайломToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
@@ -145,6 +145,16 @@ namespace ReportKompas
             this.settingsToolStripMenuItem.Text = "Настроить";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.SettingsToolStripMenuItem_Click);
             // 
+            // toolStripButton2
+            // 
+            this.toolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton2.Image")));
+            this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton2.Name = "toolStripButton2";
+            this.toolStripButton2.Size = new System.Drawing.Size(59, 22);
+            this.toolStripButton2.Text = "Колонки";
+            this.toolStripButton2.Click += new System.EventHandler(this.toolStripButton2_Click);
+            // 
             // dataGridView1
             // 
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -179,16 +189,6 @@ namespace ReportKompas
             this.открытьДиректориюСФайломToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
             this.открытьДиректориюСФайломToolStripMenuItem.Text = "&Открыть в проводнике";
             this.открытьДиректориюСФайломToolStripMenuItem.Click += new System.EventHandler(this.OpenExplorer_MenuItem_Click);
-            // 
-            // toolStripButton2
-            // 
-            this.toolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton2.Image")));
-            this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton2.Name = "toolStripButton2";
-            this.toolStripButton2.Size = new System.Drawing.Size(59, 22);
-            this.toolStripButton2.Text = "Колонки";
-            this.toolStripButton2.Click += new System.EventHandler(this.toolStripButton2_Click);
             // 
             // ReportKompas
             // 

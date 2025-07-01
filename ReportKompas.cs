@@ -38,6 +38,8 @@ namespace ReportKompas
         string topParent;
         public Dictionary<string, List<string>> DictionaryCodeEquip;
         public Dictionary<string, List<string>> DictionaryCodeMaterial;
+        public Columns columns;
+        public Settings equipment;
 
         [DllImport("user32.dll", SetLastError = true)]
         static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
@@ -64,7 +66,8 @@ namespace ReportKompas
         {
             DictionaryCodeEquip = new Dictionary<string, List<string>>();
             XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(Properties.Settings.Default.PathSettingsEquipmenttextBox);
+            string tempPathCodeEquip = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
+            xmlDoc.Load(tempPathCodeEquip.Remove(tempPathCodeEquip.LastIndexOf(@"\")) + @"\" + "CodeEquip.xml");
             XmlNodeList keyNodes = xmlDoc.SelectNodes("/Dictionary/Key");
             foreach (XmlNode keyNode in keyNodes)
             {
@@ -88,7 +91,8 @@ namespace ReportKompas
             }
             DictionaryCodeMaterial = new Dictionary<string, List<string>>();
             XmlDocument xmlDoc2 = new XmlDocument();
-            xmlDoc2.Load(Properties.Settings.Default.PathSettingsMaterialtextBox);
+            string tempPathCodeMaterial = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
+            xmlDoc2.Load(tempPathCodeMaterial.Remove(tempPathCodeMaterial.LastIndexOf(@"\")) + @"\" + "CodeMaterial.xml");
             XmlNodeList keyNodes2 = xmlDoc2.SelectNodes("/Dictionary/Key");
             foreach (XmlNode keyNode in keyNodes2)
             {
@@ -233,7 +237,7 @@ namespace ReportKompas
                     dynamic info;
                     bool source;
                     propertyKeeper.GetPropertyValue((_Property)item, out info, false, out source);
-                    objectAssemblyKompas.Mass = Math.Round(info, 2)*1.2;
+                    objectAssemblyKompas.Mass = Math.Round(info, 2) * 1.2;
                 }
                 if (item.Name == "Покрытие")
                 {
@@ -543,6 +547,51 @@ namespace ReportKompas
                     row.DefaultCellStyle.BackColor = Color.LightGreen;
                 }
             }
+            string tempPath = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
+            UpdateExistingColumnsFromXml(tempPath.Remove(tempPath.LastIndexOf(@"\")) + @"\" + "Сolumns.xml", dataGridView1);
+        }
+
+        public void UpdateExistingColumnsFromXml(string xmlFilePath, DataGridView dgv)
+        {
+            // Очищаем текущие колонки
+            //dgv.Columns.Clear();
+
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(xmlFilePath);
+
+            // Находим раздел Columns
+            XmlNode columnsNode = xmlDoc.SelectSingleNode("/Columns");
+            if (columnsNode == null)
+            {
+                MessageBox.Show("Раздел <Columns> не найден в XML.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            foreach (XmlNode columnNode in columnsNode.ChildNodes)
+            {
+                if (columnNode.Name != "Column")
+                    continue;
+
+                string headerText = "";
+                bool isVisible = true; // по умолчанию
+
+                if (columnNode.Attributes["HeaderText"] != null)
+                    headerText = columnNode.Attributes["HeaderText"].Value;
+
+                if (columnNode.Attributes["Visible"] != null)
+                    bool.TryParse(columnNode.Attributes["Visible"].Value, out isVisible);
+
+                // Ищем колонку с таким HeaderText
+                var existingCol = dgv.Columns.Cast<DataGridViewColumn>()
+                                    .FirstOrDefault(c => c.HeaderText == headerText);
+
+                if (existingCol != null)
+                {
+                    // Обновляем свойство Visible
+                    existingCol.Visible = isVisible;
+                }
+                // Можно добавить обработку для случаев отсутствия колонки, если нужно
+            }
         }
 
         private void toolStripButtonShowData_Click(object sender, EventArgs e)
@@ -756,7 +805,7 @@ namespace ReportKompas
             }
 
             IXLWorksheet worksheet = excelWorkbook.Worksheets.Add(dt, "Отчет");
-            worksheet.Outline.SummaryVLocation = XLOutlineSummaryVLocation.Top;            
+            worksheet.Outline.SummaryVLocation = XLOutlineSummaryVLocation.Top;
 
             //IXLCells cells2 = worksheet.CellsUsed(x => x.Value.ToString() == "Узел-1");
             //int columnNumber = 0;
@@ -955,101 +1004,130 @@ namespace ReportKompas
 
         private void SettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Settings equipment = new Settings();
-            #region Задаю путь и новые настройки кодов стандартных изделий
-            equipment.PathSettingsEquipmenttextBox.Text = Properties.Settings.Default.PathSettingsEquipmenttextBox;
-            DictionaryCodeEquip = new Dictionary<string, List<string>>();
+            if (equipment == null || equipment.IsDisposed)
+            {
+                equipment = new Settings();
+            }
+            else equipment.Show();
+
             XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(Properties.Settings.Default.PathSettingsEquipmenttextBox);
-            XmlNodeList keyNodes = xmlDoc.SelectNodes("/Dictionary/Key");
-            foreach (XmlNode keyNode in keyNodes)
+            string tempPath = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
+            xmlDoc.Load(tempPath.Remove(tempPath.LastIndexOf(@"\")) + @"\" + "Settings.xml");
+            var textBoxesNodes = xmlDoc.SelectNodes("/Settings/TextBox");
+            foreach (XmlNode node in textBoxesNodes)
             {
-                // Получаем имя ключа из атрибута 'name'
-                string keyName = keyNode.Attributes["name"]?.InnerText;
+                string name = node.Attributes["Name"].Value;
+                string value = node.InnerText;
 
-                if (keyName != null)
-                {
-                    var values = new List<string>();
-
-                    // Получаем все <Value> внутри текущего <Key>
-                    foreach (XmlNode valueNode in keyNode.SelectNodes("Value"))
-                    {
-                        string valueText = valueNode.InnerText;
-                        values.Add(valueText);
-                    }
-
-                    // Добавляем в словарь
-                    DictionaryCodeEquip[keyName] = values;
-                }
+                if (name == "CodeEquip") // добавляем установку PathSettingsEquipmenttextBox.Text
+                    equipment.PathSettingsEquipmenttextBox.Text = value;
+                else if (name == "CodeMaterial") // добавляем установку PathSettingsEquipmenttextBox.Text
+                    equipment.PathSettingsMaterialtextBox.Text = value;
             }
-            #endregion
-
-            #region Задаю путь и новые настройки кодов материалов
-            equipment.PathSettingsMaterialtextBox.Text = Properties.Settings.Default.PathSettingsMaterialtextBox;
-            DictionaryCodeMaterial = new Dictionary<string, List<string>>();
-            XmlDocument xmlDoc2 = new XmlDocument();
-            xmlDoc2.Load(Properties.Settings.Default.PathSettingsMaterialtextBox);
-            XmlNodeList keyNodes2 = xmlDoc2.SelectNodes("/Dictionary/Key");
-            foreach (XmlNode keyNode in keyNodes2)
-            {
-                // Получаем имя ключа из атрибута 'name'
-                string keyName = keyNode.Attributes["name"]?.InnerText;
-
-                if (keyName != null)
-                {
-                    var values = new List<string>();
-
-                    // Получаем все <Value> внутри текущего <Key>
-                    foreach (XmlNode valueNode in keyNode.SelectNodes("Value"))
-                    {
-                        string valueText = valueNode.InnerText;
-                        values.Add(valueText);
-                    }
-
-                    // Добавляем в словарь
-                    DictionaryCodeMaterial[keyName] = values;
-                }
-            }
-            #endregion
-
+            equipment.TopMost = true;
             equipment.Show();
         }
 
         private void toolStripButton2_Click(object sender, EventArgs e)
         {
-            Columns columns = new Columns();
+            // Путь к файлу настроек
+            string tempPath = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
+            string settingsFilePath = tempPath.Remove(tempPath.LastIndexOf(@"\")) + @"\" + "Сolumns.xml";
+
+            // Создаем форму с CheckedListBox
+
+            if (columns == null || columns.IsDisposed)
+            {
+                columns = new Columns();
+            }
+            else
+            {
+                columns.checkedListBox1.Items.Clear();
+            }
+            
             columns.checkedListBox1.CheckOnClick = true;
+
+            // Загружаем состояние из XML перед отображением
+            LoadColumnsStateFromXml(settingsFilePath);
+
+            // Заполняем CheckedListBox названиями колонок и их состоянием
             foreach (DataGridViewColumn column in dataGridView1.Columns)
             {
-                if (column.Visible)
-                {
-                    columns.checkedListBox1.Items.Add(column.HeaderText, true);
-                }
-                else
-                {
-                    columns.checkedListBox1.Items.Add(column.HeaderText, false);
-                }
-                
+                bool isChecked = column.Visible; // или можно использовать сохраненное состояние
+                columns.checkedListBox1.Items.Add(column.HeaderText, isChecked);
             }
 
             Button btnOk = new Button();
             btnOk.Dock = DockStyle.Fill;
             btnOk.Text = "Применить";
+
             btnOk.Click += (s, args) =>
             {
-                // Обработка выбранных элементов (например, скрытие колонок DataGridView)
+                // Обработка выбранных элементов: скрытие/показ колонок
                 for (int i = 0; i < dataGridView1.Columns.Count; i++)
                 {
                     var colHeader = dataGridView1.Columns[i].HeaderText;
-                    bool isChecked = columns.checkedListBox1.Items.Contains(colHeader) && columns.checkedListBox1.CheckedItems.Contains(colHeader);
+                    bool isChecked = false;
+
+                    if (columns.checkedListBox1.Items.Contains(colHeader))
+                    {
+                        int index = columns.checkedListBox1.Items.IndexOf(colHeader);
+                        isChecked = columns.checkedListBox1.GetItemChecked(index);
+                    }
+
                     dataGridView1.Columns[i].Visible = isChecked;
                 }
+
+                // Сохраняем состояние в XML после применения
+                SaveColumnsStateToXml(settingsFilePath);
+
                 columns.Close();
             };
 
             columns.tableLayoutPanel1.Controls.Add(btnOk, 0, 1);
 
+            // Показываем форму
+            columns.TopMost = true;
             columns.Show();
+        }
+        private void SaveColumnsStateToXml(string filePath)
+        {
+            XmlDocument doc = new XmlDocument();
+            XmlElement root = doc.CreateElement("Columns");
+            doc.AppendChild(root);
+
+            foreach (DataGridViewColumn column in dataGridView1.Columns)
+            {
+                XmlElement colElem = doc.CreateElement("Column");
+                colElem.SetAttribute("HeaderText", column.HeaderText);
+                colElem.SetAttribute("Visible", column.Visible.ToString());
+                root.AppendChild(colElem);
+            }
+
+            doc.Save(filePath);
+        }
+        private void LoadColumnsStateFromXml(string filePath)
+        {
+            if (!File.Exists(filePath))
+                return;
+
+            XmlDocument doc = new XmlDocument();
+            doc.Load(filePath);
+
+            var columnsNodes = doc.SelectNodes("/Columns/Column");
+            foreach (XmlNode node in columnsNodes)
+            {
+                string headerText = node.Attributes["HeaderText"].Value;
+                bool isVisible = bool.Parse(node.Attributes["Visible"].Value);
+
+                var column = dataGridView1.Columns
+                    .Cast<DataGridViewColumn>()
+                    .FirstOrDefault(c => c.HeaderText == headerText);
+                if (column != null)
+                {
+                    column.Visible = isVisible;
+                }
+            }
         }
     }
 }

@@ -12,38 +12,31 @@ namespace ReportKompas.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.10.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.9.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
-        
-        public static Settings Default {
-            get {
+
+        public static Settings Default
+        {
+            get
+            {
                 return defaultInstance;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("d:\\Users\\Comp-User\\Documents\\ReportKompas\\CodeEquip.xml")]
-        public string PathSettingsEquipmenttextBox {
-            get {
-                return ((string)(this["PathSettingsEquipmenttextBox"]));
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string PathOfSettings
+        {
+            get
+            {
+                return ((string)(this["PathOfSettings"]));
             }
-            set {
-                this["PathSettingsEquipmenttextBox"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("d:\\Users\\Comp-User\\Documents\\ReportKompas\\CodeMaterial.xml")]
-        public string PathSettingsMaterialtextBox {
-            get {
-                return ((string)(this["PathSettingsMaterialtextBox"]));
-            }
-            set {
-                this["PathSettingsMaterialtextBox"] = value;
+            set
+            {
+                this["PathOfSettings"] = value;
             }
         }
     }
