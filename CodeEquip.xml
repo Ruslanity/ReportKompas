@@ -160,10 +160,11 @@
   <Key name="631">
     <Value>Болт DIN933-8.8-ZN-М8*16 </Value>
   </Key>
-  <Key name="18246">
+  <Key name="18246"> <!-- 18246 -->
     <Value>Болт DIN933-8.8-ZN-М8*20</Value>
 	  <Value>Болт DIN 933 М8x20 -Zn</Value>
     <Value>Болт DIN 933 М8x20-Zn</Value>
+    <Value>Болт DIN 933 М8х20-Zn</Value>
   </Key>
   <Key name="15471">
     <Value>Болт DIN933-8.8-ZN-М8*25</Value>
@@ -228,7 +229,10 @@
   </Key>
   <Key name="26770">
     <Value>Винт DIN 7380 М6x40 с внутренним шестигранником </Value>
-	<Value>Винт ISO 7380-1 М6x40-А2</Value>
+  	<Value>Винт ISO 7380-1 М6x40-А2</Value>
+  </Key>
+  <Key name="34435">
+    <Value>Винт ISO 7380-1 М4x16-Zn</Value>
   </Key>
   <Key name="23556">
     <Value>Винт DIN7985 М4х14</Value>
@@ -327,7 +331,7 @@
   </Key>
   <Key name="256">
     <Value>Гайка DIN934 М16 ZN</Value>
-    <Value>Шайба DIN 125-16-Zn</Value>
+    <Value>Гайка DIN 934 М16-Zn</Value>
   </Key>
   <Key name="254">
     <Value>Гайка DIN934 М20 ZN</Value>
@@ -360,6 +364,10 @@
   </Key>
   <Key name="17111">
     <Value>Гайка клетевая М10</Value>
+  </Key>
+  <Key name="17303">
+    <Value>Гайка клетевая М8</Value>
+	<Value>Гайка клетьевая М8</Value>
   </Key>
   <Key name="16206">
     <Value>Гайка клетевая М6</Value>
@@ -400,6 +408,7 @@
   </Key>
   <Key name="22409">
     <Value>Заклепка вытяжная потайной бортик 4*12</Value>
+	<Value>Заклепка вытяжная потайной бортик 4,0х12</Value>
   </Key>
   <Key name="7952">
     <Value>Заклепка вытяжная потайной бортик 4,0*10</Value>
@@ -712,6 +721,7 @@
   <!-- </Key> -->
   <Key name="259">
     <Value>Шайба DIN125-ZN-М8 плоская</Value>
+	<Value>Шайба DIN 125 8-Zn</Value>
   </Key>
   <Key name="269">
     <Value>Шайба DIN127-ZN-М10 гровер</Value>
@@ -774,7 +784,8 @@
   </Key>
   <Key name="781">
     <Value>Шайба DIN9021 М12 плоская кузовная</Value>
-	<Value>Шайба DIN 9021 12-Zn</Value>
+	  <Value>Шайба DIN 9021 12-Zn</Value>
+    <Value>Шайба DIN 9021-12-Zn</Value>
   </Key>
   <Key name="1780">
     <Value>Шайба DIN9021 М16 плоская кузовная</Value>

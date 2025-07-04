@@ -64,10 +64,15 @@ namespace ReportKompas
 
         public void LoadSettings()
         {
+            if (equipment == null || equipment.IsDisposed)
+            {
+                equipment = new Settings();
+            }
+                        
             DictionaryCodeEquip = new Dictionary<string, List<string>>();
             XmlDocument xmlDoc = new XmlDocument();
-            string tempPathCodeEquip = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
-            xmlDoc.Load(tempPathCodeEquip.Remove(tempPathCodeEquip.LastIndexOf(@"\")) + @"\" + "CodeEquip.xml");
+            //string tempPathCodeEquip = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
+            xmlDoc.Load(equipment?.PathSettingsEquipmenttextBox.Text + @"\" + "CodeEquip.xml");
             XmlNodeList keyNodes = xmlDoc.SelectNodes("/Dictionary/Key");
             foreach (XmlNode keyNode in keyNodes)
             {
@@ -91,8 +96,8 @@ namespace ReportKompas
             }
             DictionaryCodeMaterial = new Dictionary<string, List<string>>();
             XmlDocument xmlDoc2 = new XmlDocument();
-            string tempPathCodeMaterial = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
-            xmlDoc2.Load(tempPathCodeMaterial.Remove(tempPathCodeMaterial.LastIndexOf(@"\")) + @"\" + "CodeMaterial.xml");
+            //string tempPathCodeMaterial = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
+            xmlDoc2.Load(equipment?.PathSettingsEquipmenttextBox.Text + @"\" + "CodeMaterial.xml");
             XmlNodeList keyNodes2 = xmlDoc2.SelectNodes("/Dictionary/Key");
             foreach (XmlNode keyNode in keyNodes2)
             {
@@ -118,16 +123,28 @@ namespace ReportKompas
 
         private void Recursion(IPart7 Part, string ParentName)
         {
-            DisassembleObject(Part, ParentName);
-            foreach (IPart7 item in Part.Parts)
+            #region Провожу проверку есть ли такой объект в коллекции
+            ObjectAssemblyKompas objectF = objectsAssemblyKompas.SingleOrDefault((ObjectAssemblyKompas) => ObjectAssemblyKompas.Designation == Part.Marking &&
+                                                                                                           ObjectAssemblyKompas.Name == Part.Name &&
+                                                                                                           ObjectAssemblyKompas.Parent == ParentName);
+            if (objectF != null)
             {
-                ksPart ksPart2 = kompas.TransferInterface(item, 1, 0);
-                if (ksPart2.excluded != true)
+                objectF.Quantity++;                
+            }
+            else if (objectF == null)
+            {
+                DisassembleObject(Part, ParentName);
+                foreach (IPart7 item in Part.Parts)
                 {
-                    if (item.Detail == true) DisassembleObject(item, Part.Marking + " - " + Part.Name);
-                    if (item.Detail == false) Recursion(item, Part.Marking + " - " + Part.Name);
+                    ksPart ksPart2 = kompas.TransferInterface(item, 1, 0);
+                    if (ksPart2.excluded != true)
+                    {
+                        if (item.Detail == true) DisassembleObject(item, Part.Marking + " - " + Part.Name);
+                        if (item.Detail == false) Recursion(item, Part.Marking + " - " + Part.Name);
+                    }
                 }
             }
+            #endregion            
         }
 
         private void GetSortedObjectsKompas()
@@ -805,6 +822,7 @@ namespace ReportKompas
             }
 
             IXLWorksheet worksheet = excelWorkbook.Worksheets.Add(dt, "Отчет");
+            worksheet.RangeUsed().Style.NumberFormat.Format = "@";
             worksheet.Outline.SummaryVLocation = XLOutlineSummaryVLocation.Top;
 
             //IXLCells cells2 = worksheet.CellsUsed(x => x.Value.ToString() == "Узел-1");
@@ -993,9 +1011,21 @@ namespace ReportKompas
                         {
                             item.Material = @"Лист ОЦd1,5 ГОСТ 19904-90;08пс ГОСТ 14918-80";
                         }
+                        if (item.Designation.Contains("1.5mm_") && item.Designation.Contains("_Aisi"))
+                        {
+                            item.Material = @"Лист нерж. 1,5ммх1250х2500 AISI430 4N+PE";
+                        }
                         if (item.Designation.Contains("1mm_") && item.Designation.Contains("_Zn"))
                         {
                             item.Material = @"Лист ОЦd1,0 ГОСТ 19904-90;08пс ГОСТ 14918-80";
+                        }
+                        if (item.Designation.Contains("1.5mm_") && item.Designation.Contains("_AL"))
+                        {
+                            item.Material = @"Лист квинтет 1,5mm AL";
+                        }
+                        if (item.Designation.Contains("1.5mm_") && item.Designation.Contains("_Forbo"))
+                        {
+                            item.Material = @"Forbo flooring";
                         }
                     }
                 }

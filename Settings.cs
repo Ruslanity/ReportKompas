@@ -16,6 +16,25 @@ namespace ReportKompas
         public Settings()
         {
             InitializeComponent();
+            LoadSet();
+        }
+
+        void LoadSet()
+        {
+            XmlDocument xmlDoc = new XmlDocument();
+            string tempPath = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
+            xmlDoc.Load(tempPath.Remove(tempPath.LastIndexOf(@"\")) + @"\" + "Settings.xml");
+            var textBoxesNodes = xmlDoc.SelectNodes("/Settings/TextBox");
+            foreach (XmlNode node in textBoxesNodes)
+            {
+                string name = node.Attributes["Name"].Value;
+                string value = node.InnerText;
+
+                if (name == "CodeEquip") // добавляем установку PathSettingsEquipmenttextBox.Text
+                    PathSettingsEquipmenttextBox.Text = value;
+                else if (name == "CodeMaterial") // добавляем установку PathSettingsEquipmenttextBox.Text
+                    PathSettingsMaterialtextBox.Text = value;
+            }
         }
 
         private void Equipment_FormClosing(object sender, FormClosingEventArgs e)
@@ -41,21 +60,16 @@ namespace ReportKompas
             // Сохраняем XML в файл
             string tempPath = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
             doc.Save(tempPath.Remove(tempPath.LastIndexOf(@"\")) + @"\" + "Settings.xml");
-            //Properties.Settings.Default.PathSettingsEquipmenttextBox = PathSettingsEquipmenttextBox.Text;
-            //Properties.Settings.Default.PathSettingsMaterialtextBox = PathSettingsMaterialtextBox.Text;
-            //Properties.Settings.Default.Save();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            string tempPath = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
-            Process.Start(tempPath.Remove(tempPath.LastIndexOf(@"\"))+@"\"+"CodeEquip.xml");
+            Process.Start(PathSettingsEquipmenttextBox.Text + @"\"+"CodeEquip.xml");
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            string tempPath = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
-            Process.Start(tempPath.Remove(tempPath.LastIndexOf(@"\")) + @"\" + "CodeMaterial.xml");
+            Process.Start(PathSettingsMaterialtextBox.Text + @"\" + "CodeMaterial.xml");
         }
 
     }
