@@ -31,6 +31,7 @@ namespace ReportKompas
         public string CodeEquipment { get; set; }
         public string CodeMaterial { get; set; }
         public string TimeCut { get; set; }
+        public string DxfDimensions { get; set; }
 
 
         public ObjectAssemblyKompas() { }        
@@ -52,6 +53,7 @@ namespace ReportKompas
                                     string codeequipment,
                                     string codematerial,
                                     string timecut,
+                                    string dxfdimentions,
                                     string overallDimensions)
         {
             Designation = designation;
@@ -72,6 +74,7 @@ namespace ReportKompas
             CodeEquipment = codeequipment;
             CodeMaterial = codematerial;
             CodeEquipment = timecut;
+            DxfDimensions = dxfdimentions;
             OverallDimensions = overallDimensions;
         }
     }

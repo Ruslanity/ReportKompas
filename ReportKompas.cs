@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using Kompas6API5;
+using Kompas6Constants;
 using KompasAPI7;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
+using netDxf;
+using netDxf.Entities;
 
 namespace ReportKompas
 {
@@ -68,7 +71,7 @@ namespace ReportKompas
             {
                 equipment = new Settings();
             }
-                        
+
             DictionaryCodeEquip = new Dictionary<string, List<string>>();
             XmlDocument xmlDoc = new XmlDocument();
             //string tempPathCodeEquip = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
@@ -129,7 +132,7 @@ namespace ReportKompas
                                                                                                            ObjectAssemblyKompas.Parent == ParentName);
             if (objectF != null)
             {
-                objectF.Quantity++;                
+                objectF.Quantity++;
             }
             else if (objectF == null)
             {
@@ -463,6 +466,13 @@ namespace ReportKompas
             }
             #endregion
 
+            #region Расчет времени резки
+            if (objectAssemblyKompas.SpecificationSection == "Детали")
+            {
+                CuttingTimeCalculation(objectAssemblyKompas);
+            }
+            #endregion
+
             #region Тут расчет кол-ва и добавление в коллекцию
             ObjectAssemblyKompas objectK = objectsAssemblyKompas.SingleOrDefault((ObjectAssemblyKompas) => ObjectAssemblyKompas.Designation == objectAssemblyKompas.Designation &&
                                                                                                            ObjectAssemblyKompas.Name == objectAssemblyKompas.Name &&
@@ -554,6 +564,9 @@ namespace ReportKompas
             dataGridView1.Columns["TimeCut"].HeaderText = "Время резки";
             dataGridView1.Columns["TimeCut"].DisplayIndex = 21;
             dataGridView1.Columns["TimeCut"].Width = 50;
+            dataGridView1.Columns["DxfDimensions"].HeaderText = "Габариты DXF";
+            dataGridView1.Columns["DxfDimensions"].DisplayIndex = 22;
+            dataGridView1.Columns["DxfDimensions"].Width = 80;
             dataGridView1.RowHeadersVisible = false;
             dataGridView1.AllowUserToAddRows = false;
             foreach (DataGridViewRow row in dataGridView1.Rows)
@@ -783,6 +796,7 @@ namespace ReportKompas
                     lostParts.dataGridView2.Columns["CodeEquipment"].Visible = false;
                     lostParts.dataGridView2.Columns["CodeMaterial"].Visible = false;
                     lostParts.dataGridView2.Columns["TimeCut"].Visible = false;
+                    lostParts.dataGridView2.Columns["DxfDimentions"].Visible = false;
                     lostParts.dataGridView2.AllowUserToAddRows = false;
                     lostParts.dataGridView2.Columns["FullName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 }
@@ -1074,7 +1088,7 @@ namespace ReportKompas
             {
                 columns.checkedListBox1.Items.Clear();
             }
-            
+
             columns.checkedListBox1.CheckOnClick = true;
 
             // Загружаем состояние из XML перед отображением
@@ -1158,6 +1172,175 @@ namespace ReportKompas
                     column.Visible = isVisible;
                 }
             }
+        }
+
+        private void CuttingTimeCalculation(ObjectAssemblyKompas objectAssemblyKompas)
+        {
+            string currentDirectory = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
+            string workspacePath = Path.Combine(currentDirectory.Remove(currentDirectory.LastIndexOf(@"\")), "Workspace");
+            if (!Directory.Exists(workspacePath))
+            {
+                Directory.CreateDirectory(workspacePath);
+            }
+
+            #region Создаю DXF
+            IDocuments document = application.Documents;
+            OpenDocumentParam openDocumentParam = document.GetOpenDocumentParam();
+            openDocumentParam.ReadOnly = true;
+            IKompasDocument kompasDocument = document.OpenDocument(objectAssemblyKompas.FullName, openDocumentParam);
+            IKompasDocument3D kompasDocument3D = (IKompasDocument3D)kompasDocument;
+            IPart7 topPart = kompasDocument3D.TopPart;
+            ISheetMetalContainer sheetMetalContainer = topPart as ISheetMetalContainer;
+            ISheetMetalBodies sheetMetalBodies = sheetMetalContainer.SheetMetalBodies;
+            ISheetMetalBody sheetMetalBody = sheetMetalBodies.SheetMetalBody[0];
+            if (sheetMetalBody == null)
+            {
+                return;
+            }
+
+            //MessageBox.Show(workspacePath.ToString());
+
+            string save_to_name = workspacePath + @"\" +
+                sheetMetalBody.Thickness.ToString(CultureInfo.CreateSpecificCulture("en-GB")) + "mm_" + topPart.Marking.Remove(0, 3) + ".dxf";
+
+            KompasObject kompas2 = (KompasObject)Marshal.GetActiveObject("KOMPAS.Application.5");
+
+            ksDocumentParam documentParam = (ksDocumentParam)kompas2.GetParamStruct(35);
+            documentParam.type = 1;
+            documentParam.Init();
+            ksDocument2D document2D = (ksDocument2D)kompas2.Document2D();
+            document2D.ksCreateDocument(documentParam);
+
+            IKompasDocument2D kompasDocument2D = (IKompasDocument2D)application.ActiveDocument;
+
+            //Скрываем все сообщения системы - Да
+            application.HideMessage = ksHideMessageEnum.ksHideMessageYes;
+
+            IViewsAndLayersManager viewsAndLayersManager = kompasDocument2D.ViewsAndLayersManager;
+            IViews views = viewsAndLayersManager.Views;
+            IView pView = views.Add(Kompas6Constants.LtViewType.vt_Arbitrary);
+
+            IAssociationView pAssociationView = pView as IAssociationView;
+            pAssociationView.SourceFileName = topPart.FileName;
+
+            //IEmbodimentsManager embodimentsManager = (IEmbodimentsManager)document3D;
+            //int indexPart = embodimentsManager.CurrentEmbodimentIndex;
+
+            IEmbodimentsManager emb = (IEmbodimentsManager)pAssociationView;
+            emb.SetCurrentEmbodiment(topPart.Marking);
+            pAssociationView.Angle = 0;
+            pAssociationView.X = 0;
+            pAssociationView.Y = 0;
+            pAssociationView.BendLinesVisible = false;
+            pAssociationView.BreakLinesVisible = false;
+            pAssociationView.HiddenLinesVisible = false;
+            pAssociationView.VisibleLinesStyle = (int)ksCurveStyleEnum.ksCSNormal;
+            pAssociationView.Scale = 1;
+            pAssociationView.Name = "User view";
+            pAssociationView.ProjectionName = "#Развертка";
+            pAssociationView.Unfold = true; //развернутый вид
+            pAssociationView.BendLinesVisible = false;
+            pAssociationView.CenterLinesVisible = false;
+            pAssociationView.SourceFileName = topPart.FileName;
+            pAssociationView.Update();
+            pView.Update();
+            IViewDesignation pViewDesignation = pView as IViewDesignation;
+            pViewDesignation.ShowUnfold = false;
+            pViewDesignation.ShowScale = false;
+
+            pView.Update();
+            document2D.ksRebuildDocument();
+            //Скрываем все сообщения системы - Нет
+            application.HideMessage = ksHideMessageEnum.ksHideMessageNo;
+            document2D.ksSaveDocument(save_to_name);
+            IKompasDocument kompasDocument2 = (IKompasDocument)application.ActiveDocument;
+            kompasDocument2.Close(DocumentCloseOptions.kdDoNotSaveChanges);
+            #endregion
+
+            #region Считаю время резки
+            DxfDocument dxf = DxfDocument.Load(save_to_name);
+            double totalLengthMm = 0;
+            foreach (var block in dxf.Blocks.Items)
+            {
+                foreach (var entity in block.Entities)
+                {
+                    if (entity.Type == EntityType.LwPolyline)
+                    {
+                        var polyline = entity as LwPolyline;
+                        totalLengthMm += CalculatePolylineLength(polyline);
+                    }
+                    if (entity.Type == EntityType.LwPolyline)
+                    {
+                        var polyline = entity as LwPolyline;
+                        totalLengthMm += CalculatePolylineLength(polyline);
+                    }
+                    if (entity.Type == EntityType.Line)
+                    {
+                        var line = entity as Line;
+                        totalLengthMm += Distance(line.StartPoint, line.EndPoint);
+                    }
+                    if (entity.Type == EntityType.Circle)
+                    {
+                        var circle = entity as Circle;
+                        totalLengthMm += 2 * Math.PI * circle.Radius;
+                    }
+                    if (entity.Type == EntityType.Arc)
+                    {
+                        var arc = entity as Arc;
+                        double angle = Math.Abs(arc.EndAngle - arc.StartAngle);
+                        double arcLength = arc.Radius * (((angle > 180 ? 360 - angle : angle) * Math.PI) / 180);
+                        totalLengthMm += arcLength;
+                    }
+                }                
+            }
+
+            // Расчет времени в секундах
+            double timeMinutes = (totalLengthMm / 10000) * 60; //здесь 100мм/мин *60 - перевод в сек
+            if (objectAssemblyKompas.Designation.Contains("Aisi") || objectAssemblyKompas.Material.Contains("Aisi"))
+            {
+                objectAssemblyKompas.TimeCut = (Math.Round(timeMinutes, 1) * 2).ToString();
+            }
+            else
+            {
+                objectAssemblyKompas.TimeCut = Math.Round(timeMinutes, 1).ToString();
+            }
+
+            //string pathToDxf = @"C:\path\to\your\file.dxf";
+            //double speedMmPerMin = 100; // например, 100 мм/мин
+
+            #endregion
+
+            #region Считаю габаритные размеры DXF
+            DxfDimensions dims = DxfHelper.GetDxfDimensions(save_to_name);
+            double X = dims.MaxX - dims.MinX;
+            double Y = dims.MaxY - dims.MinY;
+            objectAssemblyKompas.DxfDimensions = Math.Round(X, 0).ToString() + "x" + Math.Round(Y, 0).ToString();
+            #endregion
+
+            //System.Threading.Thread.Sleep(5000);
+            //Directory.Delete(workspacePath, true); // true — удаляет рекурсивно, если есть содержимое
+        }
+        private static double Distance(Vector3 p1, Vector3 p2)
+        {
+            return Math.Sqrt(Math.Pow(p2.X - p1.X, 2) +
+                             Math.Pow(p2.Y - p1.Y, 2));
+        }
+        private static double DistanceLwPolyline(Vector2 p1, Vector2 p2)
+        {
+            return Math.Sqrt(Math.Pow(p2.X - p1.X, 2) +
+                             Math.Pow(p2.Y - p1.Y, 2));
+        }
+
+        private static double CalculatePolylineLength(LwPolyline polyline)
+        {
+            double length = 0;
+            for (int i = 0; i < polyline.Vertexes.Count - 1; i++)
+            {
+                var v1 = polyline.Vertexes[i];
+                var v2 = polyline.Vertexes[i + 1];
+                length += DistanceLwPolyline(v1.Position, v2.Position);
+            }
+            return length;
         }
     }
 }

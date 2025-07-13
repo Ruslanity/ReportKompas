@@ -46,7 +46,7 @@ namespace ReportKompas
             this.PathSettingsEquipment.AutoSize = true;
             this.PathSettingsEquipment.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.PathSettingsEquipment.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.PathSettingsEquipment.Location = new System.Drawing.Point(3, 6);
+            this.PathSettingsEquipment.Location = new System.Drawing.Point(3, 8);
             this.PathSettingsEquipment.Margin = new System.Windows.Forms.Padding(3);
             this.PathSettingsEquipment.Name = "PathSettingsEquipment";
             this.PathSettingsEquipment.Padding = new System.Windows.Forms.Padding(3);
@@ -58,7 +58,7 @@ namespace ReportKompas
             // 
             this.PathSettingsEquipmenttextBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.PathSettingsEquipmenttextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.PathSettingsEquipmenttextBox.Location = new System.Drawing.Point(5, 33);
+            this.PathSettingsEquipmenttextBox.Location = new System.Drawing.Point(5, 35);
             this.PathSettingsEquipmenttextBox.Margin = new System.Windows.Forms.Padding(5);
             this.PathSettingsEquipmenttextBox.Name = "PathSettingsEquipmenttextBox";
             this.PathSettingsEquipmenttextBox.Size = new System.Drawing.Size(347, 20);
@@ -67,7 +67,7 @@ namespace ReportKompas
             // button1
             // 
             this.button1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.button1.Location = new System.Drawing.Point(360, 31);
+            this.button1.Location = new System.Drawing.Point(360, 33);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(74, 22);
             this.button1.TabIndex = 2;
@@ -83,7 +83,7 @@ namespace ReportKompas
             this.groupBox1.Margin = new System.Windows.Forms.Padding(5);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(5);
-            this.groupBox1.Size = new System.Drawing.Size(447, 137);
+            this.groupBox1.Size = new System.Drawing.Size(447, 173);
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Пути к библиотекам";
@@ -102,13 +102,13 @@ namespace ReportKompas
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(5, 18);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 4;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(437, 114);
+            this.tableLayoutPanel1.RowCount = 5;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(437, 150);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // label1
@@ -116,7 +116,7 @@ namespace ReportKompas
             this.label1.AutoSize = true;
             this.label1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label1.Location = new System.Drawing.Point(3, 62);
+            this.label1.Location = new System.Drawing.Point(3, 68);
             this.label1.Margin = new System.Windows.Forms.Padding(3);
             this.label1.Name = "label1";
             this.label1.Padding = new System.Windows.Forms.Padding(3);
@@ -128,7 +128,7 @@ namespace ReportKompas
             // 
             this.PathSettingsMaterialtextBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.PathSettingsMaterialtextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.PathSettingsMaterialtextBox.Location = new System.Drawing.Point(5, 89);
+            this.PathSettingsMaterialtextBox.Location = new System.Drawing.Point(5, 95);
             this.PathSettingsMaterialtextBox.Margin = new System.Windows.Forms.Padding(5);
             this.PathSettingsMaterialtextBox.Name = "PathSettingsMaterialtextBox";
             this.PathSettingsMaterialtextBox.Size = new System.Drawing.Size(347, 20);
@@ -137,7 +137,7 @@ namespace ReportKompas
             // button2
             // 
             this.button2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.button2.Location = new System.Drawing.Point(360, 87);
+            this.button2.Location = new System.Drawing.Point(360, 93);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(74, 22);
             this.button2.TabIndex = 5;
@@ -149,7 +149,7 @@ namespace ReportKompas
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(457, 147);
+            this.ClientSize = new System.Drawing.Size(457, 183);
             this.Controls.Add(this.groupBox1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
