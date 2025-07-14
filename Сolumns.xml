@@ -1,0 +1,24 @@
+<Columns>
+  <Column HeaderText="Обозначение" Visible="True" />
+  <Column HeaderText="Наименование" Visible="True" />
+  <Column HeaderText="Кол-во" Visible="True" />
+  <Column HeaderText="Раздел спецификации" Visible="True" />
+  <Column HeaderText="Материал" Visible="True" />
+  <Column HeaderText="Масса" Visible="True" />
+  <Column HeaderText="Пуансон" Visible="False" />
+  <Column HeaderText="Матрица" Visible="False" />
+  <Column HeaderText="Кол-во гибов" Visible="False" />
+  <Column HeaderText="Узел-1" Visible="False" />
+  <Column HeaderText="Узел верхний" Visible="False" />
+  <Column HeaderText="Путь до файла" Visible="True" />
+  <Column HeaderText="Путь до DXF" Visible="True" />
+  <Column HeaderText="Габаритные размеры" Visible="True" />
+  <Column HeaderText="Покрытие" Visible="False" />
+  <Column HeaderText="Сварочные работы" Visible="False" />
+  <Column HeaderText="Слесарные работы" Visible="False" />
+  <Column HeaderText="Примечание" Visible="False" />
+  <Column HeaderText="Площадь поверхности" Visible="False" />
+  <Column HeaderText="Код СИ" Visible="False" />
+  <Column HeaderText="Код Мат" Visible="False" />
+  <Column HeaderText="Время резки" Visible="True" />
+</Columns>
