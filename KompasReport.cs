@@ -1,4 +1,4 @@
-﻿    using Kompas6API5;
+﻿using Kompas6API5;
 using KompasAPI7;
 using Microsoft.Win32;
 using System;

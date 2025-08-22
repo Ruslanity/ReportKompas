@@ -16,6 +16,7 @@
   </Key>
   <Key name="18644">
     <Value>Болт DIN603-ZN-М12*30 мебельный</Value>
+	<Value>Болт DIN 603 М12x30-Zn</Value>
   </Key>
   <Key name="18645">
     <Value>Болт DIN603-ZN-М16*35 мебельный</Value>
@@ -67,6 +68,7 @@
   </Key>
   <Key name="7731">
     <Value>Болт DIN933-8.8-ZN-М10*30 </Value>
+	<Value>Болт DIN 933 М10x30-Zn</Value>
   </Key>
   <Key name="15624">
     <Value>Болт DIN933-8.8-ZN-М10*40</Value>
@@ -89,6 +91,8 @@
   </Key>
   <Key name="16294">
     <Value>Болт DIN933-8.8-ZN-М12*35</Value>
+	<Value>Болт DIN 933 М12x35-Zn</Value>
+	<Value>Болт DIN 933 М12х35-Zn</Value>
   </Key>
   <Key name="11917">
     <Value>Болт DIN933-8.8-ZN-М12*40</Value>
@@ -365,7 +369,7 @@
   <Key name="17111">
     <Value>Гайка клетевая М10</Value>
   </Key>
-  <Key name="17303">
+  <Key name="34213">
     <Value>Гайка клетевая М8</Value>
 	<Value>Гайка клетьевая М8</Value>
   </Key>
@@ -690,6 +694,7 @@
   </Key>
   <Key name="261">
     <Value>Шайба DIN125-ZN-М12 плоская</Value>
+	<Value>Шайба DIN 125-12-Zn</Value>
   </Key>
   <Key name="263">
     <Value>Шайба DIN125-ZN-М16 плоская </Value>
@@ -730,6 +735,7 @@
   <Key name="270">
     <Value>Шайба DIN127-ZN-М12 гровер</Value>
 	<Value>Шайба DIN 127 12-Zn</Value>
+	<Value>Шайба DIN 127-12-Zn</Value>
   </Key>
   <Key name="271">
     <Value>Шайба DIN127-ZN-М14 гровер</Value>
@@ -799,6 +805,7 @@
   </Key>
   <Key name="782">
     <Value>Шайба DIN9021-М8 плоская кузовная</Value>
+	<Value>Шайба DIN 9021-8-Zn</Value>
   </Key>
   <Key name="26892">
     <Value>Швеллер 5П </Value>

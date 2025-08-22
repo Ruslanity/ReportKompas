@@ -41,8 +41,9 @@ namespace ReportKompas
         string topParent;
         public Dictionary<string, List<string>> DictionaryCodeEquip;
         public Dictionary<string, List<string>> DictionaryCodeMaterial;
+        public Dictionary<string, double> DictionarySpeedCut;
         public Columns columns;
-        public Settings equipment;
+        public Settings _settings;
 
         [DllImport("user32.dll", SetLastError = true)]
         static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
@@ -67,15 +68,16 @@ namespace ReportKompas
 
         public void LoadSettings()
         {
-            if (equipment == null || equipment.IsDisposed)
+            if (_settings == null || _settings.IsDisposed)
             {
-                equipment = new Settings();
+                _settings = new Settings();
+                _settings.StartPosition = FormStartPosition.CenterParent;
+                _settings.TopMost = true;
             }
 
             DictionaryCodeEquip = new Dictionary<string, List<string>>();
             XmlDocument xmlDoc = new XmlDocument();
-            //string tempPathCodeEquip = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
-            xmlDoc.Load(equipment?.PathSettingsEquipmenttextBox.Text + @"\" + "CodeEquip.xml");
+            xmlDoc.Load(_settings?.Path_Dictionary_Equipment_textBox.Text + @"\" + "CodeEquip.xml");
             XmlNodeList keyNodes = xmlDoc.SelectNodes("/Dictionary/Key");
             foreach (XmlNode keyNode in keyNodes)
             {
@@ -99,8 +101,7 @@ namespace ReportKompas
             }
             DictionaryCodeMaterial = new Dictionary<string, List<string>>();
             XmlDocument xmlDoc2 = new XmlDocument();
-            //string tempPathCodeMaterial = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
-            xmlDoc2.Load(equipment?.PathSettingsEquipmenttextBox.Text + @"\" + "CodeMaterial.xml");
+            xmlDoc2.Load(_settings?.Path_Dictionary_Materials_textBox.Text + @"\" + "CodeMaterial.xml");
             XmlNodeList keyNodes2 = xmlDoc2.SelectNodes("/Dictionary/Key");
             foreach (XmlNode keyNode in keyNodes2)
             {
@@ -120,6 +121,26 @@ namespace ReportKompas
 
                     // Добавляем в словарь
                     DictionaryCodeMaterial[keyName] = values;
+                }
+            }
+            DictionarySpeedCut = new Dictionary<string, double>();
+            XmlDocument xmlDoc3 = new XmlDocument();
+            xmlDoc3.Load(_settings?.Speed_Cut_textBox.Text + @"\" + "SpeedCut.xml");
+            XmlNodeList keyNodes3 = xmlDoc3.SelectNodes("/Dictionary/Key");
+            foreach (XmlNode keyNode in keyNodes3)
+            {
+                // Получаем атрибут 'name'
+                string keyName = keyNode.Attributes["name"].InnerText;
+
+                // Получаем значение внутри <Value>
+                XmlNode valueNode = keyNode.SelectSingleNode("Value");
+                if (valueNode != null)
+                {
+                    // Парсим значение в double
+                    if (double.TryParse(valueNode.InnerText, out double value))
+                    {
+                        DictionarySpeedCut[keyName] = value;
+                    }
                 }
             }
         }
@@ -257,7 +278,7 @@ namespace ReportKompas
                     dynamic info;
                     bool source;
                     propertyKeeper.GetPropertyValue((_Property)item, out info, false, out source);
-                    objectAssemblyKompas.Mass = Math.Round(info, 2) * 1.2;
+                    objectAssemblyKompas.Mass = Math.Round(info * 1.2, 2);
                 }
                 if (item.Name == "Покрытие")
                 {
@@ -467,7 +488,8 @@ namespace ReportKompas
             #endregion
 
             #region Расчет времени резки
-            if (objectAssemblyKompas.SpecificationSection == "Детали")
+            bool checkBox = _settings.Other_Param_Laser_Cut_checkBox.Checked;
+            if (objectAssemblyKompas.SpecificationSection == "Детали" && checkBox == true)
             {
                 CuttingTimeCalculation(objectAssemblyKompas);
             }
@@ -578,7 +600,7 @@ namespace ReportKompas
                 }
             }
             string tempPath = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
-            UpdateExistingColumnsFromXml(tempPath.Remove(tempPath.LastIndexOf(@"\")) + @"\" + "Сolumns.xml", dataGridView1);
+            UpdateExistingColumnsFromXml(tempPath.Remove(tempPath.LastIndexOf(@"\")) + @"\" + @"Settings\Сolumns.xml", dataGridView1);
         }
 
         public void UpdateExistingColumnsFromXml(string xmlFilePath, DataGridView dgv)
@@ -660,6 +682,7 @@ namespace ReportKompas
                     {
                         DisassembleObject(part7, "0");
                         FillTable();
+                        this.Activate();
                         break;
                     }
                 case Kompas6Constants.DocumentTypeEnum.ksDocumentAssembly:
@@ -675,6 +698,7 @@ namespace ReportKompas
                             }
                         }
                         FillTable();
+                        this.Activate();
                         break;
                     }
                 case Kompas6Constants.DocumentTypeEnum.ksDocumentTextual:
@@ -807,10 +831,8 @@ namespace ReportKompas
             }
             catch (NullReferenceException)
             {
-                MessageBox.Show("Пропущенных компонентов нет");
+                MessageBox.Show("NullReferenceException");
             }
-
-
         }
 
         private void SaveExcel_ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -838,15 +860,6 @@ namespace ReportKompas
             IXLWorksheet worksheet = excelWorkbook.Worksheets.Add(dt, "Отчет");
             worksheet.RangeUsed().Style.NumberFormat.Format = "@";
             worksheet.Outline.SummaryVLocation = XLOutlineSummaryVLocation.Top;
-
-            //IXLCells cells2 = worksheet.CellsUsed(x => x.Value.ToString() == "Узел-1");
-            //int columnNumber = 0;
-            //foreach (IXLCell item in cells2)
-            //{
-            //    columnNumber = item.WorksheetColumn().ColumnNumber();
-            //}
-
-            //IXLCells xLCells = worksheet.CellsUsed(c => c.WorksheetColumn().ColumnNumber() == columnNumber);
 
             Dictionary<string, List<int>> groups = new Dictionary<string, List<int>>();
             // Заполняем данные и собираем группы по колонке "Parent"
@@ -1029,6 +1042,10 @@ namespace ReportKompas
                         {
                             item.Material = @"Лист нерж. 1,5ммх1250х2500 AISI430 4N+PE";
                         }
+                        if (item.Designation.Contains("1.5mm_") && item.Designation.Contains("_Aisi Bronze"))
+                        {
+                            item.Material = @"Лист нерж. 1,5ммх1250х2500 AISI430 4N+PE (Bronze)";
+                        }
                         if (item.Designation.Contains("1mm_") && item.Designation.Contains("_Zn"))
                         {
                             item.Material = @"Лист ОЦd1,0 ГОСТ 19904-90;08пс ГОСТ 14918-80";
@@ -1048,35 +1065,15 @@ namespace ReportKompas
 
         private void SettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (equipment == null || equipment.IsDisposed)
-            {
-                equipment = new Settings();
-            }
-            else equipment.Show();
-
-            XmlDocument xmlDoc = new XmlDocument();
-            string tempPath = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
-            xmlDoc.Load(tempPath.Remove(tempPath.LastIndexOf(@"\")) + @"\" + "Settings.xml");
-            var textBoxesNodes = xmlDoc.SelectNodes("/Settings/TextBox");
-            foreach (XmlNode node in textBoxesNodes)
-            {
-                string name = node.Attributes["Name"].Value;
-                string value = node.InnerText;
-
-                if (name == "CodeEquip") // добавляем установку PathSettingsEquipmenttextBox.Text
-                    equipment.PathSettingsEquipmenttextBox.Text = value;
-                else if (name == "CodeMaterial") // добавляем установку PathSettingsEquipmenttextBox.Text
-                    equipment.PathSettingsMaterialtextBox.Text = value;
-            }
-            equipment.TopMost = true;
-            equipment.Show();
+            LoadSettings();
+            _settings.ShowDialog();
         }
 
         private void toolStripButton2_Click(object sender, EventArgs e)
         {
             // Путь к файлу настроек
             string tempPath = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
-            string settingsFilePath = tempPath.Remove(tempPath.LastIndexOf(@"\")) + @"\" + "Сolumns.xml";
+            string settingsFilePath = tempPath.Remove(tempPath.LastIndexOf(@"\")) + @"\" + @"Settings\Сolumns.xml";
 
             // Создаем форму с CheckedListBox
 
@@ -1131,8 +1128,8 @@ namespace ReportKompas
             columns.tableLayoutPanel1.Controls.Add(btnOk, 0, 1);
 
             // Показываем форму
-            columns.TopMost = true;
-            columns.Show();
+            columns.StartPosition = FormStartPosition.CenterParent;
+            columns.ShowDialog();
         }
         private void SaveColumnsStateToXml(string filePath)
         {
@@ -1184,11 +1181,20 @@ namespace ReportKompas
             }
 
             #region Создаю DXF
+            List<string> pathnameOpenparts = new List<string>();
             IDocuments document = application.Documents;
+            for (int i = 0; i < document.Count; i++)
+            {
+                pathnameOpenparts.Add(document[i].PathName);
+            }
             OpenDocumentParam openDocumentParam = document.GetOpenDocumentParam();
-            openDocumentParam.ReadOnly = true;
+            openDocumentParam.ReadOnly = false;
             IKompasDocument kompasDocument = document.OpenDocument(objectAssemblyKompas.FullName, openDocumentParam);
             IKompasDocument3D kompasDocument3D = (IKompasDocument3D)kompasDocument;
+            if (kompasDocument3D == null)
+            {
+                return;
+            }
             IPart7 topPart = kompasDocument3D.TopPart;
             ISheetMetalContainer sheetMetalContainer = topPart as ISheetMetalContainer;
             ISheetMetalBodies sheetMetalBodies = sheetMetalContainer.SheetMetalBodies;
@@ -1201,7 +1207,7 @@ namespace ReportKompas
             //MessageBox.Show(workspacePath.ToString());
 
             string save_to_name = workspacePath + @"\" +
-                sheetMetalBody.Thickness.ToString(CultureInfo.CreateSpecificCulture("en-GB")) + "mm_" + topPart.Marking.Remove(0, 3) + ".dxf";
+                sheetMetalBody.Thickness.ToString(CultureInfo.CreateSpecificCulture("en-GB")) + "mm_" + topPart.Marking/*.Remove(0, 3)*/ + ".dxf";
 
             KompasObject kompas2 = (KompasObject)Marshal.GetActiveObject("KOMPAS.Application.5");
 
@@ -1250,11 +1256,22 @@ namespace ReportKompas
 
             pView.Update();
             document2D.ksRebuildDocument();
-            //Скрываем все сообщения системы - Нет
-            application.HideMessage = ksHideMessageEnum.ksHideMessageNo;
             document2D.ksSaveDocument(save_to_name);
             IKompasDocument kompasDocument2 = (IKompasDocument)application.ActiveDocument;
             kompasDocument2.Close(DocumentCloseOptions.kdDoNotSaveChanges);
+            kompasDocument.Close(DocumentCloseOptions.kdDoNotSaveChanges);
+            IDocuments document2 = application.Documents;
+            for (int j = 0; j < document2.Count; j++)
+            {
+                if (pathnameOpenparts.Contains(document2[j].PathName) != true)
+                {
+                    document2[j].Close(DocumentCloseOptions.kdDoNotSaveChanges);
+                }
+            }
+
+            //Скрываем все сообщения системы - Нет
+            application.HideMessage = ksHideMessageEnum.ksShowMessage;
+
             #endregion
 
             #region Считаю время резки
@@ -1264,11 +1281,6 @@ namespace ReportKompas
             {
                 foreach (var entity in block.Entities)
                 {
-                    if (entity.Type == EntityType.LwPolyline)
-                    {
-                        var polyline = entity as LwPolyline;
-                        totalLengthMm += CalculatePolylineLength(polyline);
-                    }
                     if (entity.Type == EntityType.LwPolyline)
                     {
                         var polyline = entity as LwPolyline;
@@ -1291,23 +1303,54 @@ namespace ReportKompas
                         double arcLength = arc.Radius * (((angle > 180 ? 360 - angle : angle) * Math.PI) / 180);
                         totalLengthMm += arcLength;
                     }
-                }                
+                }
             }
 
             // Расчет времени в секундах
-            double timeMinutes = (totalLengthMm / 10000) * 60; //здесь 100мм/мин *60 - перевод в сек
-            if (objectAssemblyKompas.Designation.Contains("Aisi") || objectAssemblyKompas.Material.Contains("Aisi"))
+            double divisor = 10000; // значение по умолчанию
+
+            var sortedKeys = DictionarySpeedCut.Keys.OrderByDescending(k => k.Length);
+
+            //List<string> keysList = new List<string>(DictionarySpeedCut.Keys);
+            //keysList.Sort((a, b) => b.Length.CompareTo(a.Length));
+
+            string matchedKey = null;
+            foreach (var key in sortedKeys)
             {
-                objectAssemblyKompas.TimeCut = (Math.Round(timeMinutes, 1) * 2).ToString();
+                if (save_to_name.Contains(key))
+                {
+                    matchedKey = key;
+                    break;
+                }
             }
-            else
+            if (matchedKey != null)
             {
-                objectAssemblyKompas.TimeCut = Math.Round(timeMinutes, 1).ToString();
+                divisor = DictionarySpeedCut[matchedKey];
             }
 
-            //string pathToDxf = @"C:\path\to\your\file.dxf";
-            //double speedMmPerMin = 100; // например, 100 мм/мин
+            DXFCountBurnPoint instance = new DXFCountBurnPoint(save_to_name);
+            
+            // далее расчет
+            double timeWorkLaser = (totalLengthMm / divisor) * 60; //здесь 100мм/мин *60 - перевод в сек
+            string[] stringsToCheck =
+            {
+                objectAssemblyKompas.Designation,
+                objectAssemblyKompas.Material
+            };
 
+            foreach (var str in stringsToCheck)
+            {
+                bool containsIgnoreCase = str.IndexOf("Aisi", StringComparison.OrdinalIgnoreCase) >= 0;
+                if (containsIgnoreCase)
+                {
+                    objectAssemblyKompas.TimeCut = ((Math.Round(timeWorkLaser, 1) * 2) + instance.burnPoint).ToString();
+                }
+                else
+                {
+                    objectAssemblyKompas.TimeCut = (Math.Round(timeWorkLaser, 1) + instance.burnPoint).ToString();
+                }
+            }
+            
             #endregion
 
             #region Считаю габаритные размеры DXF

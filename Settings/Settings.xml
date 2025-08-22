@@ -1,0 +1,6 @@
+<Settings>
+  <TextBox Name="CodeEquip">d:\Users\Comp-User\Documents\ReportKompas\Settings</TextBox>
+  <TextBox Name="CodeMaterial">d:\Users\Comp-User\Documents\ReportKompas\Settings</TextBox>
+  <TextBox Name="SpeedCut">d:\Users\Comp-User\Documents\ReportKompas\Settings</TextBox>
+  <CheckBox Name="Other_Param_Laser_Cut_checkBox">True</CheckBox>
+</Settings>

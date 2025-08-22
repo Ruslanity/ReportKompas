@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{BC6FCC42-BD05-4A41-AE1B-CD250D5FB56F}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Library</OutputType>
     <RootNamespace>ReportKompas</RootNamespace>
     <AssemblyName>ReportKompas</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
@@ -92,6 +92,7 @@
     <Compile Include="Columns.Designer.cs">
       <DependentUpon>Columns.cs</DependentUpon>
     </Compile>
+    <Compile Include="DXFCountBurnPoint.cs" />
     <Compile Include="DxfDimensions.cs" />
     <Compile Include="DxfHelper.cs" />
     <Compile Include="Program.cs" />
@@ -200,18 +201,21 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="CodeEquip.xml">
+    <Content Include="Settings\CodeEquip.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="CodeMaterial.xml">
+    <Content Include="Settings\CodeMaterial.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="kompas.ICO" />
-    <Content Include="Settings.xml">
+    <Content Include="Settings\Settings.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Сolumns.xml">
+    <Content Include="Settings\SpeedCut.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Settings\Сolumns.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
