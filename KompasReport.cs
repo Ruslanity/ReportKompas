@@ -14,7 +14,7 @@ using System.Windows.Forms;
 namespace ReportKompas
 {
     [ClassInterface(ClassInterfaceType.AutoDual)]
-    public class ManagerKompas
+    public class KompasReport
     {
 
         [return: MarshalAs(UnmanagedType.BStr)]

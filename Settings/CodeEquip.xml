@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<Dictionary>
+<CodeEquip>
   <Key name="21669">
     <Value>Анкер клиновой 6*80</Value>
     <Value>Анкер клиновой М6х80</Value>
@@ -16,7 +16,7 @@
   </Key>
   <Key name="18644">
     <Value>Болт DIN603-ZN-М12*30 мебельный</Value>
-	<Value>Болт DIN 603 М12x30-Zn</Value>
+	  <Value>Болт DIN 603 М12x30-Zn</Value>
   </Key>
   <Key name="18645">
     <Value>Болт DIN603-ZN-М16*35 мебельный</Value>
@@ -33,7 +33,7 @@
   </Key>
   <Key name="25797">
     <Value>Болт DIN603-М6*16 мебельный</Value>
-	<Value>Болт DIN 603 М6x16-Zn</Value>
+	  <Value>Болт DIN 603 М6x16-Zn</Value>
   </Key>
   <Key name="23626">
     <Value>Болт DIN6921-10.9-ZN-М6*16</Value>
@@ -1032,4 +1032,4 @@
   <Key name="18887">
     <Value>Светильник светодиодный 40W 500x200x10</Value>
   </Key>
-</Dictionary>
+</CodeEquip>

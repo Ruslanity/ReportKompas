@@ -1,48 +1,17 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<Dictionary>
-  <Key name="0.7mm" burntime="1.5">
-    <Value>14000</Value>
-  </Key>
-  <Key name="0.8mm" burntime="1.5">
-    <Value>14000</Value>
-  </Key>
-  <Key name="1mm" burntime="1.5">
-    <Value>14000</Value>
-  </Key>
-  <Key name="1.2mm" burntime="1.5">
-    <Value>14000</Value>
-  </Key>
-  <Key name="1.5mm" burntime="0.15">
-    <Value>14000</Value>
-  </Key>
-  <Key name="2mm" burntime="1.5">
-    <Value>14000</Value>
-  </Key>
-  <Key name="3mm" burntime="1.5">
-    <Value>10000</Value>
-  </Key>
-  <!-- <Key name="3mm"> ОЦ -->
-    <!-- <Value>10000</Value> -->
-  <!-- </Key> -->
-  <Key name="4mm" burntime="1.5">
-    <Value>2500</Value>
-  </Key>
-  <Key name="5mm" burntime="1.5">
-    <Value>2600</Value>
-  </Key>
-  <Key name="6mm" burntime="1.5">
-    <Value>2300</Value>
-  </Key>
-  <Key name="8mm" burntime="1.5">
-    <Value>2300</Value>
-  </Key>
-  <Key name="10mm" burntime="1.5">
-    <Value>2300</Value>
-  </Key>
-  <Key name="16mm" burntime="1.5">
-    <Value>2300</Value>
-  </Key>
-  <Key name="20mm" burntime="1.5">
-    <Value>2300</Value>
-  </Key>
-</Dictionary>
+<?xml version="1.0"?>
+<SpeedCut xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <key name="0.7mm" burntime="1.5" material ="" value ="14000"/>
+  <key name="0.8mm" burntime="1.5" material ="" value ="14000"/>
+  <key name="1mm" burntime="1.5" material ="" value ="14000"/>
+  <key name="1.2mm" burntime="1.5" material ="" value ="14000"/>
+  <key name="1.5mm" burntime="0.3" material ="" value ="14000"/>
+  <key name="2mm" burntime="1.5" material ="" value ="14000"/>
+  <key name="3mm" burntime="1.5" material ="" value ="10000"/>
+  <key name="4mm" burntime="1.5" material ="" value ="3000"/>
+  <key name="5mm" burntime="1.5" material ="" value ="14000"/>
+  <key name="6mm" burntime="1.5" material ="" value ="2300"/>
+  <key name="8mm" burntime="1.5" material ="" value ="2300"/>
+  <key name="10mm" burntime="1.5" material ="" value ="2300"/>
+  <key name="16mm" burntime="1.5" material ="" value ="2300"/>
+  <key name="20mm" burntime="1.5" material ="" value ="2300"/>
+</SpeedCut>

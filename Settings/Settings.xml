@@ -1,6 +1,7 @@
-<Settings>
-  <TextBox Name="CodeEquip">d:\Users\Comp-User\Documents\ReportKompas\Settings</TextBox>
-  <TextBox Name="CodeMaterial">d:\Users\Comp-User\Documents\ReportKompas\Settings</TextBox>
-  <TextBox Name="SpeedCut">d:\Users\Comp-User\Documents\ReportKompas\Settings</TextBox>
-  <CheckBox Name="Other_Param_Laser_Cut_checkBox">True</CheckBox>
+<?xml version="1.0"?>
+<Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <PathDictionaryMaterials>E:\ReportKompas\Settings\CodeMaterial.xml</PathDictionaryMaterials>
+  <PathDictionaryEquipment>E:\ReportKompas\Settings\CodeEquip.xml</PathDictionaryEquipment>
+  <PathDictionarySpeedCut>E:\ReportKompas\Settings\SpeedCut.xml</PathDictionarySpeedCut>
+  <CalcLaserCutTime>true</CalcLaserCutTime>
 </Settings>
