@@ -38,6 +38,7 @@ namespace ReportKompas
             this.toolStripButton5 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton6 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButtonPaint = new System.Windows.Forms.ToolStripButton();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.сохранитьВExcelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сохранитьВXMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -46,7 +47,6 @@ namespace ReportKompas
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.MenuItemSelected = new System.Windows.Forms.ToolStripMenuItem();
             this.открытьДиректориюСФайломToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripButtonPaint = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -59,8 +59,8 @@ namespace ReportKompas
             this.toolStripButton5,
             this.toolStripButton6,
             this.toolStripButton1,
-            this.toolStripLabel1,
-            this.toolStripButtonPaint});
+            this.toolStripButtonPaint,
+            this.toolStripLabel1});
             this.toolStrip1.Location = new System.Drawing.Point(0, 396);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(834, 25);
@@ -98,7 +98,7 @@ namespace ReportKompas
             // toolStripButton5
             // 
             this.toolStripButton5.Name = "toolStripButton5";
-            this.toolStripButton5.Size = new System.Drawing.Size(37, 22);
+            this.toolStripButton5.Size = new System.Drawing.Size(38, 22);
             this.toolStripButton5.Text = "Excel";
             this.toolStripButton5.Click += new System.EventHandler(this.StripButtonExcel_Click);
             // 
@@ -121,6 +121,17 @@ namespace ReportKompas
             this.toolStripButton1.Size = new System.Drawing.Size(151, 22);
             this.toolStripButton1.Text = "Открыть папку с отчетом";
             this.toolStripButton1.Click += new System.EventHandler(this.toolStripOpenExplorer_Click);
+            // 
+            // toolStripButtonPaint
+            // 
+            this.toolStripButtonPaint.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButtonPaint.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonPaint.Image")));
+            this.toolStripButtonPaint.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonPaint.Name = "toolStripButtonPaint";
+            this.toolStripButtonPaint.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButtonPaint.Text = "toolStripButton2";
+            this.toolStripButtonPaint.ToolTipText = "Назначить покрытие";
+            this.toolStripButtonPaint.Click += new System.EventHandler(this.toolStripButtonPaint_Click);
             // 
             // toolStripLabel1
             // 
@@ -162,15 +173,6 @@ namespace ReportKompas
             // 
             this.открытьДиректориюСФайломToolStripMenuItem.Name = "открытьДиректориюСФайломToolStripMenuItem";
             this.открытьДиректориюСФайломToolStripMenuItem.Size = new System.Drawing.Size(67, 22);
-            // 
-            // toolStripButtonPaint
-            // 
-            this.toolStripButtonPaint.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButtonPaint.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonPaint.Image")));
-            this.toolStripButtonPaint.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButtonPaint.Name = "toolStripButtonPaint";
-            this.toolStripButtonPaint.Size = new System.Drawing.Size(23, 22);
-            this.toolStripButtonPaint.Text = "toolStripButton2";
             // 
             // ReportKompas
             // 

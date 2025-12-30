@@ -412,7 +412,7 @@ namespace ReportKompas
             IPart7 part7 = kompasDocument3D.TopPart;
             #region Вытаскиваю текстовые поля
             IPropertyMng propertyMng = (IPropertyMng)application;
-            var properties = propertyMng.GetProperties(document3D);
+            var properties = propertyMng.GetProperties(kompasDocument3D);
             IPropertyKeeper propertyKeeper = (IPropertyKeeper)part7;
             foreach (IProperty item in properties)
             {
@@ -451,6 +451,17 @@ namespace ReportKompas
                     bool source;
                     propertyKeeper.GetPropertyValue((_Property)item, out info, false, out source);
                     ObjectKompas.Mass = Math.Round(info * 1.2, 2);
+                }
+                if (item.Name == "IsPainted")
+                {
+                    dynamic info;
+                    bool source = true;
+                    propertyKeeper.GetPropertyValue((_Property)item, out info, false, out source);
+                    // Преобразуем значение в строку для единообразия
+                    if (info != null)
+                    {
+                        ObjectKompas.IsPainted = info.ToString();
+                    }
                 }
                 if (item.Name == "Покрытие")
                 {
@@ -766,7 +777,9 @@ namespace ReportKompas
             var colFullName = new OLVColumn("Путь до файла", "FullName") { Width = 50 };
             var colPathToDXF = new OLVColumn("Путь до DXF", "PathToDXF") { Width = 200 };
             var colOverallDimensions = new OLVColumn("Габаритные размеры", "OverallDimensions") { Width = 100 };
+            var colIsPainted = new OLVColumn("IsPainted", "IsPainted") { Width = 50 };
             var colCoating = new OLVColumn("Покрытие", "Coating") { Width = 80 };
+            var colCoverageArea = new OLVColumn("Площадь покрытия", "CoverageArea") { Width = 100 };
             var colWelding = new OLVColumn("Сварочные работы", "Welding") { Width = 100 };
             var colLocksmithWork = new OLVColumn("Слесарные работы", "LocksmithWork") { Width = 80 };
             var colNote = new OLVColumn("Примечание", "Note") { Width = 80 };
@@ -790,7 +803,9 @@ namespace ReportKompas
                                                      colFullName,
                                                      colPathToDXF,
                                                      colOverallDimensions,
+                                                     colIsPainted,
                                                      colCoating,
+                                                     colCoverageArea,
                                                      colWelding,
                                                      colLocksmithWork,
                                                      colNote,
@@ -1154,6 +1169,27 @@ namespace ReportKompas
         {
             string tempPath = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
             Process.Start(tempPath.Remove(tempPath.LastIndexOf(@"\")));
+        }
+
+        private void toolStripButtonPaint_Click(object sender, EventArgs e)
+        {
+            if (root == null)
+            {
+                MessageBox.Show("Сначала загрузите данные из Компас", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            Coating coatingForm = new Coating(root);
+            coatingForm.Owner = this;
+            coatingForm.StartPosition = FormStartPosition.CenterParent;
+            coatingForm.ShowDialog(this);
+
+            // Обновляем TreeListView после закрытия формы покрытий
+            if (treeListView != null)
+            {
+                // Полностью перестраиваем TreeListView
+                treeListView.RebuildAll(true);
+            }
         }
     }
 }
