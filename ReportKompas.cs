@@ -222,6 +222,7 @@ namespace ReportKompas
 
         private void toolStripButton4_Click(object sender, EventArgs e)
         {
+            this.TopMost = true;
             kompas = (KompasObject)Marshal.GetActiveObject("KOMPAS.Application.5");
             kompas.Visible = true;
             kompas.ActivateControllerAPI();

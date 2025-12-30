@@ -33,6 +33,8 @@ namespace ReportKompas
         public string TimeCut { get; set; }
         public string DxfDimensions { get; set; }
         public bool IsLocal { get; set; }
+        public double IsPainted { get; set; }
+        public double CoverageArea { get; set; }
 
         // Связи в дереве
         public ObjectAssemblyKompas ParentK { get; set; }
