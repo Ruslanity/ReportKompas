@@ -494,6 +494,121 @@ namespace ReportKompas
             }
             #endregion
 
+            #region Получение превью-изображения из 3D модели
+            try
+            {
+                // Создаем временный путь для сохранения изображения
+                string tempImagePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".png");
+
+                // Получаем ksDocument3D для использования метода SaveAsToRasterFormat (API v5)
+                ksDocument3D ksDoc3D = kompas.TransferInterface(kompasDocument3D, 1, 0) as ksDocument3D;
+                ksDoc3D.hideAllAuxiliaryGeom = true;
+                ksDoc3D.drawMode = 1;
+                //тут нужно поскрывать что мешает
+                ksViewProjectionCollection ksViewProjectionCollection = ksDoc3D.GetViewProjectionCollection();
+                ksViewProjectionCollection.GetByIndex(7).SetCurrent();
+
+                if (ksDoc3D != null)
+                {
+                    // Получаем параметры для сохранения в растровый формат
+                    ksRasterFormatParam rasterParam = (ksRasterFormatParam)ksDoc3D.RasterFormatParam();
+                    if (rasterParam != null)
+                    {
+                        rasterParam.Init();
+                        rasterParam.format = 2;                           // PNG формат
+                        rasterParam.colorType = 0;                        // Цветной
+                        rasterParam.extResolution = 100;                  // Разрешение 100 DPI
+                        rasterParam.extScale = 1.0;                       // Масштаб 1:1
+                        rasterParam.greyScale = false;                    // Не градации серого
+                        rasterParam.colorBPP = 24;                        // 24 бита на пиксель
+                        rasterParam.onlyThinLine = true;                  // Только тонкие линии
+                        rasterParam.resultArrayBytes();
+
+                        // Сохраняем изображение
+                        bool result = ksDoc3D.SaveAsToRasterFormat(tempImagePath, rasterParam);
+
+                        if (result && File.Exists(tempImagePath))
+                        {
+                            // Загружаем изображение и изменяем размер с сохранением пропорций
+                            using (Bitmap originalImage = new Bitmap(tempImagePath))
+                            {
+                                // Рассчитываем размеры с сохранением пропорций
+                                int maxSize = 150;
+                                float aspectRatio = (float)originalImage.Width / originalImage.Height;
+                                int newWidth, newHeight;
+
+                                if (originalImage.Width > originalImage.Height)
+                                {
+                                    newWidth = maxSize;
+                                    newHeight = (int)(maxSize / aspectRatio);
+                                }
+                                else
+                                {
+                                    newHeight = maxSize;
+                                    newWidth = (int)(maxSize * aspectRatio);
+                                }
+
+                                // Создаем квадратный холст для центрирования изображения
+                                using (Bitmap resizedImage = new Bitmap(maxSize, maxSize))
+                                {
+                                    using (Graphics graphics = Graphics.FromImage(resizedImage))
+                                    {
+                                        // Заливаем фон белым цветом
+                                        graphics.Clear(Color.White);
+
+                                        graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                                        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                                        graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+
+                                        // Центрируем изображение на холсте
+                                        int x = (maxSize - newWidth) / 2;
+                                        int y = (maxSize - newHeight) / 2;
+
+                                        graphics.DrawImage(originalImage, x, y, newWidth, newHeight);
+                                    }
+
+                                    // Пост-обработка: все не-белые пиксели делаем черными для контрастности
+                                    for (int y = 0; y < resizedImage.Height; y++)
+                                    {
+                                        for (int x = 0; x < resizedImage.Width; x++)
+                                        {
+                                            Color pixelColor = resizedImage.GetPixel(x, y);
+                                            // Если пиксель не чисто белый (с учетом небольшого порога)
+                                            if (pixelColor.R < 250 || pixelColor.G < 250 || pixelColor.B < 250)
+                                            {
+                                                resizedImage.SetPixel(x, y, Color.Black);
+                                            }
+                                        }
+                                    }
+
+                                    // Конвертируем в массив байтов
+                                    using (MemoryStream ms = new MemoryStream())
+                                    {
+                                        resizedImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                                        ObjectKompas.PreviewImage = ms.ToArray();
+                                    }
+                                }
+                            }
+
+                            // Удаляем временный файл
+                            try
+                            {
+                                File.Delete(tempImagePath);
+                            }
+                            catch { }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Если не удалось получить изображение, оставляем поле пустым
+                ObjectKompas.PreviewImage = null;
+                // Опционально: можно залогировать ошибку для отладки
+                // System.Diagnostics.Debug.WriteLine($"Ошибка получения превью для {ObjectKompas.Designation}: {ex.Message}");
+            }
+            #endregion
+
             #region Тут присваиваю свойство куда входит
 
             if (ObjectKompas.ParentK != null)
@@ -525,11 +640,12 @@ namespace ReportKompas
 
                 uint bitVector = 0x3;
                 ksMassInertiaParam ksMassInertiaParam = ksPart.CalcMassInertiaProperties(bitVector);
-                if (ObjectKompas.Coating != null && ObjectKompas.Coating.Contains("Рекуперат"))
-                {
-                    ObjectKompas.Area = Math.Round(ksMassInertiaParam.F, 2).ToString();
-                }
-                else { ObjectKompas.Area = Math.Round(ksMassInertiaParam.F / 2, 2).ToString(); }
+                ObjectKompas.Area = Math.Round(ksMassInertiaParam.F, 2).ToString();
+                //if (ObjectKompas.Coating != null && ObjectKompas.Coating.Contains("Рекуперат"))
+                //{
+                //    ObjectKompas.Area = Math.Round(ksMassInertiaParam.F, 2).ToString();
+                //}
+                //else { ObjectKompas.Area = Math.Round(ksMassInertiaParam.F / 2, 2).ToString(); }
             }
             #endregion
 
@@ -963,6 +1079,13 @@ namespace ReportKompas
             WriteElementOrEmpty(writer, "SpecificationSection", obj.SpecificationSection);
             WriteElementOrEmpty(writer, "Material", obj.Material);
             WriteElementOrEmpty(writer, "Mass", obj.Mass.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
+
+            // Добавляем изображение в формате Base64
+            string base64Image = (obj.PreviewImage != null && obj.PreviewImage.Length > 0)
+                ? Convert.ToBase64String(obj.PreviewImage)
+                : "";
+            WriteElementOrEmpty(writer, "PreviewImage", base64Image);
+
             WriteElementOrEmpty(writer, "R", obj.R);
             WriteElementOrEmpty(writer, "V", obj.V);
             WriteElementOrEmpty(writer, "Q", obj.Q);
@@ -972,6 +1095,7 @@ namespace ReportKompas
             WriteElementOrEmpty(writer, "PathToDXF", obj.PathToDXF);
             WriteElementOrEmpty(writer, "OverallDimensions", obj.OverallDimensions);
             WriteElementOrEmpty(writer, "Coating", obj.Coating);
+            WriteElementOrEmpty(writer, "CoverageArea", obj.CoverageArea.ToString());
             WriteElementOrEmpty(writer, "Welding", obj.Welding);
             WriteElementOrEmpty(writer, "LocksmithWork", obj.LocksmithWork);
             WriteElementOrEmpty(writer, "Note", obj.Note);
@@ -1010,6 +1134,7 @@ namespace ReportKompas
             DataTable dt = new DataTable();
 
             // Описание колонок, совпадает с колонками treeListView
+            dt.Columns.Add("Превью", typeof(byte[])); // Колонка для превью-изображений
             dt.Columns.Add("Обозначение", typeof(string));
             dt.Columns.Add("Наименование", typeof(string));
             dt.Columns.Add("Кол-во", typeof(int));
@@ -1025,6 +1150,7 @@ namespace ReportKompas
             dt.Columns.Add("Путь до DXF", typeof(string));
             dt.Columns.Add("Габаритные размеры", typeof(string));
             dt.Columns.Add("Покрытие", typeof(string));
+            dt.Columns.Add("Площадь покрытия", typeof(string));
             dt.Columns.Add("Сварочные работы", typeof(string));
             dt.Columns.Add("Слесарные работы", typeof(string));
             dt.Columns.Add("Примечание", typeof(string));
@@ -1042,6 +1168,7 @@ namespace ReportKompas
                 // Создаем новую строку
                 var row = dt.NewRow();
 
+                row["Превью"] = node?.PreviewImage;
                 row["Обозначение"] = node.Designation ?? "";
                 row["Наименование"] = node.Name ?? "";
                 row["Кол-во"] = node.Quantity;
@@ -1057,6 +1184,7 @@ namespace ReportKompas
                 row["Путь до DXF"] = node.PathToDXF ?? "";
                 row["Габаритные размеры"] = node.OverallDimensions ?? "";
                 row["Покрытие"] = node.Coating ?? "";
+                row["Площадь покрытия"] = node.CoverageArea;
                 row["Сварочные работы"] = node.Welding ?? "";
                 row["Слесарные работы"] = node.LocksmithWork ?? "";
                 row["Примечание"] = node.Note ?? "";
@@ -1086,22 +1214,77 @@ namespace ReportKompas
 
             XLWorkbook excelWorkbook = new XLWorkbook();
             string pathForExcel = System.Reflection.Assembly.GetExecutingAssembly().Location.Remove(System.Reflection.Assembly.GetExecutingAssembly().Location.Length - 16);
-            IXLWorksheet worksheet = excelWorkbook.Worksheets.Add(dt, "Отчет");
+            IXLWorksheet worksheet = excelWorkbook.Worksheets.Add("Отчет");
 
-            // Записываем заголовки из DataTable в первую строку
+            // Записываем заголовки
             for (int colIndex = 0; colIndex < dt.Columns.Count; colIndex++)
             {
                 worksheet.Cell(1, colIndex + 1).Value = dt.Columns[colIndex].ColumnName;
+            }
+
+            // Записываем данные из DataTable (пропускаем колонку "Превью" с byte[])
+            for (int rowIndex = 0; rowIndex < dt.Rows.Count; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < dt.Columns.Count; colIndex++)
+                {
+                    // Пропускаем колонку "Превью" - изображения вставим отдельно
+                    if (dt.Columns[colIndex].ColumnName == "Превью")
+                        continue;
+
+                    var cellValue = dt.Rows[rowIndex][colIndex];
+                    worksheet.Cell(rowIndex + 2, colIndex + 1).Value = cellValue?.ToString() ?? "";
+                }
             }
 
             // Настройка стилей
             worksheet.RangeUsed().Style.NumberFormat.Format = "@";
             worksheet.Outline.SummaryVLocation = XLOutlineSummaryVLocation.Top;
 
-            // Создаем таблицу
-            IXLTable xLTable = worksheet.Table(0);
+            // Создаем таблицу из диапазона данных
+            var dataRange = worksheet.Range(1, 1, dt.Rows.Count + 1, dt.Columns.Count);
+            IXLTable xLTable = dataRange.CreateTable();
             xLTable.Theme = XLTableTheme.TableStyleLight8;
 
+            // Вставляем изображения из DataTable в Excel
+            int previewColumnIndex = 1; // Колонка "Превью" - первая колонка
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                var previewData = dt.Rows[i]["Превью"];
+                if (previewData != null && previewData != DBNull.Value)
+                {
+                    byte[] imageBytes = (byte[])previewData;
+                    if (imageBytes != null && imageBytes.Length > 0)
+                    {
+                        try
+                        {
+                            int rowIndex = i + 2; // +2 потому что первая строка - заголовки
+
+                            // Создаем временный файл для изображения
+                            string tempImagePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".png");
+                            File.WriteAllBytes(tempImagePath, imageBytes);
+
+                            // Добавляем изображение в ячейку
+                            var picture = worksheet.AddPicture(tempImagePath);
+                            picture.MoveTo(worksheet.Cell(rowIndex, previewColumnIndex));
+                            picture.Width = 150;
+                            picture.Height = 150;
+
+                            // Удаляем временный файл
+                            try { File.Delete(tempImagePath); } catch { }
+
+                            // Устанавливаем высоту строки для изображения
+                            worksheet.Row(rowIndex).Height = 115; // Высота ~150 пикселей в единицах Excel
+                        }
+                        catch (Exception ex)
+                        {
+                            // Игнорируем ошибки при вставке изображения
+                            System.Diagnostics.Debug.WriteLine($"Ошибка вставки изображения: {ex.Message}");
+                        }
+                    }
+                }
+            }
+
+            #region Группирование строк
             Dictionary<string, List<int>> groups = new Dictionary<string, List<int>>();
             // Получаем заголовки из первой строки листа
             var headerRow = worksheet.Row(1);
@@ -1155,9 +1338,12 @@ namespace ReportKompas
                     worksheet.Rows(startRow, endRow).Group();
                 }
             }
+            #endregion
 
             // Автоматическая подгонка ширины колонок
             worksheet.Columns().AdjustToContents();
+            // Устанавливаем ширину колонки "Превью"
+            worksheet.Column(previewColumnIndex).Width = 20.7; // Ширина для изображения 150px
 
             excelWorkbook.SaveAs(pathForExcel + root.Designation + " - " + root.Name + ".xlsx");
 

@@ -35,6 +35,7 @@ namespace ReportKompas
         public bool IsLocal { get; set; }
         public string IsPainted { get; set; }
         public double CoverageArea { get; set; }
+        public byte[] PreviewImage { get; set; }  // PNG формат по умолчанию
 
         // Связи в дереве
         public ObjectAssemblyKompas ParentK { get; set; }
