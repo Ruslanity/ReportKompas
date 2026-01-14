@@ -174,6 +174,34 @@ Sorting within sections:
 - KOMPAS-3D expects specific registry keys under `HKLM\SOFTWARE\Classes\CLSID\{GUID}\Kompas Report`
 - `KompasReport.RegisterKompasLib()` and `UnregisterKompasLib()` handle COM registration
 
+### KOMPAS AddIns Registration (from Руководство KOMPAS-Invisible.txt)
+
+For automatic library connection in KOMPAS-3D, AddIn registration is required in the Windows Registry.
+
+**Registry Paths:**
+- **KOMPAS v22+**: `HKLM\SOFTWARE\ASCON\KOMPAS-3D\AddIns\{LibraryName}` (general path without version)
+- **KOMPAS v18**: `HKLM\SOFTWARE\ASCON\KOMPAS-3D\18.0\AddIns\{LibraryName}`
+- Alternative: `HKCU\SOFTWARE\ASCON\...` for per-user registration (no admin rights needed)
+
+**Required Registry Values:**
+| Value Name | Type | Description |
+|------------|------|-------------|
+| `ProgID` | REG_SZ | COM component identifier (e.g., `"ReportKompas.KompasReport"`) |
+| `Path` | REG_SZ | Full path to the DLL/library file |
+| `AutoConnect` | REG_DWORD | `1` = auto-connect on KOMPAS startup, `0` = manual connection |
+
+**Note:** If both `ProgID` and `Path` are present, `Path` takes priority. ActiveX components must be registered via regasm.
+
+**Implementation:** See `RegisterKompasAddIn()` and `UnregisterKompasAddIn()` in [KompasReport.cs](KompasReport.cs)
+
+**Example .reg file format:**
+```reg
+[HKEY_LOCAL_MACHINE\SOFTWARE\ASCON\KOMPAS-3D\AddIns\Kompas Report]
+"ProgID"="ReportKompas.KompasReport"
+"Path"="C:\\Program Files\\...\\ReportKompas.dll"
+"AutoConnect"=dword:00000001
+```
+
 ### Licensing System
 - License file location: Application directory + `\bug`
 - License format: Hex-encoded → Base64-encoded machine fingerprint

@@ -135,7 +135,7 @@
         "DisplayName" = "8:Debug"
         "IsDebugOnly" = "11:TRUE"
         "IsReleaseOnly" = "11:FALSE"
-        "OutputFilename" = "8:Debug\\Setup Report.msi"
+        "OutputFilename" = "8:Debug\\Setup Report 1.0.2.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -152,6 +152,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
+                    }
+                }
             }
         }
         "Release"
@@ -159,7 +167,7 @@
         "DisplayName" = "8:Release"
         "IsDebugOnly" = "11:FALSE"
         "IsReleaseOnly" = "11:TRUE"
-        "OutputFilename" = "8:Release\\Setup Report.msi"
+        "OutputFilename" = "8:Release\\Setup Report 1.0.2.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -536,15 +544,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Report"
-        "ProductCode" = "8:{CFF46426-CB80-403A-BA97-5FFC765B3F3C}"
-        "PackageCode" = "8:{BDB5EA96-B26A-4626-845F-4F34F01D5918}"
+        "ProductCode" = "8:{08999D1D-351E-4A5C-A499-909FAD16D18E}"
+        "PackageCode" = "8:{5E468140-6B57-48BA-BEDF-8FC762E56B32}"
         "UpgradeCode" = "8:{7D76C1E4-5ECA-4611-9F76-38CAA04EF0DA}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.0.1"
+        "ProductVersion" = "8:1.0.2"
         "Manufacturer" = "8:Rusik Edition"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -1058,7 +1066,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_AE684069CF3146A8BA5FF31F56C1E8AB"
             {
-            "SourcePath" = "8:..\\obj\\Release\\ReportKompas.exe"
+            "SourcePath" = "8:..\\obj\\Release\\ReportKompas.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_585B239EA70E42C7BED6D55108B183D5"
