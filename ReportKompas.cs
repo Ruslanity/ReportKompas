@@ -20,6 +20,7 @@ using System.Xml;
 using netDxf;
 using netDxf.Entities;
 using BrightIdeasSoftware;
+using reference = System.Int32;
 
 namespace ReportKompas
 {
@@ -494,6 +495,107 @@ namespace ReportKompas
             }
             #endregion
 
+            #region Чтение атрибута "Технологический маршрут"
+            try
+            {
+                ksDocument3D ksDoc3D = kompas.TransferInterface(kompasDocument3D, 1, 0) as ksDocument3D;
+                reference docRef = ksDoc3D.reference;
+                ksAttributeObject attrObj = (ksAttributeObject)kompas.GetAttributeObject();
+
+                if (attrObj != null && docRef != 0)
+                {
+                    string attrLibraryFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "document_attr.lat");
+
+                    // Создаем итератор атрибутов
+                    ksIterator iter = (ksIterator)kompas.GetIterator();
+                    if (iter != null && iter.ksCreateAttrIterator(docRef, 0, 0, 0, 0, 0))
+                    {
+                        // Получаем первый атрибут
+                        reference ownerRef = docRef;
+                        reference pAttr = iter.ksMoveAttrIterator("F", ref ownerRef);
+
+                        while (pAttr != 0)
+                        {
+                            try
+                            {
+                                // Получаем информацию о ключах атрибута и его тип
+                                int k1 = 0, k2 = 0, k3 = 0, k4 = 0;
+                                double attrTypeNum = 0;
+                                attrObj.ksGetAttrKeysInfo(pAttr, out k1, out k2, out k3, out k4, out attrTypeNum);
+
+                                // Получаем тип атрибута для извлечения имени
+                                ksAttributeTypeParam type = (ksAttributeTypeParam)kompas.GetParamStruct((short)Kompas6Constants.StructType2DEnum.ko_AttributeType);
+                                if (type != null)
+                                {
+                                    type.Init();
+                                    int getTypeResult = attrObj.ksGetAttrType(attrTypeNum, attrLibraryFile, type);
+
+                                    if (getTypeResult == 1)
+                                    {
+                                        string attrName = type.header;
+
+                                        if (attrName == "Технологический маршрут")
+                                        {
+                                            // Читаем значение атрибута
+                                            ksUserParam usPar = (ksUserParam)kompas.GetParamStruct((short)Kompas6Constants.StructType2DEnum.ko_UserParam);
+                                            ksLtVariant item = (ksLtVariant)kompas.GetParamStruct((short)Kompas6Constants.StructType2DEnum.ko_LtVariant);
+                                            ksDynamicArray arr = (ksDynamicArray)kompas.GetDynamicArray(23);
+
+                                            if (usPar != null && item != null && arr != null)
+                                            {
+                                                usPar.Init();
+                                                usPar.SetUserArray(arr);
+
+                                                // Добавляем пустое значение в массив
+                                                item.Init();
+                                                item.strVal = string.Empty;
+                                                arr.ksAddArrayItem(-1, item);
+
+                                                // Читаем строку атрибута
+                                                attrObj.ksGetAttrRow(pAttr, 0, 0, 0, usPar);
+
+                                                // Получаем массив после чтения
+                                                ksDynamicArray readArr = (ksDynamicArray)usPar.GetUserArray();
+
+                                                if (readArr != null && readArr.ksGetArrayCount() > 0)
+                                                {
+                                                    item.Init();
+                                                    int getItemResult = readArr.ksGetArrayItem(0, item);
+
+                                                    if (getItemResult == 1)
+                                                    {
+                                                        ObjectKompas.TechnologicalRoute = item.strVal ?? "";
+                                                    }
+                                                }
+
+                                                // Очищаем массив
+                                                arr.ksDeleteArray();
+                                            }
+
+                                            break; // Нашли нужный атрибут, выходим из цикла
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                // Игнорируем ошибки при обработке отдельного атрибута
+                            }
+
+                            // Переходим к следующему атрибуту
+                            ownerRef = docRef;
+                            pAttr = iter.ksMoveAttrIterator("N", ref ownerRef);
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Если не удалось прочитать атрибут, оставляем поле пустым
+                ObjectKompas.TechnologicalRoute = null;
+            }
+            #endregion
+
             #region Получение превью-изображения из 3D модели
             try
             {
@@ -516,16 +618,15 @@ namespace ReportKompas
                     {
                         rasterParam.Init();
                         rasterParam.format = 2;                           // PNG формат
-                        rasterParam.colorType = 0;                        // Цветной
-                        rasterParam.extResolution = 100;                  // Разрешение 100 DPI
+                        rasterParam.colorType = 2;                        // Цветное изображение (0=ч/б, 1=серый, 2=цвет)
+                        rasterParam.extResolution = 300;                  // Разрешение 150 DPI (выше качество)
                         rasterParam.extScale = 1.0;                       // Масштаб 1:1
                         rasterParam.greyScale = false;                    // Не градации серого
-                        rasterParam.colorBPP = 24;                        // 24 бита на пиксель
-                        rasterParam.onlyThinLine = true;                  // Только тонкие линии
-                        rasterParam.resultArrayBytes();
+                        rasterParam.colorBPP = 24;                        // 24 бита на пиксель (RGB)
+                        rasterParam.onlyThinLine = false;                 // Нормальная толщина линий
 
                         // Сохраняем изображение
-                        bool result = ksDoc3D.SaveAsToRasterFormat(tempImagePath, rasterParam);
+                        bool result = ksDoc3D.SaveAsToUncompressedRasterFormat(tempImagePath, rasterParam);
 
                         if (result && File.Exists(tempImagePath))
                         {
@@ -599,6 +700,7 @@ namespace ReportKompas
                         }
                     }
                 }
+                ksDoc3D.shadedWireframe = true;
             }
             catch (Exception ex)
             {
@@ -865,14 +967,6 @@ namespace ReportKompas
                 OwnerDraw = true,
             };
 
-            //var treeListView = new BrightIdeasSoftware.TreeListView
-            //{
-            //    Dock = DockStyle.Fill,
-            //    FullRowSelect = true,
-            //    UseAlternatingBackColors = true,
-            //    OwnerDraw = true,
-            //    //CellEditActivation = ObjectListView.CellEditActivateMode.DoubleClick
-            //};
             this.Controls.Add(treeListView);
             treeListView.GridLines = true;
             treeListView.AllowColumnReorder = true;
@@ -898,6 +992,7 @@ namespace ReportKompas
             var colCoverageArea = new OLVColumn("Площадь покрытия", "CoverageArea") { Width = 100 };
             var colWelding = new OLVColumn("Сварочные работы", "Welding") { Width = 100 };
             var colLocksmithWork = new OLVColumn("Слесарные работы", "LocksmithWork") { Width = 80 };
+            var colTechnologicalRoute = new OLVColumn("Технологический маршрут", "TechnologicalRoute") { Width = 80 };
             var colNote = new OLVColumn("Примечание", "Note") { Width = 80 };
             var colArea = new OLVColumn("Площадь поверхности", "Area") { Width = 80 };
             var colCodeEquipment = new OLVColumn("Код СИ", "CodeEquipment") { Width = 50 };
@@ -924,6 +1019,7 @@ namespace ReportKompas
                                                      colCoverageArea,
                                                      colWelding,
                                                      colLocksmithWork,
+                                                     colTechnologicalRoute,
                                                      colNote,
                                                      colArea,
                                                      colCodeEquipment,
@@ -1098,6 +1194,25 @@ namespace ReportKompas
             WriteElementOrEmpty(writer, "CoverageArea", obj.CoverageArea.ToString());
             WriteElementOrEmpty(writer, "Welding", obj.Welding);
             WriteElementOrEmpty(writer, "LocksmithWork", obj.LocksmithWork);
+
+            // Обработка технологического маршрута
+            string technologicalRoute = obj.TechnologicalRoute ?? "";
+
+            // Если Coating пустое, удаляем указанные коды из TechnologicalRoute
+            if (string.IsNullOrEmpty(obj.Coating))
+            {
+                string[] codesToRemove = { "32281,", "32281", "34492,", "34492", "17139,", "17139", "16963,", "16963" };
+                foreach (string code in codesToRemove)
+                {
+                    technologicalRoute = technologicalRoute.Replace(code, "");
+                }
+                // Очищаем множественные пробелы и запятые
+                technologicalRoute = System.Text.RegularExpressions.Regex.Replace(technologicalRoute, @"\s+", " ");
+                technologicalRoute = System.Text.RegularExpressions.Regex.Replace(technologicalRoute, @",+", ",");
+                technologicalRoute = technologicalRoute.Trim().Trim(',').Trim();
+            }
+
+            WriteElementOrEmpty(writer, "TechnologicalRoute", technologicalRoute);
             WriteElementOrEmpty(writer, "Note", obj.Note);
             WriteElementOrEmpty(writer, "Area", obj.Area);
             WriteElementOrEmpty(writer, "CodeEquipment", obj.CodeEquipment);
@@ -1153,6 +1268,7 @@ namespace ReportKompas
             dt.Columns.Add("Площадь покрытия", typeof(string));
             dt.Columns.Add("Сварочные работы", typeof(string));
             dt.Columns.Add("Слесарные работы", typeof(string));
+            dt.Columns.Add("Технологический маршрут", typeof(string));
             dt.Columns.Add("Примечание", typeof(string));
             dt.Columns.Add("Площадь поверхности", typeof(string));
             dt.Columns.Add("Код СИ", typeof(string));
@@ -1187,6 +1303,25 @@ namespace ReportKompas
                 row["Площадь покрытия"] = node.CoverageArea;
                 row["Сварочные работы"] = node.Welding ?? "";
                 row["Слесарные работы"] = node.LocksmithWork ?? "";
+
+                // Обработка технологического маршрута
+                string technologicalRoute = node.TechnologicalRoute ?? "";
+
+                // Если Coating пустое, удаляем указанные коды из TechnologicalRoute
+                if (string.IsNullOrEmpty(node.Coating))
+                {
+                    string[] codesToRemove = { "32281,", "32281", "34492,", "34492", "17139,", "17139", "16963,", "16963" };
+                    foreach (string code in codesToRemove)
+                    {
+                        technologicalRoute = technologicalRoute.Replace(code, "");
+                    }
+                    // Очищаем множественные пробелы и запятые
+                    technologicalRoute = System.Text.RegularExpressions.Regex.Replace(technologicalRoute, @"\s+", " ");
+                    technologicalRoute = System.Text.RegularExpressions.Regex.Replace(technologicalRoute, @",+", ",");
+                    technologicalRoute = technologicalRoute.Trim().Trim(',').Trim();
+                }
+
+                row["Технологический маршрут"] = technologicalRoute;
                 row["Примечание"] = node.Note ?? "";
                 row["Площадь поверхности"] = node.Area ?? "";
                 row["Код СИ"] = node.CodeEquipment ?? "";
@@ -1239,11 +1374,15 @@ namespace ReportKompas
             // Настройка стилей
             worksheet.RangeUsed().Style.NumberFormat.Format = "@";
             worksheet.Outline.SummaryVLocation = XLOutlineSummaryVLocation.Top;
+            // Выравнивание текста по вертикали по центру для всех ячеек
+            worksheet.RangeUsed().Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
 
             // Создаем таблицу из диапазона данных
             var dataRange = worksheet.Range(1, 1, dt.Rows.Count + 1, dt.Columns.Count);
             IXLTable xLTable = dataRange.CreateTable();
             xLTable.Theme = XLTableTheme.TableStyleLight8;
+
+            
 
             // Вставляем изображения из DataTable в Excel
             int previewColumnIndex = 1; // Колонка "Превью" - первая колонка
@@ -1268,6 +1407,12 @@ namespace ReportKompas
                             picture.MoveTo(worksheet.Cell(rowIndex, previewColumnIndex));
                             picture.Width = 150;
                             picture.Height = 150;
+
+                            // Программно перемещаем изображение вниз (эмуляция двойного нажатия стрелки вниз)
+                            // Смещение вниз на 2 шага (каждый шаг ~3-5 пикселей в Excel)
+                            var topLeftCell = picture.TopLeftCell;
+                            int offsetPixels = 3; // Подбираем оптимальное смещение
+                            picture.MoveTo(topLeftCell, 0, offsetPixels);
 
                             // Удаляем временный файл
                             try { File.Delete(tempImagePath); } catch { }

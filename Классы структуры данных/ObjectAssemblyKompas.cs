@@ -36,6 +36,7 @@ namespace ReportKompas
         public string IsPainted { get; set; }
         public double CoverageArea { get; set; }
         public byte[] PreviewImage { get; set; }  // PNG формат по умолчанию
+        public string TechnologicalRoute { get; set; }
 
         // Связи в дереве
         public ObjectAssemblyKompas ParentK { get; set; }
