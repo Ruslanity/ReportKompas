@@ -20,6 +20,7 @@ using System.Xml;
 using netDxf;
 using netDxf.Entities;
 using BrightIdeasSoftware;
+using Microsoft.WindowsAPICodePack.Shell;
 using reference = System.Int32;
 
 namespace ReportKompas
@@ -599,115 +600,174 @@ namespace ReportKompas
             #region Получение превью-изображения из 3D модели
             try
             {
-                // Создаем временный путь для сохранения изображения
-                string tempImagePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".png");
+                Bitmap originalImage = null;
+                bool useKompasApiFallback = false;
+                bool imageFromShell = false;
 
-                // Получаем ksDocument3D для использования метода SaveAsToRasterFormat (API v5)
-                ksDocument3D ksDoc3D = kompas.TransferInterface(kompasDocument3D, 1, 0) as ksDocument3D;
-                ksDoc3D.hideAllAuxiliaryGeom = true;
-                ksDoc3D.drawMode = 1;
-                //тут нужно поскрывать что мешает
-                ksViewProjectionCollection ksViewProjectionCollection = ksDoc3D.GetViewProjectionCollection();
-                ksViewProjectionCollection.GetByIndex(7).SetCurrent();
-
-                if (ksDoc3D != null)
+                // Метод 1: Попытка получить миниатюру через Windows Shell (быстрый способ)
+                // Windows кэширует миниатюры, поэтому повторные запросы будут очень быстрыми
+                try
                 {
-                    // Получаем параметры для сохранения в растровый формат
-                    ksRasterFormatParam rasterParam = (ksRasterFormatParam)ksDoc3D.RasterFormatParam();
-                    if (rasterParam != null)
+                    if (File.Exists(ObjectKompas.FullName))
                     {
-                        rasterParam.Init();
-                        rasterParam.format = 2;                           // PNG формат
-                        rasterParam.colorType = 2;                        // Цветное изображение (0=ч/б, 1=серый, 2=цвет)
-                        rasterParam.extResolution = 300;                  // Разрешение 150 DPI (выше качество)
-                        rasterParam.extScale = 1.0;                       // Масштаб 1:1
-                        rasterParam.greyScale = false;                    // Не градации серого
-                        rasterParam.colorBPP = 24;                        // 24 бита на пиксель (RGB)
-                        rasterParam.onlyThinLine = false;                 // Нормальная толщина линий
-
-                        // Сохраняем изображение
-                        bool result = ksDoc3D.SaveAsToUncompressedRasterFormat(tempImagePath, rasterParam);
-
-                        if (result && File.Exists(tempImagePath))
+                        using (ShellFile shellFile = ShellFile.FromFilePath(ObjectKompas.FullName))
                         {
-                            // Загружаем изображение и изменяем размер с сохранением пропорций
-                            using (Bitmap originalImage = new Bitmap(tempImagePath))
+                            // ExtraLargeBitmap = 256x256, LargeBitmap = 96x96
+                            Bitmap shellThumbnail = shellFile.Thumbnail.ExtraLargeBitmap;
+                            if (shellThumbnail != null && shellThumbnail.Width > 1 && shellThumbnail.Height > 1)
                             {
-                                // Рассчитываем размеры с сохранением пропорций
-                                int maxSize = 150;
-                                float aspectRatio = (float)originalImage.Width / originalImage.Height;
-                                int newWidth, newHeight;
-
-                                if (originalImage.Width > originalImage.Height)
-                                {
-                                    newWidth = maxSize;
-                                    newHeight = (int)(maxSize / aspectRatio);
-                                }
-                                else
-                                {
-                                    newHeight = maxSize;
-                                    newWidth = (int)(maxSize * aspectRatio);
-                                }
-
-                                // Создаем квадратный холст для центрирования изображения
-                                using (Bitmap resizedImage = new Bitmap(maxSize, maxSize))
-                                {
-                                    using (Graphics graphics = Graphics.FromImage(resizedImage))
-                                    {
-                                        // Заливаем фон белым цветом
-                                        graphics.Clear(Color.White);
-
-                                        graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                                        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                                        graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
-
-                                        // Центрируем изображение на холсте
-                                        int x = (maxSize - newWidth) / 2;
-                                        int y = (maxSize - newHeight) / 2;
-
-                                        graphics.DrawImage(originalImage, x, y, newWidth, newHeight);
-                                    }
-
-                                    // Пост-обработка: все не-белые пиксели делаем черными для контрастности
-                                    for (int y = 0; y < resizedImage.Height; y++)
-                                    {
-                                        for (int x = 0; x < resizedImage.Width; x++)
-                                        {
-                                            Color pixelColor = resizedImage.GetPixel(x, y);
-                                            // Если пиксель не чисто белый (с учетом небольшого порога)
-                                            if (pixelColor.R < 250 || pixelColor.G < 250 || pixelColor.B < 250)
-                                            {
-                                                resizedImage.SetPixel(x, y, Color.Black);
-                                            }
-                                        }
-                                    }
-
-                                    // Конвертируем в массив байтов
-                                    using (MemoryStream ms = new MemoryStream())
-                                    {
-                                        resizedImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                                        ObjectKompas.PreviewImage = ms.ToArray();
-                                    }
-                                }
+                                // Создаём копию, т.к. оригинал будет удалён при dispose ShellFile
+                                originalImage = new Bitmap(shellThumbnail);
+                                imageFromShell = true;
                             }
-
-                            // Удаляем временный файл
-                            try
+                            else
                             {
-                                File.Delete(tempImagePath);
+                                useKompasApiFallback = true;
                             }
-                            catch { }
                         }
                     }
+                    else
+                    {
+                        useKompasApiFallback = true;
+                    }
                 }
-                ksDoc3D.shadedWireframe = true;
+                catch
+                {
+                    // Если Shell не сработал, используем KOMPAS API
+                    useKompasApiFallback = true;
+                }
+
+                // Метод 2: Fallback на KOMPAS API если Shell не сработал
+                if (useKompasApiFallback || originalImage == null)
+                {
+                    string tempImagePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".png");
+
+                    try
+                    {
+                        // Получаем ksDocument3D для использования метода SaveAsToRasterFormat (API v5)
+                        ksDocument3D ksDoc3D = kompas.TransferInterface(kompasDocument3D, 1, 0) as ksDocument3D;
+                        if (ksDoc3D != null)
+                        {
+                            ksDoc3D.hideAllAuxiliaryGeom = true;
+                            ksDoc3D.drawMode = 1;
+
+                            ksViewProjectionCollection ksViewProjectionCollection = ksDoc3D.GetViewProjectionCollection();
+                            ksViewProjectionCollection.GetByIndex(7).SetCurrent();
+
+                            // Получаем параметры для сохранения в растровый формат
+                            ksRasterFormatParam rasterParam = (ksRasterFormatParam)ksDoc3D.RasterFormatParam();
+                            if (rasterParam != null)
+                            {
+                                rasterParam.Init();
+                                rasterParam.format = 2;                           // PNG формат
+                                rasterParam.colorType = 2;                        // Цветное изображение
+                                rasterParam.extResolution = 300;                  // Разрешение 300 DPI
+                                rasterParam.extScale = 1.0;                       // Масштаб 1:1
+                                rasterParam.greyScale = false;                    // Не градации серого
+                                rasterParam.colorBPP = 24;                        // 24 бита на пиксель (RGB)
+                                rasterParam.onlyThinLine = false;                 // Нормальная толщина линий
+
+                                bool result = ksDoc3D.SaveAsToUncompressedRasterFormat(tempImagePath, rasterParam);
+
+                                if (result && File.Exists(tempImagePath))
+                                {
+                                    originalImage = new Bitmap(tempImagePath);
+                                }
+                            }
+
+                            ksDoc3D.shadedWireframe = true;
+                        }
+                    }
+                    finally
+                    {
+                        // Удаляем временный файл
+                        try
+                        {
+                            if (File.Exists(tempImagePath))
+                                File.Delete(tempImagePath);
+                        }
+                        catch { }
+                    }
+                }
+
+                // Обработка полученного изображения (масштабирование и конвертация)
+                if (originalImage != null)
+                {
+                    try
+                    {
+                        // Рассчитываем размеры с сохранением пропорций
+                        int maxSize = 150;
+                        float aspectRatio = (float)originalImage.Width / originalImage.Height;
+                        int newWidth, newHeight;
+
+                        if (originalImage.Width > originalImage.Height)
+                        {
+                            newWidth = maxSize;
+                            newHeight = (int)(maxSize / aspectRatio);
+                        }
+                        else
+                        {
+                            newHeight = maxSize;
+                            newWidth = (int)(maxSize * aspectRatio);
+                        }
+
+                        // Создаем квадратный холст для центрирования изображения
+                        using (Bitmap resizedImage = new Bitmap(maxSize, maxSize))
+                        {
+                            using (Graphics graphics = Graphics.FromImage(resizedImage))
+                            {
+                                // Заливаем фон белым цветом
+                                graphics.Clear(Color.White);
+
+                                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                                graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                                graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+
+                                // Центрируем изображение на холсте
+                                int x = (maxSize - newWidth) / 2;
+                                int y = (maxSize - newHeight) / 2;
+
+                                graphics.DrawImage(originalImage, x, y, newWidth, newHeight);
+                            }
+
+                            // Пост-обработка только для изображений из KOMPAS API (каркасный режим)
+                            // Shell-миниатюры уже цветные и готовы к использованию
+                            if (!imageFromShell)
+                            {
+                                // Для KOMPAS API: все не-белые пиксели делаем черными для контрастности
+                                for (int py = 0; py < resizedImage.Height; py++)
+                                {
+                                    for (int px = 0; px < resizedImage.Width; px++)
+                                    {
+                                        Color pixelColor = resizedImage.GetPixel(px, py);
+                                        // Если пиксель не чисто белый (с учетом небольшого порога)
+                                        if (pixelColor.R < 250 || pixelColor.G < 250 || pixelColor.B < 250)
+                                        {
+                                            resizedImage.SetPixel(px, py, Color.Black);
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Конвертируем в массив байтов
+                            using (MemoryStream ms = new MemoryStream())
+                            {
+                                resizedImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                                ObjectKompas.PreviewImage = ms.ToArray();
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        originalImage.Dispose();
+                    }
+                }
             }
             catch (Exception ex)
             {
                 // Если не удалось получить изображение, оставляем поле пустым
                 ObjectKompas.PreviewImage = null;
-                // Опционально: можно залогировать ошибку для отладки
-                // System.Diagnostics.Debug.WriteLine($"Ошибка получения превью для {ObjectKompas.Designation}: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine("Ошибка получения превью для " + ObjectKompas.Designation + ": " + ex.Message);
             }
             #endregion
 

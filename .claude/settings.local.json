@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(msbuild:*)",
+      "Bash(cmd /c \"dir /s /b \"\"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\*msbuild.exe\"\" 2>nul | head -5\")",
+      "Bash(cmd /c \"dir /s /b \"\"C:\\\\Program Files*\\\\Microsoft Visual Studio\\\\*MSBuild.exe\"\" 2>nul\")",
+      "Bash(cmd /c \"\"\"C:\\\\Program Files \\(x86\\)\\\\Microsoft Visual Studio\\\\2019\\\\Community\\\\MSBuild\\\\Current\\\\Bin\\\\MSBuild.exe\"\" --version\")",
+      "Bash(cmd /c \"\"\"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\MSBuild\\\\Current\\\\Bin\\\\MSBuild.exe\"\" --version\")",
+      "Bash(powershell:*)",
+      "Bash(cmd /c \"\"\"C:\\\\Program Files \\(x86\\)\\\\Microsoft Visual Studio\\\\2017\\\\Community\\\\MSBuild\\\\15.0\\\\Bin\\\\MSBuild.exe\"\" \"\"c:\\\\Users\\\\Rusik\\\\Documents\\\\ReportKompas\\\\ReportKompas.csproj\"\" /p:Configuration=Release /t:Build /verbosity:minimal\")",
+      "Bash(cmd /c \"dir /s /b \"\"C:\\\\Program Files \\(x86\\)\\\\Microsoft Visual Studio\"\" 2>nul | findstr /i MSBuild.exe\")",
+      "Bash(cmd /c \"where /R \"\"C:\\\\Windows\\\\Microsoft.NET\\\\Framework\"\" MSBuild.exe\")",
+      "Bash(cmd /c \"dir /s /b C:\\\\Windows\\\\Microsoft.NET\\\\Framework\\\\*MSBuild.exe\")",
+      "Bash(\"C:\\\\Windows\\\\Microsoft.NET\\\\Framework64\\\\v4.0.30319\\\\MSBuild.exe\" \"c:\\\\Users\\\\Rusik\\\\Documents\\\\ReportKompas\\\\ReportKompas.sln\" /p:Configuration=Debug /t:Build /verbosity:minimal)",
+      "Bash(\"C:\\\\Windows\\\\Microsoft.NET\\\\Framework64\\\\v4.0.30319\\\\MSBuild.exe\" \"c:\\\\Users\\\\Rusik\\\\Documents\\\\ReportKompas\\\\ReportKompas.csproj\" /t:Build /verbosity:minimal)",
+      "Bash(\"C:\\\\Windows\\\\Microsoft.NET\\\\Framework64\\\\v4.0.30319\\\\MSBuild.exe\" ReportKompas.csproj)",
+      "Bash(nuget restore:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(powershell.exe -Command \"& { cd ''c:\\\\Users\\\\Rusik\\\\Documents\\\\ReportKompas''; & ''C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\MSBuild\\\\Current\\\\Bin\\\\MSBuild.exe'' /t:restore ReportKompas.sln 2>&1 }\")",
+      "Bash(powershell.exe:*)"
+    ]
+  }
+}

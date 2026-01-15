@@ -1,14 +1,6 @@
-﻿using Kompas6API5;
-using KompasAPI7;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Management;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ReportKompas
@@ -24,69 +16,15 @@ namespace ReportKompas
         }
         // Головная функция библиотеки
         public void ExternalRunCommand([In] short command, [In] short mode, [In, MarshalAs(UnmanagedType.IDispatch)] object kompas_)
-        {            
-            string motherboardSerial = string.Empty;
-            motherboardSerial = Environment.UserName + Environment.OSVersion + Environment.MachineName;
-
-            if (File.Exists(System.Windows.Forms.Application.StartupPath.ToString() + "\\bug"))
+        {
+            if (LicenseValidator.IsValid(out string errorMessage))
             {
-                string lic = File.ReadAllText(System.Windows.Forms.Application.StartupPath.ToString() + "\\bug");
-                string licHex = DecodeFromHex(lic);
-                if (DecodeFromBase64(licHex) == motherboardSerial)
-                {
-                    ReportKompas.GetInstance().Show();
-                }
-                else
-                {
-                    MessageBox.Show("Лицензии нет");
-                }
+                ReportKompas.GetInstance().Show();
             }
             else
             {
-                MessageBox.Show("Отсутствует файл лицензии");
+                MessageBox.Show(errorMessage);
             }
-        }
-
-        public string GenerateMS()
-        {
-            string motherboardSerial = string.Empty;
-            try
-            {
-                ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT SerialNumber FROM Win32_BaseBoard");
-                foreach (ManagementObject obj in searcher.Get())
-                {
-                    motherboardSerial = obj["SerialNumber"].ToString();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            return motherboardSerial;
-        }
-
-        public string DecodeFromBase64(string base64EncodedData)
-        {
-            byte[] base64EncodedBytes = Convert.FromBase64String(base64EncodedData);
-            return Encoding.UTF8.GetString(base64EncodedBytes);
-        }
-
-        static string DecodeFromHex(string hex)
-        {
-            // Проверяем, что длина строки четная
-            if (hex.Length % 2 != 0)
-                throw new ArgumentException("Hex string must have an even length.");
-
-            byte[] bytes = new byte[hex.Length / 2];
-
-            for (int i = 0; i < hex.Length; i += 2)
-            {
-                // Преобразуем каждую пару символов в байт
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-            }
-
-            // Преобразуем массив байтов обратно в строку
-            return Encoding.UTF8.GetString(bytes);
         }
 
         #region COM Registration
