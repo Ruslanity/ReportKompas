@@ -114,10 +114,10 @@ namespace ReportKompas
             };
             buttonEquipment.Click += (sender, e) =>
             {
-                if (System.IO.File.Exists(txtEquipment.Text + @"\" + "CodeEquip.xml"))
+                if (System.IO.File.Exists(txtEquipment.Text))
                 {
                     // Открытие файла по умолчанию
-                    Process.Start(txtEquipment.Text + @"\" + "CodeEquip.xml");
+                    Process.Start(txtEquipment.Text);
                 }
                 else
                 {
@@ -161,10 +161,10 @@ namespace ReportKompas
             };
             buttonMaterial.Click += (sender, e) =>
             {
-                if (System.IO.File.Exists(txtMaterials.Text + @"\" + "CodeMaterial.xml"))
+                if (System.IO.File.Exists(txtMaterials.Text))
                 {
                     // Открытие файла по умолчанию
-                    Process.Start(txtMaterials.Text + @"\" + "CodeMaterial.xml");
+                    Process.Start(txtMaterials.Text);
                 }
                 else
                 {
@@ -208,10 +208,10 @@ namespace ReportKompas
             };
             buttonSpeedCut.Click += (sender, e) =>
             {
-                if (System.IO.File.Exists(txtSpeedCut.Text + @"\" + "SpeedCut.xml"))
+                if (System.IO.File.Exists(txtSpeedCut.Text))
                 {
                     // Открытие файла по умолчанию
-                    Process.Start(txtSpeedCut.Text + @"\" + "SpeedCut.xml");
+                    Process.Start(txtSpeedCut.Text);
                 }
                 else
                 {

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <PathDictionaryMaterials>E:\ReportKompas\Settings\CodeMaterial.xml</PathDictionaryMaterials>
+  <PathDictionaryMaterials>C:\Users\Rusik\Documents\ReportKompas\Settings\CodeEquip.xml</PathDictionaryMaterials>
   <PathDictionaryEquipment>E:\ReportKompas\Settings\CodeEquip.xml</PathDictionaryEquipment>
   <PathDictionarySpeedCut>E:\ReportKompas\Settings\SpeedCut.xml</PathDictionarySpeedCut>
   <CalcLaserCutTime>true</CalcLaserCutTime>
