@@ -276,6 +276,7 @@ namespace ReportKompas
                         root.ReplaceMaterial();
                         FillCodeMaterial(root);
                         FillCodeEquip(root);
+                        ReorganizeElements(root);
                         AddControl(root);
 
                         this.Activate();
@@ -493,6 +494,13 @@ namespace ReportKompas
                     propertyKeeper.GetPropertyValue((_Property)item, out info, false, out source);
                     ObjectKompas.Note = info;
                 }
+                if (item.Name == "Комплект крепежа")
+                {
+                    dynamic info;
+                    bool source;
+                    propertyKeeper.GetPropertyValue((_Property)item, out info, false, out source);
+                    ObjectKompas.IsFastener = info;
+                }
             }
             #endregion
 
@@ -596,12 +604,52 @@ namespace ReportKompas
                 ObjectKompas.TechnologicalRoute = null;
             }
             #endregion
+            
+            #region Тут присваиваю свойство куда входит
+
+            if (ObjectKompas.ParentK != null)
+            {
+                ObjectKompas.Parent = ObjectKompas.ParentK.Designation + " - " + ObjectKompas.ParentK.Name;
+                ObjectKompas.TopParent = root.Designation + " - " + root.Name;
+            }
+            else
+            {
+                ObjectKompas.Parent = null;
+                ObjectKompas.TopParent = null;
+            }
+            #endregion
+
+            #region Заполняю габаритные размеры и площадь поверхности
+            ksPart ksPart = kompas.TransferInterface(part7, 1, 0);
+            if (ksPart != null)
+            {
+                double x1, x2, y1, y2, z1, z2;
+                ksPart.GetGabarit(true, true, out x1, out y1, out z1, out x2, out y2, out z2);
+
+                string TemporaryVariable = String.Format("{0}x{1}x{2}", Math.Round(x2 - x1),
+                                                                        Math.Round(y2 - y1),
+                                                                        Math.Round(z2 - z1));
+                if (TemporaryVariable.Contains("E") != true)
+                {
+                    ObjectKompas.OverallDimensions = TemporaryVariable;
+                }
+
+                uint bitVector = 0x3;
+                ksMassInertiaParam ksMassInertiaParam = ksPart.CalcMassInertiaProperties(bitVector);
+                ObjectKompas.Area = Math.Round(ksMassInertiaParam.F, 2).ToString();
+                //if (ObjectKompas.Coating != null && ObjectKompas.Coating.Contains("Рекуперат"))
+                //{
+                //    ObjectKompas.Area = Math.Round(ksMassInertiaParam.F, 2).ToString();
+                //}
+                //else { ObjectKompas.Area = Math.Round(ksMassInertiaParam.F / 2, 2).ToString(); }
+            }
+            #endregion
 
             #region Получение превью-изображения из 3D модели
             try
             {
                 Bitmap originalImage = null;
-                bool useKompasApiFallback = false;
+                bool useKompasApiFallback = true; // Принудительно использовать KOMPAS API вместо Shell
                 bool imageFromShell = false;
 
                 // Метод 1: Попытка получить миниатюру через Windows Shell (быстрый способ)
@@ -640,6 +688,13 @@ namespace ReportKompas
                 // Метод 2: Fallback на KOMPAS API если Shell не сработал
                 if (useKompasApiFallback || originalImage == null)
                 {
+                    // Сбрасываем Shell-изображение, чтобы использовать только KOMPAS API
+                    if (originalImage != null)
+                    {
+                        originalImage.Dispose();
+                        originalImage = null;
+                    }
+
                     string tempImagePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".png");
 
                     try
@@ -649,10 +704,13 @@ namespace ReportKompas
                         if (ksDoc3D != null)
                         {
                             ksDoc3D.hideAllAuxiliaryGeom = true;
-                            ksDoc3D.drawMode = 1;
+                            ksDoc3D.drawMode = 1; // 1=каркас, 2=полутоновое, 3=полутоновое с каркасом нужно ставить 1
 
                             ksViewProjectionCollection ksViewProjectionCollection = ksDoc3D.GetViewProjectionCollection();
-                            ksViewProjectionCollection.GetByIndex(7).SetCurrent();
+                            if (ksViewProjectionCollection != null)
+                            {
+                                ksViewProjectionCollection.GetByIndex(7).SetCurrent();
+                            }
 
                             // Получаем параметры для сохранения в растровый формат
                             ksRasterFormatParam rasterParam = (ksRasterFormatParam)ksDoc3D.RasterFormatParam();
@@ -660,18 +718,92 @@ namespace ReportKompas
                             {
                                 rasterParam.Init();
                                 rasterParam.format = 2;                           // PNG формат
-                                rasterParam.colorType = 2;                        // Цветное изображение
-                                rasterParam.extResolution = 300;                  // Разрешение 300 DPI
-                                rasterParam.extScale = 1.0;                       // Масштаб 1:1
-                                rasterParam.greyScale = false;                    // Не градации серого
-                                rasterParam.colorBPP = 24;                        // 24 бита на пиксель (RGB)
-                                rasterParam.onlyThinLine = false;                 // Нормальная толщина линий
+                                rasterParam.colorType = 1;                        // Цветное изображение
+                                rasterParam.extResolution = 72;                   // Разрешение 72 DPI
 
-                                bool result = ksDoc3D.SaveAsToUncompressedRasterFormat(tempImagePath, rasterParam);
-
-                                if (result && File.Exists(tempImagePath))
+                                // Динамический масштаб на основе габаритных размеров детали (OverallDimensions)
+                                // Формат строки: "100х1008х50" или "100x1008x50" (через русскую "х" или латинскую "x")
+                                // extScale в KOMPAS: количество пикселей на 1 мм при 72 DPI
+                                // При extScale=1: 1 мм = 1 пиксель, деталь 100мм = 100 пикселей
+                                double scale = 15.0; // масштаб по умолчанию для мелких деталей
+                                if (!string.IsNullOrEmpty(ObjectKompas.OverallDimensions))
                                 {
-                                    originalImage = new Bitmap(tempImagePath);
+                                    // Разбиваем строку по разделителям "х" (рус) и "x" (лат)
+                                    string[] parts = ObjectKompas.OverallDimensions.Split(new char[] { 'х', 'x', 'Х', 'X' }, StringSplitOptions.RemoveEmptyEntries);
+                                    double maxDimension = 0;
+                                    foreach (string part in parts)
+                                    {
+                                        double dim;
+                                        if (double.TryParse(part.Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out dim))
+                                        {
+                                            if (dim > maxDimension)
+                                                maxDimension = dim;
+                                        }
+                                    }
+                                    // Масштаб: целевой размер изображения / максимальный габарит детали
+                                    // Цель: итоговое изображение ~500 пикселей по большей стороне
+                                    if (maxDimension > 0)
+                                    {
+                                        double targetPixels = 500.0;
+                                        scale = targetPixels / maxDimension;
+                                        // Ограничиваем масштаб: минимум 0.1 (для очень больших деталей), максимум 15 (для мелких)
+                                        scale = Math.Max(0.1, Math.Min(scale, 15.0));
+                                    }
+                                }
+                                rasterParam.extScale = scale;
+                                rasterParam.greyScale = true;                     // Градации серого
+                                rasterParam.colorBPP = 0x18;                      // 24 бита на пиксель (RGB)
+                                rasterParam.onlyThinLine = true;                  // Нормальная толщина линий
+
+                                bool result = ksDoc3D.SaveAsToRasterFormat(tempImagePath, rasterParam);
+
+                                // Поиск файла (KOMPAS может сохранить с другим расширением)
+                                string fileNameWithoutExt = Path.GetFileNameWithoutExtension(tempImagePath);
+                                string tempDir = Path.GetDirectoryName(tempImagePath);
+                                string[] extensions = { ".png", ".bmp", ".jpg", ".jpeg", ".gif", ".tif", ".tiff" };
+                                string actualFilePath = tempImagePath;
+                                foreach (string ext in extensions)
+                                {
+                                    string altPath = Path.Combine(tempDir, fileNameWithoutExt + ext);
+                                    if (File.Exists(altPath))
+                                    {
+                                        actualFilePath = altPath;
+                                        break;
+                                    }
+                                }
+
+                                if (result && File.Exists(actualFilePath))
+                                {
+                                    // Загружаем изображение с уменьшением размера для избежания переполнения памяти
+                                    using (FileStream fs = new FileStream(actualFilePath, FileMode.Open, FileAccess.Read))
+                                    {
+                                        using (Bitmap fullImage = new Bitmap(fs))
+                                        {
+                                            // Ограничиваем максимальный размер изображения
+                                            int maxPreviewSize = 500;
+                                            int newWidth, newHeight;
+
+                                            if (fullImage.Width > maxPreviewSize || fullImage.Height > maxPreviewSize)
+                                            {
+                                                float ratio = Math.Min((float)maxPreviewSize / fullImage.Width, (float)maxPreviewSize / fullImage.Height);
+                                                newWidth = (int)(fullImage.Width * ratio);
+                                                newHeight = (int)(fullImage.Height * ratio);
+                                            }
+                                            else
+                                            {
+                                                newWidth = fullImage.Width;
+                                                newHeight = fullImage.Height;
+                                            }
+
+                                            // Создаём уменьшенную копию
+                                            originalImage = new Bitmap(newWidth, newHeight);
+                                            using (Graphics g = Graphics.FromImage(originalImage))
+                                            {
+                                                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                                                g.DrawImage(fullImage, 0, 0, newWidth, newHeight);
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
@@ -697,18 +829,21 @@ namespace ReportKompas
                     {
                         // Рассчитываем размеры с сохранением пропорций
                         int maxSize = 150;
+                        int padding = 5; // Отступ от краёв, чтобы линии не обрезались
+                        int availableSize = maxSize - (padding * 2); // Доступная область для изображения
+
                         float aspectRatio = (float)originalImage.Width / originalImage.Height;
                         int newWidth, newHeight;
 
                         if (originalImage.Width > originalImage.Height)
                         {
-                            newWidth = maxSize;
-                            newHeight = (int)(maxSize / aspectRatio);
+                            newWidth = availableSize;
+                            newHeight = (int)(availableSize / aspectRatio);
                         }
                         else
                         {
-                            newHeight = maxSize;
-                            newWidth = (int)(maxSize * aspectRatio);
+                            newHeight = availableSize;
+                            newWidth = (int)(availableSize * aspectRatio);
                         }
 
                         // Создаем квадратный холст для центрирования изображения
@@ -723,28 +858,23 @@ namespace ReportKompas
                                 graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
                                 graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
 
-                                // Центрируем изображение на холсте
+                                // Центрируем изображение на холсте с учётом отступов
                                 int x = (maxSize - newWidth) / 2;
                                 int y = (maxSize - newHeight) / 2;
 
                                 graphics.DrawImage(originalImage, x, y, newWidth, newHeight);
                             }
 
-                            // Пост-обработка только для изображений из KOMPAS API (каркасный режим)
-                            // Shell-миниатюры уже цветные и готовы к использованию
-                            if (!imageFromShell)
+                            // Пост-обработка: все не-белые пиксели делаем черными для контрастности
+                            for (int py = 0; py < resizedImage.Height; py++)
                             {
-                                // Для KOMPAS API: все не-белые пиксели делаем черными для контрастности
-                                for (int py = 0; py < resizedImage.Height; py++)
+                                for (int px = 0; px < resizedImage.Width; px++)
                                 {
-                                    for (int px = 0; px < resizedImage.Width; px++)
+                                    Color pixelColor = resizedImage.GetPixel(px, py);
+                                    // Если пиксель не чисто белый (с учетом небольшого порога)
+                                    if (pixelColor.R < 250 || pixelColor.G < 250 || pixelColor.B < 250)
                                     {
-                                        Color pixelColor = resizedImage.GetPixel(px, py);
-                                        // Если пиксель не чисто белый (с учетом небольшого порога)
-                                        if (pixelColor.R < 250 || pixelColor.G < 250 || pixelColor.B < 250)
-                                        {
-                                            resizedImage.SetPixel(px, py, Color.Black);
-                                        }
+                                        resizedImage.SetPixel(px, py, Color.Black);
                                     }
                                 }
                             }
@@ -768,46 +898,6 @@ namespace ReportKompas
                 // Если не удалось получить изображение, оставляем поле пустым
                 ObjectKompas.PreviewImage = null;
                 System.Diagnostics.Debug.WriteLine("Ошибка получения превью для " + ObjectKompas.Designation + ": " + ex.Message);
-            }
-            #endregion
-
-            #region Тут присваиваю свойство куда входит
-
-            if (ObjectKompas.ParentK != null)
-            {
-                ObjectKompas.Parent = ObjectKompas.ParentK.Designation + " - " + ObjectKompas.ParentK.Name;
-                ObjectKompas.TopParent = root.Designation + " - " + root.Name;
-            }
-            else
-            {
-                ObjectKompas.Parent = null;
-                ObjectKompas.TopParent = null;
-            }
-            #endregion
-
-            #region Заполняю габаритные размеры и площадь поверхности
-            ksPart ksPart = kompas.TransferInterface(part7, 1, 0);
-            if (ksPart != null)
-            {
-                double x1, x2, y1, y2, z1, z2;
-                ksPart.GetGabarit(true, true, out x1, out y1, out z1, out x2, out y2, out z2);
-
-                string TemporaryVariable = String.Format("{0}x{1}x{2}", Math.Round(x2 - x1),
-                                                                        Math.Round(y2 - y1),
-                                                                        Math.Round(z2 - z1));
-                if (TemporaryVariable.Contains("E") != true)
-                {
-                    ObjectKompas.OverallDimensions = TemporaryVariable;
-                }
-
-                uint bitVector = 0x3;
-                ksMassInertiaParam ksMassInertiaParam = ksPart.CalcMassInertiaProperties(bitVector);
-                ObjectKompas.Area = Math.Round(ksMassInertiaParam.F, 2).ToString();
-                //if (ObjectKompas.Coating != null && ObjectKompas.Coating.Contains("Рекуперат"))
-                //{
-                //    ObjectKompas.Area = Math.Round(ksMassInertiaParam.F, 2).ToString();
-                //}
-                //else { ObjectKompas.Area = Math.Round(ksMassInertiaParam.F / 2, 2).ToString(); }
             }
             #endregion
 
@@ -1155,6 +1245,81 @@ namespace ReportKompas
                 }
             };
         }
+        
+        // Метод для формирования node "Комплект крепежа"
+        // Собирает элементы с IsFastener == "true", удаляет их из родителей
+        // и добавляет новый узел "Комплект крепежа" в Children переданного node
+        public void ReorganizeElements(ObjectAssemblyKompas node)
+        {
+            if (node == null)
+                return;
+
+            string parentValue = node.Designation + " - " + node.Name;
+
+            // Создаём узел "Комплект крепежа"
+            var fastenerKit = new ObjectAssemblyKompas
+            {
+                Name = "Комплект крепежа " + node.Designation,
+                Quantity = 1,
+                Parent = parentValue,
+                TopParent = parentValue
+            };
+
+            // Рекурсивно собираем крепёжные элементы, удаляем их у родителей и добавляем в fastenerKit
+            
+            CollectAndRemoveFasteners(node, fastenerKit, parentValue);
+
+            // Если крепёжные элементы найдены, добавляем "Комплект крепежа" в Children переданного node
+            if (fastenerKit.Children != null && fastenerKit.Children.Count > 0)
+            {
+                node.AddChild(fastenerKit);
+            }
+        }
+
+        // Вспомогательный рекурсивный метод для сбора и удаления крепёжных элементов
+        private void CollectAndRemoveFasteners(ObjectAssemblyKompas node, ObjectAssemblyKompas fastenerKit, string parentValue)
+        {
+            if (node == null || node.Children == null)
+                return;
+
+            // Создаём копию списка для безопасной итерации при удалении
+            var childrenCopy = node.Children.ToList();
+
+            foreach (var child in childrenCopy)
+            {
+                // Проверяем, является ли элемент крепёжным (IsFastener == "true")
+                if (!string.IsNullOrEmpty(child.IsFastener) &&
+                    child.IsFastener.Equals("true", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Устанавливаем Parent и TopParent
+                    child.Parent = parentValue;
+                    child.TopParent = parentValue;
+
+                    // Проверяем, есть ли уже элемент с таким же Name в коллекции fastenerKit
+                    var existingFastener = fastenerKit.Children?.FirstOrDefault(c =>
+                        c.Name == child.Name);
+
+                    if (existingFastener != null)
+                    {
+                        // Если найден — складываем Quantity
+                        existingFastener.Quantity += child.Quantity;
+                    }
+                    else
+                    {
+                        // Если не найден — добавляем как новый элемент
+                        fastenerKit.AddChild(child);
+                    }
+
+                    // Удаляем у родителя
+                    node.RemoveChild(child);
+                }
+                else
+                {
+                    // Рекурсивно обрабатываем дочерние элементы
+                    CollectAndRemoveFasteners(child, fastenerKit, parentValue);
+                }
+            }
+        }
 
         // Рекурсивный метод для обхода узлов и добавления их в таблицу
         private void AddNodeToDataTable(ObjectAssemblyKompas node, DataTable dt)
@@ -1315,7 +1480,7 @@ namespace ReportKompas
             dt.Columns.Add("Кол-во", typeof(int));
             dt.Columns.Add("Раздел спецификации", typeof(string));
             dt.Columns.Add("Материал", typeof(string));
-            dt.Columns.Add("Масса", typeof(double));
+            dt.Columns.Add("Масса", typeof(string));
             dt.Columns.Add("R", typeof(string));
             dt.Columns.Add("V", typeof(string));
             dt.Columns.Add("Q", typeof(string));
@@ -1350,7 +1515,7 @@ namespace ReportKompas
                 row["Кол-во"] = node.Quantity;
                 row["Раздел спецификации"] = node.SpecificationSection ?? "";
                 row["Материал"] = node.Material ?? "";
-                row["Масса"] = node.Mass;
+                row["Масса"] = node.Mass.ToString("F2", CultureInfo.InvariantCulture);
                 row["R"] = node.R ?? "";
                 row["V"] = node.V ?? "";
                 row["Q"] = node.Q ?? "";

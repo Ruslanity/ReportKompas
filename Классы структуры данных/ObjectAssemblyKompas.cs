@@ -22,21 +22,22 @@ namespace ReportKompas
         //public string Bending { get; set; }
         public string FullName { get; set; }
         public string PathToDXF { get; set; }
-        public string OverallDimensions { get; set; }
-        public string Coating { get; set; }
-        public string Welding { get; set; }
-        public string LocksmithWork { get; set; }
+        public string OverallDimensions { get; set; } //габаритные размеры
+        public string Coating { get; set; } //покрытие
+        public string Welding { get; set; } //сварочные работы
+        public string LocksmithWork { get; set; } //слесарные работы
         public string Note { get; set; }
         public string Area { get; set; }
         public string CodeEquipment { get; set; }
         public string CodeMaterial { get; set; }
         public string TimeCut { get; set; }
         public string DxfDimensions { get; set; }
-        public bool IsLocal { get; set; }
-        public string IsPainted { get; set; }
-        public double CoverageArea { get; set; }
+        public bool IsLocal { get; set; } //свойство локальной детали
+        public string IsPainted { get; set; } //красится/не красится
+        public double CoverageArea { get; set; } //поверхность покрытия
         public byte[] PreviewImage { get; set; }  // PNG формат по умолчанию
-        public string TechnologicalRoute { get; set; }
+        public string TechnologicalRoute { get; set; } //технологический маршрут
+        public string IsFastener { get; set; } //включать/не включать в комплект крепежа
 
         // Связи в дереве
         public ObjectAssemblyKompas ParentK { get; set; }
