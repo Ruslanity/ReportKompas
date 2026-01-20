@@ -268,7 +268,22 @@ namespace ReportKompas
                             ksPart ksPart = kompas.TransferInterface(item, 1, 0);
                             if (ksPart.excluded != true)
                             {
-                                RecursionK(item, root);
+                                if (item.RevealComposition)
+                                {
+                                    // Раскрываем состав: добавляем дочерние элементы напрямую к root
+                                    foreach (IPart7 childItem in item.Parts)
+                                    {
+                                        ksPart childKsPart = kompas.TransferInterface(childItem, 1, 0);
+                                        if (childKsPart.excluded != true)
+                                        {
+                                            RecursionK(childItem, root);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    RecursionK(item, root);
+                                }
                             }
                         }
                         ProcessTree(root);
@@ -334,8 +349,7 @@ namespace ReportKompas
                 var objectAssemblyKompas = PrimaryParse(Part);
                 objectAssemblyKompas.ParentK = parent;
                 parent.AddChild(objectAssemblyKompas);
-
-                //DisassembleObject(Part, ParentName);
+                                
                 if (objectAssemblyKompas.Designation != "" || objectAssemblyKompas.Designation != String.Empty)//заглушка не добавлять детей для детелей у которых нет обозначения
                 {
                     foreach (IPart7 item in Part.Parts)
@@ -343,8 +357,24 @@ namespace ReportKompas
                         ksPart ksPart2 = kompas.TransferInterface(item, 1, 0);
                         if (ksPart2.excluded != true)
                         {
-                            if (item.Detail) objectAssemblyKompas.AddChild(PrimaryParse(item));
-                            else RecursionK(item, objectAssemblyKompas);
+                            if (item.RevealComposition)
+                            {
+                                // Раскрываем состав: добавляем дочерние элементы напрямую к текущему родителю
+                                foreach (IPart7 childItem in item.Parts)
+                                {
+                                    ksPart childKsPart = kompas.TransferInterface(childItem, 1, 0);
+                                    if (childKsPart.excluded != true)
+                                    {
+                                        if (childItem.Detail) objectAssemblyKompas.AddChild(PrimaryParse(childItem));
+                                        else RecursionK(childItem, objectAssemblyKompas);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (item.Detail) objectAssemblyKompas.AddChild(PrimaryParse(item));
+                                else RecursionK(item, objectAssemblyKompas);
+                            }
                         }
                     }
                 }
