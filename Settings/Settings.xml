@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <PathDictionaryMaterials>C:\Users\Rusik\Documents\ReportKompas\bin\Debug\Settings\CodeMaterial.xml</PathDictionaryMaterials>
-  <PathDictionaryEquipment>C:\Users\Rusik\Documents\ReportKompas\bin\Debug\Settings\CodeEquip.xml</PathDictionaryEquipment>
-  <PathDictionarySpeedCut>C:\Users\Rusik\Documents\ReportKompas\bin\Debug\Settings\SpeedCut.xml</PathDictionarySpeedCut>
+  <PathDictionaryMaterials>\\cadman\lsu-trade$\ПРОИЗВОДСТВО\ЗАДАНИЯ (!!!НЕ ПЕЧАТАТЬ!!!ТОЛЬКО ДЛЯ Т.О.!!!)\Работа Руслан\diskX\soft\Report\CodeMaterial.xml</PathDictionaryMaterials>
+  <PathDictionaryEquipment>\\cadman\lsu-trade$\ПРОИЗВОДСТВО\ЗАДАНИЯ (!!!НЕ ПЕЧАТАТЬ!!!ТОЛЬКО ДЛЯ Т.О.!!!)\Работа Руслан\diskX\soft\Report\CodeEquip.xml</PathDictionaryEquipment>
+  <PathDictionarySpeedCut>\\cadman\lsu-trade$\ПРОИЗВОДСТВО\ЗАДАНИЯ (!!!НЕ ПЕЧАТАТЬ!!!ТОЛЬКО ДЛЯ Т.О.!!!)\Работа Руслан\diskX\soft\Report\SpeedCut.xml</PathDictionarySpeedCut>
   <CalcLaserCutTime>false</CalcLaserCutTime>
 </Settings>

@@ -71,6 +71,22 @@ namespace ReportKompas
             }
         }
 
+        private void CollapseAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (treeListView != null)
+            {
+                treeListView.CollapseAll();
+            }
+        }
+
+        private void ExpandAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (treeListView != null)
+            {
+                treeListView.ExpandAll();
+            }
+        }
+
         private void CuttingTimeCalculation(ObjectAssemblyKompas objectAssemblyKompas)
         {
             string currentDirectory = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
@@ -268,6 +284,11 @@ namespace ReportKompas
                             ksPart ksPart = kompas.TransferInterface(item, 1, 0);
                             if (ksPart.excluded != true)
                             {
+                                // Пропускаем элементы зелёного цвета (0x00FF00)
+                                //IColorParam7 itemColorParam = (IColorParam7)item;
+                                //if (itemColorParam.Color == 0x00FF00)
+                                //    continue;
+
                                 if (item.RevealComposition)
                                 {
                                     // Раскрываем состав: добавляем дочерние элементы напрямую к root
@@ -276,6 +297,11 @@ namespace ReportKompas
                                         ksPart childKsPart = kompas.TransferInterface(childItem, 1, 0);
                                         if (childKsPart.excluded != true)
                                         {
+                                            // Пропускаем элементы зелёного цвета (0x00FF00)
+                                            //IColorParam7 childColorParam = (IColorParam7)childItem;
+                                            //if (childColorParam.Color == 0x00FF00)
+                                            //    continue;
+
                                             RecursionK(childItem, root);
                                         }
                                     }
@@ -311,6 +337,11 @@ namespace ReportKompas
 
         private ObjectAssemblyKompas PrimaryParse(IPart7 part7)
         {
+            // Пропускаем детали зелёного цвета (0x00FF00)
+            IColorParam7 colorCheck = (IColorParam7)part7;
+            if (colorCheck.Color == 0x00FF00)
+                return null;
+
             var ObjectKompas = new ObjectAssemblyKompas();
             ObjectKompas.FullName = part7.FileName;
             ObjectKompas.Designation = part7.Marking;
@@ -333,6 +364,11 @@ namespace ReportKompas
                     }
                 }
             }
+            IColorParam7 colorParam = (IColorParam7)part7;
+            if (colorParam.Color == 0xFF33FF)
+            {
+                ObjectKompas.IsFastener = "true";
+            }
             return ObjectKompas;
         }
 
@@ -347,9 +383,12 @@ namespace ReportKompas
             else
             {
                 var objectAssemblyKompas = PrimaryParse(Part);
+                if (objectAssemblyKompas == null)
+                    return;
+
                 objectAssemblyKompas.ParentK = parent;
                 parent.AddChild(objectAssemblyKompas);
-                                
+
                 if (objectAssemblyKompas.Designation != "" || objectAssemblyKompas.Designation != String.Empty)//заглушка не добавлять детей для детелей у которых нет обозначения
                 {
                     foreach (IPart7 item in Part.Parts)
@@ -634,7 +673,7 @@ namespace ReportKompas
                 ObjectKompas.TechnologicalRoute = null;
             }
             #endregion
-            
+
             #region Тут присваиваю свойство куда входит
 
             if (ObjectKompas.ParentK != null)
@@ -1143,11 +1182,15 @@ namespace ReportKompas
             {
                 Dock = DockStyle.Fill,
                 FullRowSelect = true,
-                UseAlternatingBackColors = true,
+                UseAlternatingBackColors = false,
                 OwnerDraw = true,
+                UseCellFormatEvents = true,
             };
 
             this.Controls.Add(treeListView);
+            // Отправляем TreeListView на задний план Z-order, чтобы ToolStrip
+            // с Dock.Bottom корректно занял своё место и TreeListView заполнил остаток
+            treeListView.SendToBack();
             treeListView.GridLines = true;
             treeListView.AllowColumnReorder = true;
 
@@ -1217,6 +1260,9 @@ namespace ReportKompas
             };
             treeListView.ChildrenGetter = model => (model as ObjectAssemblyKompas).Children;
 
+            // Применяем подсветку строк ДО установки данных
+            ApplyRowHighlighting();
+
             // Данные
             treeListView.Roots = new List<ObjectAssemblyKompas> { objectKompas };
 
@@ -1235,15 +1281,14 @@ namespace ReportKompas
             {
                 if (treeListView.SelectedObject is ObjectAssemblyKompas item)
                 {
-                    // Предположим, что в свойстве FullName хранится путь к папке
-                    FileInfo fi = new FileInfo(item.FullName);
-                    if (Directory.Exists(fi.DirectoryName))
+                    if (File.Exists(item.FullName))
                     {
-                        Process.Start("explorer.exe", fi.DirectoryName);
+                        // Открываем проводник с выделенным файлом
+                        Process.Start("explorer.exe", "/select,\"" + item.FullName + "\"");
                     }
                     else
                     {
-                        MessageBox.Show("Путь не существует: " + fi.DirectoryName);
+                        MessageBox.Show("Файл не существует: " + item.FullName);
                     }
                 }
             };
@@ -1275,7 +1320,46 @@ namespace ReportKompas
                 }
             };
         }
-        
+
+        /// <summary>
+        /// Подсвечивает строки в TreeListView:
+        /// - красным: пустой Раздел спецификации
+        /// - оранжевым: раздел "Стандартные изделия" и пустой Код СИ
+        /// - оранжевым: раздел "Детали" и пустой Код Мат
+        /// </summary>
+        public void ApplyRowHighlighting()
+        {
+            if (treeListView == null)
+                return;
+
+            treeListView.FormatRow += (sender, e) =>
+            {
+                var item = e.Model as ObjectAssemblyKompas;
+                if (item == null)
+                    return;
+
+                // Проверяем условие: пустой Раздел спецификации (приоритет - красный)
+                if (string.IsNullOrEmpty(item.SpecificationSection))
+                {
+                    e.Item.BackColor = Color.Tomato;
+                    return;
+                }
+
+                // Проверяем условие: раздел "Стандартные изделия" и пустой Код СИ
+                bool isStandardWithoutCode = item.SpecificationSection == "Стандартные изделия" &&
+                    string.IsNullOrEmpty(item.CodeEquipment);
+
+                // Проверяем условие: раздел "Детали" и пустой Код Мат
+                bool isDetailWithoutMaterial = item.SpecificationSection == "Детали" &&
+                    string.IsNullOrEmpty(item.CodeMaterial);
+
+                if (isStandardWithoutCode || isDetailWithoutMaterial)
+                {
+                    e.Item.BackColor = Color.Orange;
+                }
+            };
+        }
+
         // Метод для формирования node "Комплект крепежа"
         // Собирает элементы с IsFastener == "true", удаляет их из родителей
         // и добавляет новый узел "Комплект крепежа" в Children переданного node
@@ -1296,7 +1380,7 @@ namespace ReportKompas
             };
 
             // Рекурсивно собираем крепёжные элементы, удаляем их у родителей и добавляем в fastenerKit
-            
+
             CollectAndRemoveFasteners(node, fastenerKit, parentValue);
 
             // Если крепёжные элементы найдены, добавляем "Комплект крепежа" в Children переданного node
@@ -1637,7 +1721,7 @@ namespace ReportKompas
             IXLTable xLTable = dataRange.CreateTable();
             xLTable.Theme = XLTableTheme.TableStyleLight8;
 
-            
+
 
             // Вставляем изображения из DataTable в Excel
             int previewColumnIndex = 1; // Колонка "Превью" - первая колонка

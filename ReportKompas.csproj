@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{BC6FCC42-BD05-4A41-AE1B-CD250D5FB56F}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>ReportKompas</RootNamespace>
     <AssemblyName>ReportKompas</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
