@@ -284,11 +284,6 @@ namespace ReportKompas
                             ksPart ksPart = kompas.TransferInterface(item, 1, 0);
                             if (ksPart.excluded != true)
                             {
-                                // Пропускаем элементы зелёного цвета (0x00FF00)
-                                //IColorParam7 itemColorParam = (IColorParam7)item;
-                                //if (itemColorParam.Color == 0x00FF00)
-                                //    continue;
-
                                 if (item.RevealComposition)
                                 {
                                     // Раскрываем состав: добавляем дочерние элементы напрямую к root
@@ -297,11 +292,6 @@ namespace ReportKompas
                                         ksPart childKsPart = kompas.TransferInterface(childItem, 1, 0);
                                         if (childKsPart.excluded != true)
                                         {
-                                            // Пропускаем элементы зелёного цвета (0x00FF00)
-                                            //IColorParam7 childColorParam = (IColorParam7)childItem;
-                                            //if (childColorParam.Color == 0x00FF00)
-                                            //    continue;
-
                                             RecursionK(childItem, root);
                                         }
                                     }
@@ -365,6 +355,7 @@ namespace ReportKompas
                 }
             }
             IColorParam7 colorParam = (IColorParam7)part7;
+            ObjectKompas.Color = colorParam.Color;
             if (colorParam.Color == 0xFF33FF)
             {
                 ObjectKompas.IsFastener = "true";
@@ -404,14 +395,24 @@ namespace ReportKompas
                                     ksPart childKsPart = kompas.TransferInterface(childItem, 1, 0);
                                     if (childKsPart.excluded != true)
                                     {
-                                        if (childItem.Detail) objectAssemblyKompas.AddChild(PrimaryParse(childItem));
+                                        if (childItem.Detail)
+                                        {
+                                            var parsedChild = PrimaryParse(childItem);
+                                            if (parsedChild != null)
+                                                objectAssemblyKompas.AddChild(parsedChild);
+                                        }
                                         else RecursionK(childItem, objectAssemblyKompas);
                                     }
                                 }
                             }
                             else
                             {
-                                if (item.Detail) objectAssemblyKompas.AddChild(PrimaryParse(item));
+                                if (item.Detail)
+                                {
+                                    var parsedItem = PrimaryParse(item);
+                                    if (parsedItem != null)
+                                        objectAssemblyKompas.AddChild(parsedItem);
+                                }
                                 else RecursionK(item, objectAssemblyKompas);
                             }
                         }
@@ -482,6 +483,8 @@ namespace ReportKompas
             IKompasDocument kompasDocument = document.OpenDocument(ObjectKompas.FullName, openDocumentParam);
             IKompasDocument3D kompasDocument3D = (IKompasDocument3D)kompasDocument;
             IPart7 part7 = kompasDocument3D.TopPart;
+            IEmbodimentsManager embodimentsManager = (IEmbodimentsManager)part7;
+            embodimentsManager.SetCurrentEmbodiment(ObjectKompas.Designation);
             #region Вытаскиваю текстовые поля
             IPropertyMng propertyMng = (IPropertyMng)application;
             var properties = propertyMng.GetProperties(kompasDocument3D);
@@ -971,134 +974,7 @@ namespace ReportKompas
             #endregion
 
             #region Присваиваю путь до DXF и заполняю графу гибка
-            try
-            {
-                ISheetMetalContainer sheetMetalContainer = part7 as ISheetMetalContainer;
-                ISheetMetalBodies sheetMetalBodies = sheetMetalContainer.SheetMetalBodies;
-                ISheetMetalBody sheetMetalBody = sheetMetalBodies.SheetMetalBody[0];
-
-                if (sheetMetalBody != null) //если у детали нет свойства Толщина металла или не будет dxf в папке там же где модель то путь до DXF не будет указан
-                {
-                    string save_to_name = sheetMetalBody.Thickness.ToString(CultureInfo.CreateSpecificCulture("en-GB")) + "mm_" + part7.Marking.Remove(0, 3) + ".dxf";
-
-                    string save_to_name2 = sheetMetalBody.Thickness.ToString(CultureInfo.CreateSpecificCulture("en-GB")).Replace('.', ',') + "mm_" + part7.Marking.Remove(0, 3) + ".dxf";
-
-                    #region Заполняю свойство Гибка
-                    //тут подсчет сколько гибов в теле "листовое тело"
-                    IFeature7 pFeat = sheetMetalBody.Owner;
-                    Object[] featCol = pFeat.SubFeatures[0, false, false];
-                    int featColCount = 0;
-                    if (featCol != null)
-                    {
-                        featColCount = featCol.Count();
-                    }
-
-                    double R = 0;
-                    string V = "";
-                    int Q;
-                    if (sheetMetalBody.Thickness < 3)
-                    { R = 1; }
-                    else if (sheetMetalBody.Thickness > 2 && sheetMetalBody.Thickness < 6)
-                    { R = 3; }
-                    else if (sheetMetalBody.Thickness > 5 && sheetMetalBody.Thickness < 11)
-                    { R = 6; }
-                    switch (sheetMetalBody.Thickness)
-                    {
-                        case 0.7:
-                            V = "8";
-                            break;
-                        case 0.8:
-                            V = "8";
-                            break;
-                        case 1:
-                            V = "8";
-                            break;
-                        case 1.2:
-                            V = "8";
-                            break;
-                        case 1.5:
-                            V = "12";
-                            break;
-                        case 2:
-                            V = "12";
-                            break;
-                        case 3:
-                            V = "16";
-                            break;
-                        case 4:
-                            V = "30";
-                            break;
-                        case 5:
-                            V = "35";
-                            break;
-                        case 6:
-                            V = "50";
-                            break;
-                        case 8:
-                            V = "50";
-                            break;
-                        case 10:
-                            V = "80";
-                            break;
-                    }
-                    int Q2 = 0; //считаю сгибы
-                    for (int i = 0; i < sheetMetalContainer.SheetMetalBends.Count; i++)
-                    {
-                        IFeature7 feature7 = (IFeature7)sheetMetalContainer.SheetMetalBends[i];
-                        Object[] featCol2 = feature7.SubFeatures[0, false, false];
-                        if (feature7.Excluded != true)
-                        {
-                            Q2 = Q2 + featCol2.Count();
-                        }
-                    }
-                    int Q3 = 0; //считаю сгибы нарисованные по линии
-                    for (int i = 0; i < sheetMetalContainer.SheetMetalSketchBends.Count; i++)
-                    {
-                        IFeature7 feature7 = (IFeature7)sheetMetalContainer.SheetMetalSketchBends[i];
-                        Object[] featCol3 = feature7.SubFeatures[0, false, false];
-                        if (feature7.Excluded != true)
-                        {
-                            Q3 = Q3 + featCol3.Count();
-                        }
-                    }
-                    int Q4 = 0; //считаю сгибы нарисованные по линии
-                    for (int i = 0; i < sheetMetalContainer.SheetMetalLineBends.Count; i++)
-                    {
-                        IFeature7 feature7 = (IFeature7)sheetMetalContainer.SheetMetalLineBends[i];
-                        Object[] featCol4 = feature7.SubFeatures[0, false, false];
-                        if (feature7.Excluded != true)
-                        {
-                            Q4 = Q4 + featCol4.Count();
-                        }
-                    }
-                    Q = featColCount + Q2 + Q3 + Q4;
-                    if (Q != 0)
-                    {
-                        ObjectKompas.R = R.ToString();
-                        ObjectKompas.V = V.ToString();
-                        ObjectKompas.Q = Q.ToString();
-                        //objectAssemblyKompas.Bending = "R=" + R.ToString() + "  V=" + V + "  Q=" + Q;
-                    }
-
-                    #endregion
-
-                    //обработка строки FileName
-                    //string pattern = "\\\\";
-                    //string replacement = "\\";
-                    //Regex rgx = new Regex(pattern);
-                    //string pathFull = rgx.Replace(part7.FileName, replacement);
-
-                    FileInfo fi = new FileInfo(part7.FileName);
-                    if (File.Exists(fi.DirectoryName + "\\" + save_to_name) || File.Exists(fi.DirectoryName + "\\" + save_to_name2))
-                    {
-                        ObjectKompas.PathToDXF = fi.DirectoryName;
-                    }
-                }
-            }
-            catch (ArgumentException)
-            {
-                ObjectKompas.PathToDXF = "";
-            }
+            SheetMetalAnalyzer.Analyze(part7, ObjectKompas);
             #endregion
 
             #region Расчет времени резки
@@ -1205,9 +1081,9 @@ namespace ReportKompas
             var colR = new OLVColumn("R", "R") { Width = 50 };
             var colV = new OLVColumn("V", "V") { Width = 50 };
             var colQ = new OLVColumn("Q", "Q") { Width = 50 };
-            var colParent = new OLVColumn("Узел-1", "Parent") { Width = 50 };
-            var colTopParent = new OLVColumn("Узел верхний", "TopParent") { Width = 50 };
-            var colFullName = new OLVColumn("Путь до файла", "FullName") { Width = 50 };
+            //var colParent = new OLVColumn("Узел-1", "Parent") { Width = 50 };
+            //var colTopParent = new OLVColumn("Узел верхний", "TopParent") { Width = 50 };
+            //var colFullName = new OLVColumn("Путь до файла", "FullName") { Width = 50 };
             var colPathToDXF = new OLVColumn("Путь до DXF", "PathToDXF") { Width = 200 };
             var colOverallDimensions = new OLVColumn("Габаритные размеры", "OverallDimensions") { Width = 100 };
             var colIsPainted = new OLVColumn("IsPainted", "IsPainted") { Width = 50 };
@@ -1216,6 +1092,7 @@ namespace ReportKompas
             var colWelding = new OLVColumn("Сварочные работы", "Welding") { Width = 100 };
             var colLocksmithWork = new OLVColumn("Слесарные работы", "LocksmithWork") { Width = 80 };
             var colTechnologicalRoute = new OLVColumn("Технологический маршрут", "TechnologicalRoute") { Width = 80 };
+            var colCoilBatch = new OLVColumn("Артикул", "CoilBatch") { Width = 80 };
             var colNote = new OLVColumn("Примечание", "Note") { Width = 80 };
             var colArea = new OLVColumn("Площадь поверхности", "Area") { Width = 80 };
             var colCodeEquipment = new OLVColumn("Код СИ", "CodeEquipment") { Width = 50 };
@@ -1232,9 +1109,9 @@ namespace ReportKompas
                                                      colR,
                                                      colV,
                                                      colQ,
-                                                     colParent,
-                                                     colTopParent,
-                                                     colFullName,
+                                                     //colParent,
+                                                     //colTopParent,
+                                                     //colFullName,
                                                      colPathToDXF,
                                                      colOverallDimensions,
                                                      colIsPainted,
@@ -1243,6 +1120,7 @@ namespace ReportKompas
                                                      colWelding,
                                                      colLocksmithWork,
                                                      colTechnologicalRoute,
+                                                     colCoilBatch,
                                                      colNote,
                                                      colArea,
                                                      colCodeEquipment,
@@ -1297,7 +1175,11 @@ namespace ReportKompas
                 if (treeListView.SelectedObject is ObjectAssemblyKompas item)
                 {
                     IDocuments document = application.Documents;
-                    document.Open(item.FullName, true, false);
+                    IKompasDocument kompasDocument = (IKompasDocument)document.Open(item.FullName, true, false);
+                    IKompasDocument3D kompasDocument3D = (IKompasDocument3D)kompasDocument;
+                    IPart7 part7 = kompasDocument3D.TopPart;
+                    IEmbodimentsManager embodimentsManager = (IEmbodimentsManager)part7;
+                    embodimentsManager.SetCurrentEmbodiment(item.Designation);
                     string windowTitle = "КОМПАС-3D v22";
                     IntPtr hWnd = FindWindow(null, windowTitle);
                     if (hWnd != IntPtr.Zero)
@@ -1479,9 +1361,25 @@ namespace ReportKompas
             }
         }
 
+        /// <summary>
+        /// Возвращает путь к папке Reports, создаёт её если не существует
+        /// </summary>
+        private string GetReportsPath()
+        {
+            string appDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string reportsPath = Path.Combine(appDirectory, "Reports");
+
+            if (!Directory.Exists(reportsPath))
+            {
+                Directory.CreateDirectory(reportsPath);
+            }
+
+            return reportsPath;
+        }
+
         private void StripButtonXML_Click(object sender, EventArgs e)
         {
-            string pathForXML = System.Reflection.Assembly.GetExecutingAssembly().Location.Remove(System.Reflection.Assembly.GetExecutingAssembly().Location.Length - 16) + root.Designation + " - " + root.Name + ".xml";
+            string pathForXML = Path.Combine(GetReportsPath(), root.Designation + " - " + root.Name + ".xml");
             // Настройки
             XmlWriterSettings settings = new XmlWriterSettings
             {
@@ -1552,6 +1450,7 @@ namespace ReportKompas
             }
 
             WriteElementOrEmpty(writer, "TechnologicalRoute", technologicalRoute);
+            WriteElementOrEmpty(writer, "CoilBatch", obj.CoilBatch);
             WriteElementOrEmpty(writer, "Note", obj.Note);
             WriteElementOrEmpty(writer, "Area", obj.Area);
             WriteElementOrEmpty(writer, "CodeEquipment", obj.CodeEquipment);
@@ -1608,6 +1507,7 @@ namespace ReportKompas
             dt.Columns.Add("Сварочные работы", typeof(string));
             dt.Columns.Add("Слесарные работы", typeof(string));
             dt.Columns.Add("Технологический маршрут", typeof(string));
+            dt.Columns.Add("Артикул", typeof(string));
             dt.Columns.Add("Примечание", typeof(string));
             dt.Columns.Add("Площадь поверхности", typeof(string));
             dt.Columns.Add("Код СИ", typeof(string));
@@ -1661,6 +1561,7 @@ namespace ReportKompas
                 }
 
                 row["Технологический маршрут"] = technologicalRoute;
+                row["Артикул"] = node.CoilBatch ?? "";
                 row["Примечание"] = node.Note ?? "";
                 row["Площадь поверхности"] = node.Area ?? "";
                 row["Код СИ"] = node.CodeEquipment ?? "";
@@ -1687,7 +1588,7 @@ namespace ReportKompas
             }
 
             XLWorkbook excelWorkbook = new XLWorkbook();
-            string pathForExcel = System.Reflection.Assembly.GetExecutingAssembly().Location.Remove(System.Reflection.Assembly.GetExecutingAssembly().Location.Length - 16);
+            string pathForExcel = GetReportsPath();
             IXLWorksheet worksheet = excelWorkbook.Worksheets.Add("Отчет");
 
             // Записываем заголовки
@@ -1829,7 +1730,7 @@ namespace ReportKompas
             // Устанавливаем ширину колонки "Превью"
             worksheet.Column(previewColumnIndex).Width = 20.7; // Ширина для изображения 150px
 
-            excelWorkbook.SaveAs(pathForExcel + root.Designation + " - " + root.Name + ".xlsx");
+            excelWorkbook.SaveAs(Path.Combine(pathForExcel, root.Designation + " - " + root.Name + ".xlsx"));
 
             // Теперь у вас есть DataTable dt с данными из treeListView
             // Можно, например, вывести его, открыть диалог с отчетом, привязать к GridView и т.д.            
@@ -1837,8 +1738,7 @@ namespace ReportKompas
 
         private void toolStripOpenExplorer_Click(object sender, EventArgs e)
         {
-            string tempPath = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
-            Process.Start(tempPath.Remove(tempPath.LastIndexOf(@"\")));
+            Process.Start(GetReportsPath());
         }
 
         private void toolStripButtonPaint_Click(object sender, EventArgs e)

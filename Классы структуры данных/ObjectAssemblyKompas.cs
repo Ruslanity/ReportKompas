@@ -32,12 +32,14 @@ namespace ReportKompas
         public string CodeMaterial { get; set; }
         public string TimeCut { get; set; }
         public string DxfDimensions { get; set; }
+        public string CoilBatch { get; set; } //атрибут бухты(то что будет заносится в атрибут карточки)
         public bool IsLocal { get; set; } //свойство локальной детали
         public string IsPainted { get; set; } //красится/не красится
         public double CoverageArea { get; set; } //поверхность покрытия
         public byte[] PreviewImage { get; set; }  // PNG формат по умолчанию
         public string TechnologicalRoute { get; set; } //технологический маршрут
         public string IsFastener { get; set; } //включать/не включать в комплект крепежа
+        public int Color { get; set; } // Цвет детали из KOMPAS (формат 0xRRGGBB)
 
         // Связи в дереве
         public ObjectAssemblyKompas ParentK { get; set; }
@@ -57,9 +59,11 @@ namespace ReportKompas
                 Children = new List<ObjectAssemblyKompas>();
             }
 
-            // Поиск в коллекции по совпадению поля Name и Designation
+            // Поиск в коллекции по совпадению поля Name, Designation и Color
             var existingChild = Children.FirstOrDefault(c =>
-                c.Name == child.Name && c.Designation == child.Designation);
+                c.Name == child.Name &&
+                c.Designation == child.Designation &&
+                c.Color == child.Color);
 
             if (existingChild != null)
             {
