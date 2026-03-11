@@ -20,7 +20,26 @@ namespace ReportKompas
             {
                 if (appDirectory == null)
                 {
-                    appDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\Settings\Settings.xml";
+                    string appDataDir = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "ReportKompas");
+
+                    if (!Directory.Exists(appDataDir))
+                        Directory.CreateDirectory(appDataDir);
+
+                    string settingsPath = Path.Combine(appDataDir, "Settings.xml");
+
+                    // Первый запуск: копируем дефолтные настройки из каталога установки
+                    if (!File.Exists(settingsPath))
+                    {
+                        string installSettings = Path.Combine(
+                            Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
+                            "Settings", "Settings.xml");
+                        if (File.Exists(installSettings))
+                            File.Copy(installSettings, settingsPath);
+                    }
+
+                    appDirectory = settingsPath;
                 }
                 return appDirectory;
             }

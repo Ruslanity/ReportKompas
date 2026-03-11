@@ -94,12 +94,14 @@ namespace ReportKompas
 
                 // Рассчитываем площадь покрытия как Area * IsPainted / 100
                 double calculatedArea = 0;
-                if (!string.IsNullOrEmpty(node.Area) && double.TryParse(node.Area, NumberStyles.Any, CultureInfo.InvariantCulture, out double area))
+                string areaNormalized = node.Area?.Replace(',', '.');
+                string isPaintedNormalized = node.IsPainted?.Replace(',', '.');
+
+                if (!string.IsNullOrEmpty(areaNormalized) && double.TryParse(areaNormalized, NumberStyles.Any, CultureInfo.InvariantCulture, out double area))
                 {
-                    if (!string.IsNullOrEmpty(node.IsPainted) && double.TryParse(node.IsPainted, NumberStyles.Any, CultureInfo.InvariantCulture, out double isPainted))
+                    if (!string.IsNullOrEmpty(isPaintedNormalized) && double.TryParse(isPaintedNormalized, NumberStyles.Any, CultureInfo.InvariantCulture, out double isPainted))
                     {
-                        calculatedArea = (area * isPainted) / 100;
-                        // Сохраняем значение в объект
+                        calculatedArea = (area * isPainted);
                         node.CoverageArea = calculatedArea;
                     }
                 }

@@ -89,8 +89,7 @@ namespace ReportKompas
 
         private void CuttingTimeCalculation(ObjectAssemblyKompas objectAssemblyKompas)
         {
-            string currentDirectory = System.Reflection.Assembly.GetExecutingAssembly().Location.ToString();
-            string workspacePath = Path.Combine(currentDirectory.Remove(currentDirectory.LastIndexOf(@"\")), "Workspace");
+            string workspacePath = Path.Combine(Path.GetTempPath(), "ReportKompas");
             if (!Directory.Exists(workspacePath))
             {
                 Directory.CreateDirectory(workspacePath);
@@ -272,9 +271,16 @@ namespace ReportKompas
                     break;
                 case Kompas6Constants.DocumentTypeEnum.ksDocumentPart:
                     {
-                        //DisassembleObject(part7, "0");
-                        //FillTable();
-                        //this.Activate();
+                        ProcessTree(root);
+                        root.SortTreeNodes(root);
+                        root.ReplaceMaterial();
+                        FillCodeMaterial(root);
+                        FillCodeEquip(root);
+                        ReorganizeElements(root);
+                        AddControl(root);
+
+                        this.Activate();
+                        toolStripLabel1.Text = String.Empty;
                         break;
                     }
                 case Kompas6Constants.DocumentTypeEnum.ksDocumentAssembly:
@@ -329,7 +335,7 @@ namespace ReportKompas
         {
             // Пропускаем детали зелёного цвета (0x00FF00)
             IColorParam7 colorCheck = (IColorParam7)part7;
-            if (colorCheck.Color == 0x00FF00)
+            if (colorCheck.Color == 0x00FF00 || colorCheck.Color == 0xFF0000)
                 return null;
 
             var ObjectKompas = new ObjectAssemblyKompas();
@@ -585,8 +591,6 @@ namespace ReportKompas
 
                 if (attrObj != null && docRef != 0)
                 {
-                    string attrLibraryFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "document_attr.lat");
-
                     // Создаем итератор атрибутов
                     ksIterator iter = (ksIterator)kompas.GetIterator();
                     if (iter != null && iter.ksCreateAttrIterator(docRef, 0, 0, 0, 0, 0))
@@ -609,7 +613,7 @@ namespace ReportKompas
                                 if (type != null)
                                 {
                                     type.Init();
-                                    int getTypeResult = attrObj.ksGetAttrType(attrTypeNum, attrLibraryFile, type);
+                                    int getTypeResult = attrObj.ksGetAttrType(attrTypeNum, null, type);
 
                                     if (getTypeResult == 1)
                                     {
@@ -1288,7 +1292,7 @@ namespace ReportKompas
                     child.IsFastener.Equals("true", StringComparison.OrdinalIgnoreCase))
                 {
                     // Устанавливаем Parent и TopParent
-                    child.Parent = parentValue;
+                    child.Parent = fastenerKit.Name;
                     child.TopParent = parentValue;
 
                     // Проверяем, есть ли уже элемент с таким же Name в коллекции fastenerKit
@@ -1366,8 +1370,9 @@ namespace ReportKompas
         /// </summary>
         private string GetReportsPath()
         {
-            string appDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            string reportsPath = Path.Combine(appDirectory, "Reports");
+            string reportsPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "ReportKompas");
 
             if (!Directory.Exists(reportsPath))
             {

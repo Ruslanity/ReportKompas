@@ -27,6 +27,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_840C244DDAC1491292454400DBCC6215"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_925EA7252B4045A39E1CB06384AA787D"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -118,31 +124,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_029CB97C6AA3A772C40A63174E786D78"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_96115221C1D40929F85B8694D63EADA8"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_0B11EE3E1925AC6B6F88C0558BE99686"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_F682985647C2BD1F2F01EED7A62E49EF"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_BCCECB6422D818BC75CD836FA6EBD438"
+        "OwnerKey" = "8:_FB58688291EFB490C02737AE5662A991"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -154,7 +136,31 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_FB58688291EFB490C02737AE5662A991"
+        "OwnerKey" = "8:_BCCECB6422D818BC75CD836FA6EBD438"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_F682985647C2BD1F2F01EED7A62E49EF"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_0B11EE3E1925AC6B6F88C0558BE99686"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_96115221C1D40929F85B8694D63EADA8"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_029CB97C6AA3A772C40A63174E786D78"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -165,7 +171,7 @@
         "DisplayName" = "8:Debug"
         "IsDebugOnly" = "11:TRUE"
         "IsReleaseOnly" = "11:FALSE"
-        "OutputFilename" = "8:Debug\\Setup Report 1.0.8.msi"
+        "OutputFilename" = "8:Debug\\Setup Report 1.0.13.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -197,7 +203,7 @@
         "DisplayName" = "8:Release"
         "IsDebugOnly" = "11:FALSE"
         "IsReleaseOnly" = "11:TRUE"
-        "OutputFilename" = "8:Release\\Setup Report 1.0.8.msi"
+        "OutputFilename" = "8:Release\\Setup Report 1.0.13.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -259,11 +265,6 @@
             "AssemblyAsmDisplayName" = "8:Microsoft.WindowsAPICodePack.Shell, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_029CB97C6AA3A772C40A63174E786D78"
-                    {
-                    "Name" = "8:Microsoft.WindowsAPICodePack.Shell.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Microsoft.WindowsAPICodePack.Shell.dll"
             "TargetName" = "8:"
@@ -290,11 +291,6 @@
             "AssemblyAsmDisplayName" = "8:ObjectListView, Version=2.9.1.1072, Culture=neutral, PublicKeyToken=b1c5bf581481bcd4, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_0B11EE3E1925AC6B6F88C0558BE99686"
-                    {
-                    "Name" = "8:ObjectListView.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:ObjectListView.dll"
             "TargetName" = "8:"
@@ -312,6 +308,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_840C244DDAC1491292454400DBCC6215"
+            {
+            "SourcePath" = "8:..\\додо-48.ico"
+            "TargetName" = "8:додо-48.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_83F996D4E3934D95B89EE288EE9BF5E3"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_925EA7252B4045A39E1CB06384AA787D"
@@ -341,11 +357,6 @@
             "AssemblyAsmDisplayName" = "8:Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_96115221C1D40929F85B8694D63EADA8"
-                    {
-                    "Name" = "8:Microsoft.WindowsAPICodePack.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Microsoft.WindowsAPICodePack.dll"
             "TargetName" = "8:"
@@ -372,11 +383,6 @@
             "AssemblyAsmDisplayName" = "8:DocumentFormat.OpenXml, Version=2.7.2.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_A4DE31D89389C7F1542E2E112EDF8B2F"
-                    {
-                    "Name" = "8:DocumentFormat.OpenXml.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:DocumentFormat.OpenXml.dll"
             "TargetName" = "8:"
@@ -403,11 +409,6 @@
             "AssemblyAsmDisplayName" = "8:ExcelNumberFormat, Version=1.0.10.0, Culture=neutral, PublicKeyToken=23c6f5d73be07eca, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_BCCECB6422D818BC75CD836FA6EBD438"
-                    {
-                    "Name" = "8:ExcelNumberFormat.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:ExcelNumberFormat.dll"
             "TargetName" = "8:"
@@ -514,11 +515,6 @@
             "AssemblyAsmDisplayName" = "8:ClosedXML, Version=0.95.4.0, Culture=neutral, PublicKeyToken=fd1eb21b62ae805b, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_F682985647C2BD1F2F01EED7A62E49EF"
-                    {
-                    "Name" = "8:ClosedXML.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:ClosedXML.dll"
             "TargetName" = "8:"
@@ -545,11 +541,6 @@
             "AssemblyAsmDisplayName" = "8:netDxf, Version=2.3.1.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_FB58688291EFB490C02737AE5662A991"
-                    {
-                    "Name" = "8:netDxf.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:netDxf.dll"
             "TargetName" = "8:"
@@ -636,15 +627,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Report"
-        "ProductCode" = "8:{9AD315E0-B2BF-41D5-9722-ED2EEA7EE210}"
-        "PackageCode" = "8:{364AAFA1-8F58-43C1-B8D5-7CB766C3F6F4}"
+        "ProductCode" = "8:{505C195A-7D3B-4EF8-9D7B-66CD74A500EB}"
+        "PackageCode" = "8:{8FAE300C-9024-4A15-9C88-18868EDC9153}"
         "UpgradeCode" = "8:{7D76C1E4-5ECA-4611-9F76-38CAA04EF0DA}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.0.8"
+        "ProductVersion" = "8:1.0.13"
         "Manufacturer" = "8:Rusik Edition"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -654,7 +645,7 @@
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:"
         "ARPURLINFOABOUT" = "8:"
-        "ARPPRODUCTICON" = "8:"
+        "ARPPRODUCTICON" = "8:_840C244DDAC1491292454400DBCC6215"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
