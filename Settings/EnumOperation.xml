@@ -1,0 +1,8 @@
+<Operations>
+  <Operation Id="LaserCut" Code="ЛР" Name="Лазерная резка" Number="5"/>
+  <Operation Id="BendCNC" Code="ГБ" Name="Гибка ЧПУ" Number="10"/>
+  <Operation Id="Welding" Code="СВ" Name="Сварка" Number="15"/>
+  <Operation Id="Locksmith" Code="СЛ" Name="Слесарка" Number="20"/>
+  <Operation Id="Painting" Code="ОКР" Name="Покраска" Number="25"/>
+  <Operation Id="Assembly" Code="СБ" Name="Сборка" Number="30"/> <!-- подразумевается что это и упаковка -->
+</Operations>

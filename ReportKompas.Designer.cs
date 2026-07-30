@@ -37,8 +37,11 @@ namespace ReportKompas
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.collapseAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.expandAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripButton5 = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButton6 = new System.Windows.Forms.ToolStripButton();
+            this.loadReportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.Export = new System.Windows.Forms.ToolStripDropDownButton();
+            this.xmlBuhtaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.excelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.xmlTurboToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonPaint = new System.Windows.Forms.ToolStripButton();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
@@ -49,6 +52,7 @@ namespace ReportKompas
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.MenuItemSelected = new System.Windows.Forms.ToolStripMenuItem();
             this.открытьДиректориюСФайломToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.treePanel = new System.Windows.Forms.Panel();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -57,8 +61,7 @@ namespace ReportKompas
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripButton4,
             this.Service,
-            this.toolStripButton5,
-            this.toolStripButton6,
+            this.Export,
             this.toolStripButton1,
             this.toolStripButtonPaint,
             this.toolStripLabel1});
@@ -84,7 +87,8 @@ namespace ReportKompas
             this.Service.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.settingsToolStripMenuItem,
             this.collapseAllToolStripMenuItem,
-            this.expandAllToolStripMenuItem});
+            this.expandAllToolStripMenuItem,
+            this.loadReportToolStripMenuItem});
             this.Service.Image = ((System.Drawing.Image)(resources.GetObject("Service.Image")));
             this.Service.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.Service.Name = "Service";
@@ -111,23 +115,45 @@ namespace ReportKompas
             this.expandAllToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             this.expandAllToolStripMenuItem.Text = "Развернуть всё";
             this.expandAllToolStripMenuItem.Click += new System.EventHandler(this.ExpandAllToolStripMenuItem_Click);
+            //
+            // loadReportToolStripMenuItem
+            //
+            this.loadReportToolStripMenuItem.Name = "loadReportToolStripMenuItem";
+            this.loadReportToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            this.loadReportToolStripMenuItem.Text = "Загрузить отчет";
+            this.loadReportToolStripMenuItem.Click += new System.EventHandler(this.LoadReportToolStripMenuItem_Click);
+            //
+            // Export
             // 
-            // toolStripButton5
+            this.Export.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.Export.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.xmlBuhtaToolStripMenuItem,
+            this.xmlTurboToolStripMenuItem,
+            this.excelToolStripMenuItem});
+            this.Export.Name = "Export";
+            this.Export.Size = new System.Drawing.Size(65, 20);
+            this.Export.Text = "Экспорт";
             // 
-            this.toolStripButton5.Name = "toolStripButton5";
-            this.toolStripButton5.Size = new System.Drawing.Size(38, 20);
-            this.toolStripButton5.Text = "Excel";
-            this.toolStripButton5.Click += new System.EventHandler(this.StripButtonExcel_Click);
+            // xmlBuhtaToolStripMenuItem
             // 
-            // toolStripButton6
+            this.xmlBuhtaToolStripMenuItem.Name = "xmlBuhtaToolStripMenuItem";
+            this.xmlBuhtaToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.xmlBuhtaToolStripMenuItem.Text = "Xml Buhta";
+            this.xmlBuhtaToolStripMenuItem.Click += new System.EventHandler(this.StripButtonXML_Click);
             // 
-            this.toolStripButton6.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripButton6.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton6.Image")));
-            this.toolStripButton6.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton6.Name = "toolStripButton6";
-            this.toolStripButton6.Size = new System.Drawing.Size(32, 20);
-            this.toolStripButton6.Text = "Xml";
-            this.toolStripButton6.Click += new System.EventHandler(this.StripButtonXML_Click);
+            // excelToolStripMenuItem
+            // 
+            this.excelToolStripMenuItem.Name = "excelToolStripMenuItem";
+            this.excelToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.excelToolStripMenuItem.Text = "Excel";
+            this.excelToolStripMenuItem.Click += new System.EventHandler(this.StripButtonExcel_Click);
+            // 
+            // xmlTurboToolStripMenuItem
+            // 
+            this.xmlTurboToolStripMenuItem.Name = "xmlTurboToolStripMenuItem";
+            this.xmlTurboToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.xmlTurboToolStripMenuItem.Text = "Xml Turbo";
+            this.xmlTurboToolStripMenuItem.Click += new System.EventHandler(this.XmlTurboMenuItem_Click);
             // 
             // toolStripButton1
             // 
@@ -149,7 +175,7 @@ namespace ReportKompas
             this.toolStripButtonPaint.Text = "toolStripButton2";
             this.toolStripButtonPaint.ToolTipText = "Назначить покрытие";
             this.toolStripButtonPaint.Click += new System.EventHandler(this.toolStripButtonPaint_Click);
-            // 
+            //
             // toolStripLabel1
             // 
             this.toolStripLabel1.Name = "toolStripLabel1";
@@ -190,12 +216,21 @@ namespace ReportKompas
             // 
             this.открытьДиректориюСФайломToolStripMenuItem.Name = "открытьДиректориюСФайломToolStripMenuItem";
             this.открытьДиректориюСФайломToolStripMenuItem.Size = new System.Drawing.Size(67, 22);
-            // 
+            //
+            // treePanel
+            //
+            this.treePanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treePanel.Location = new System.Drawing.Point(0, 0);
+            this.treePanel.Name = "treePanel";
+            this.treePanel.Size = new System.Drawing.Size(884, 399);
+            this.treePanel.TabIndex = 1;
+            //
             // ReportKompas
-            // 
+            //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(884, 421);
+            this.Controls.Add(this.treePanel);
             this.Controls.Add(this.toolStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(900, 460);
@@ -222,12 +257,16 @@ namespace ReportKompas
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem collapseAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem expandAllToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem loadReportToolStripMenuItem;
         private System.Windows.Forms.ToolStripButton toolStripButton4;
         private System.Windows.Forms.ToolStripStatusLabel toolStripLabel1;
-        private System.Windows.Forms.ToolStripButton toolStripButton5;
-        private System.Windows.Forms.ToolStripButton toolStripButton6;
+        private System.Windows.Forms.ToolStripDropDownButton Export;
+        private System.Windows.Forms.ToolStripMenuItem xmlBuhtaToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem excelToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem xmlTurboToolStripMenuItem;
         private System.Windows.Forms.ToolStripButton toolStripButton1;
         private System.Windows.Forms.ToolStripButton toolStripButtonPaint;
+        private System.Windows.Forms.Panel treePanel;
     }
 }
 

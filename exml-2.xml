@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Parts>
+   <Part>
+      <Designation>АЛ.00.01.500.553.006.00 L СБ</Designation>
+      <Name>Купе (проем 900) (175-25)</Name>
+      <SpecificationSection>Сборочные единицы</SpecificationSection>
+      <Company>АЛ</Company> <!-- АЛ или ЛСУ -->
+      <BaseQuantity>1</BaseQuantity> <!-- базовое количество спецификации. При необходимости, отличное от 1 -->
+      <Mass>426,03</Mass>
+      <OverallDimensions>1153x2669x1566</OverallDimensions>
+      <Operations>
+	      <Operation>
+		      <Id>СБ</Id>
+		      <Name>Сборка</Name>
+		      <Number>5</Number>
+		      <Time>1200</Time>
+		      <Tools/>
+		      <Parameters> <!-- Параметры -->
+			      <Parameter>
+				      <Id>text</Id>
+				      <Value>Собирать аккуратно, остаток лишних деталей не допускается</Value>
+			      </Parameter>
+			      <Parameter>
+				      <Id>text</Id>
+				      <Value>На коробке написать маркером номер</Value>
+			      </Parameter>
+		      </Parameters>
+		      <Resources>
+			      <Resource>
+				      <Id></Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation>1.5mm_070.005.05_900</Designation>
+				      <Name>Планка</Name>
+					  <ResourceType>Деталь</ResourceType>
+				      <Quantity>2</Quantity>
+			      </Resource>
+			      <Resource>
+				      <Id></Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation>5mm_070.007.01</Designation>
+				      <Name>Кронштейн</Name>
+					  <ResourceType>Деталь</ResourceType>
+				      <Quantity>1</Quantity>
+			      </Resource>
+			      <Resource>
+				      <Id>62236</Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation></Designation>
+				      <Name>Шайба DIN 9021-8-Zn</Name>
+					  <ResourceType>Стандартные изделия</ResourceType>
+				      <Quantity>101</Quantity>
+			      </Resource>
+			      <Resource>
+				      <Id>102037</Id>
+					  <Designation></Designation>
+				      <Name>Сборщик</Name>
+					  <ResourceType>Труд</ResourceType>
+				      <Quantity></Quantity><!-- В данном случае - время в минутках не указывается. Считается по времени операции. -->
+			      </Resource>
+		      </Resources>
+	      </Operation>
+      </Operations>
+      <FullName>\\cadman\lsu-trade$\ПРОИЗВОДСТВО\500\АЛ.00.01.500.553.001.00(25-175) L СБ - Купе (проем 900)\АЛ.00.01.500.553.006.00 L СБ - Купе (проем 900) (175-25).a3d</FullName>
+      <PathToDXF/> 
+   </Part>
+   <Part>
+	  <Designation>1.5mm_070.005.05_900</Designation>
+      <Name>Планка</Name>
+      <SpecificationSection>Детали</SpecificationSection>
+      <Company>ЛСУ</Company> <!-- АЛ или ЛСУ -->
+      <BaseQuantity>1</BaseQuantity> <!-- базовое количество спецификации. При необходимости, отличное от 1 -->
+      <Mass>0.17</Mass>
+      <OverallDimensions>17x420x20</OverallDimensions>
+      <Operations>
+	      <Operation>
+		      <Id>ЛР</Id>
+		      <Name>Резка лазером</Name>
+		      <Number>5</Number>
+		      <Time>15,21</Time>
+		      <Tools/> <!-- Оснастки -->
+		      <Parameters> <!-- Параметры -->
+			      <Parameter>
+				      <Id>DxfDimensions</Id>
+				      <Value>34,4x420</Value>
+			      </Parameter>
+			      <Parameter>
+				      <Id>text</Id>
+				      <Value>Резка лазером в среде азота</Value>
+			      </Parameter>
+		      </Parameters>
+		      <Resources>
+			      <Resource>
+				      <Id>17035</Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation></Designation>
+				      <Name>Лист ОЦd1,50 ГОСТ 19904-90;08пс ГОСТ 14918-80</Name>  
+					  <ResourceType>Материал</ResourceType>
+				      <Quantity>0,17</Quantity>
+			      </Resource>
+		      </Resources>
+		      <Resources>
+			      <Resource>
+				      <Id>5612354</Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation></Designation>
+				      <Name>Оператор лазерной резки</Name>  
+					  <ResourceType>Труд</ResourceType>
+				      <Quantity></Quantity>
+			      </Resource>
+		      </Resources>
+		      <Resources>
+			      <Resource>
+				      <Id>23523</Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation></Designation>
+				      <Name>Станок лазерной резки 1500</Name> 
+					  <ResourceType>Оборудование</ResourceType>					  
+				      <Quantity></Quantity>
+			      </Resource>
+		      </Resources>
+	      </Operation>
+	      <Operation>
+		      <Id>ГБ</Id>
+		      <Name>Гибка ЧПУ</Name>
+		      <Number>10</Number>
+		      <Time>0,5</Time>
+		      <Tools> <!-- Оснастки -->
+				<Tool>
+				  <Id>R</Id>
+				  <Value>1</Value>
+				</Tool>
+				<Tool>
+				  <Id>V</Id>
+				  <Value>8</Value>
+				</Tool>
+			  </Tools>
+		      <Parameters> <!-- Параметры -->
+			      <Parameter>
+				      <Id>Q</Id>
+				      <Value>4</Value>
+			      </Parameter>
+			      <Parameter>
+				      <Id>text</Id>
+				      <Value>Недогиб не допускается</Value>
+			      </Parameter>
+		      </Parameters>
+		      <Resources>
+			      <Resource>
+				      <Id>562235</Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation></Designation>
+				      <Name>Оператор гибочного станка</Name>  
+					  <ResourceType>Труд</ResourceType>
+				      <Quantity></Quantity>
+			      </Resource>
+			      <Resource>
+				      <Id>6234612346</Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation></Designation>
+				      <Name>Станок гибки</Name>  
+					  <ResourceType>Оборудование</ResourceType>					  
+				      <Quantity></Quantity>
+			      </Resource>
+		      </Resources>
+	      </Operation>
+      </Operations>
+      <FullName>X:\Двери Emay 070\070\070_2000x900_Zn_L\070.005.05_900 - Планка.m3d</FullName>
+	  <PathToDXF/> 
+   </Part>
+   <Part>
+	  <Designation>5mm_070.007.01 (металл)</Designation>
+      <Name>Кронштейн (ЛСУ)</Name>
+      <SpecificationSection>Детали</SpecificationSection>
+      <Company>ЛСУ</Company> <!-- АЛ или ЛСУ -->
+      <BaseQuantity>1</BaseQuantity> <!-- базовое количество спецификации. При необходимости, отличное от 1 -->
+      <Mass>0.72</Mass>
+      <OverallDimensions>95x125x90</OverallDimensions>
+      <Operations>
+	      <Operation>
+		      <Id>ЛР</Id>
+		      <Name>Резка лазером</Name>
+		      <Number>5</Number>
+		      <Time>23,01</Time>
+		      <Tools/> <!-- Оснастки -->
+		      <Parameters> <!-- Параметры -->
+			      <Parameter>
+				      <Id>DxfDimensions</Id>
+				      <Value>211,5x90</Value>
+			      </Parameter>
+			      <Parameter>
+				      <Id>text</Id>
+				      <Value>Резка лазером в среде кислорода</Value>
+			      </Parameter>
+		      </Parameters>
+		      <Resources>
+			      <Resource>
+				      <Id>16992</Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation></Designation>
+				      <Name>Листd5,0 ГОСТ 19903-74;Ст3пс ГОСТ 14637-89</Name>  
+					  <ResourceType>Материал</ResourceType>
+				      <Quantity>0.72</Quantity>
+			      </Resource>
+			      <Resource>
+				      <Id>5612354</Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation></Designation>
+				      <Name>Оператор лазерной резки</Name>  
+					  <ResourceType>Труд</ResourceType>
+				      <Quantity></Quantity>
+			      </Resource>
+			      <Resource>
+				      <Id>623443</Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation></Designation>
+				      <Name>Большой cтанок лазерной резки 3000</Name>
+					  <ResourceType>Оборудование</ResourceType>
+				      <Quantity></Quantity>
+			      </Resource>
+		      </Resources>
+	      </Operation>
+	      <Operation>
+		      <Id>ГБ</Id>
+		      <Name>Гибка ЧПУ</Name>
+		      <Number>10</Number>
+		      <Time>2</Time>
+		      <Tools> <!-- Оснастки -->
+				<Tool>
+				  <Id>R</Id>
+				  <Value>3</Value>
+				</Tool>
+				<Tool>
+				  <Id>V</Id>
+				  <Value>35</Value>
+				</Tool>
+			  </Tools>
+		      <Parameters> <!-- Параметры -->
+			      <Parameter>
+				      <Id>Q</Id>
+				      <Value>1</Value>
+			      </Parameter>
+		      </Parameters>
+		      <Resources>
+			      <Resource>
+				      <Id>562235</Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation></Designation>
+				      <Name>Оператор гибочного станка</Name>  
+					  <ResourceType>Труд</ResourceType>
+				      <Quantity></Quantity>
+			      </Resource>
+			      <Resource>
+				      <Id>6234612346</Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation></Designation>
+				      <Name>Станок гибки</Name>  
+					  <ResourceType>Оборудование</ResourceType>
+				      <Quantity></Quantity>
+			      </Resource>
+		      </Resources>
+	      </Operation>
+      </Operations>
+	  <FullName>X:\Двери Emay 070\070\070_2000x900_Zn_L\070.007.01 - Кронштейн.m3d</FullName>
+	  <PathToDXF/> 
+   </Part>
+   <Part>
+	  <Designation>5mm_070.007.01</Designation>
+      <Name>Кронштейн</Name>
+      <SpecificationSection>Детали</SpecificationSection>
+      <Company>АЛ</Company> <!-- АЛ или ЛСУ -->
+      <BaseQuantity>1</BaseQuantity> <!-- базовое количество спецификации. При необходимости, отличное от 1 -->
+      <Mass>0.72</Mass>
+      <OverallDimensions>95x125x90</OverallDimensions>
+      <Operations>
+	      <Operation>
+		      <Id>КР</Id>
+		      <Name>Покарска рекуперат</Name>
+		      <Number>5</Number>
+		      <Time>0,001</Time>
+		      <Tools/> <!-- Оснастки -->
+		      <Parameters> <!-- Параметры -->
+				<Parameter>
+					<Id>Area</id>
+					<Value>0,04</Value>
+				</Parameter>
+				<Parameter>
+					<Id>CoverageArea</id>
+					<Value>0,04</Value>
+				</Parameter>
+			  </Parameters>
+		      <Resources>
+			      <Resource>
+				      <Id></Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation>5mm_070.007.01 (металл)</Designation>
+				      <Name>Кронштейн (ЛСУ)</Name>  
+					  <ResourceType>Деталь</ResourceType>
+				      <Quantity>1</Quantity>
+			      </Resource>
+				  <Resource>
+				      <Id>153153</Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation></Designation>
+				      <Name>Рекуперат</Name>  
+					  <ResourceType>Материал</ResourceType>
+				      <Quantity>11</Quantity> <!-- Если, например, рекуперат измеряется в граммах -->
+			      </Resource>
+			      <Resource>
+				      <Id>5612354</Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation></Designation>
+				      <Name>Оператор покрасочной камеры</Name>  
+					  <ResourceType>Труд</ResourceType>
+				      <Quantity></Quantity>
+			      </Resource>
+			      <Resource>
+				      <Id>14141444</Id> <!-- Материальные ресурсы, люди, станки -->
+					  <Designation></Designation>
+				      <Name>Покрасочная камера</Name>
+					  <ResourceType>Оборудование</ResourceType>
+				      <Quantity></Quantity>
+			      </Resource>
+		      </Resources>
+	      </Operation>
+	  </Operations>
+	  <FullName>X:\Двери Emay 070\070\070_2000x900_Zn_L\070.007.01 - Кронштейн.m3d</FullName>
+	  <PathToDXF/> 
+   </Part>
+</Parts>

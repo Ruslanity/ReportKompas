@@ -14,9 +14,11 @@ namespace ReportKompas
         public string SpecificationSection { get; set; }
         public string Material { get; set; }
         public double Mass { get; set; }
+        public double MassBuhta { get; set; }
         public string R { get; set; }
         public string V { get; set; }
         public string Q { get; set; }
+        public double SheetThickness { get; set; }
         public string Parent { get; set; }
         public string TopParent { get; set; }
         //public string Bending { get; set; }
@@ -79,6 +81,24 @@ namespace ReportKompas
                 child.ParentK = this;
                 Children.Add(child);
             }
+        }
+
+        // Добавить ребёнка-контейнер БЕЗ слияния дубликатов.
+        // Нужен для уникальных узлов вроде "Комплект крепежа": обычный AddChild
+        // дедуплицирует по Name+Designation+Color и при совпадении (например когда
+        // у контейнера Designation=null/Color=0) теряет уже собранных детей.
+        public void AddChildUnique(ObjectAssemblyKompas child)
+        {
+            if (child == null)
+                throw new ArgumentNullException(nameof(child));
+
+            if (Children == null)
+            {
+                Children = new List<ObjectAssemblyKompas>();
+            }
+
+            child.ParentK = this;
+            Children.Add(child);
         }
 
         // Удалить ребёнка

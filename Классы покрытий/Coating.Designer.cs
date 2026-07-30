@@ -108,6 +108,7 @@ namespace ReportKompas
             // 
             this.colIsPainted.HeaderText = "IsPainted";
             this.colIsPainted.Name = "colIsPainted";
+            this.colIsPainted.Visible = false;
             this.colIsPainted.Width = 80;
             // 
             // Coating
@@ -117,6 +118,7 @@ namespace ReportKompas
             this.ClientSize = new System.Drawing.Size(643, 450);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.toolStrip1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "Coating";

@@ -27,6 +27,18 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_10BF96D7A4464EB782FFD916FB26975D"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_3563945657DF458C9095708C7C6F7625"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_840C244DDAC1491292454400DBCC6215"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -59,6 +71,12 @@
         {
         "MsmKey" = "8:_A4DE31D89389C7F1542E2E112EDF8B2F"
         "OwnerKey" = "8:_AE684069CF3146A8BA5FF31F56C1E8AB"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_A5BF220D634D4AF1ABD851C577D5D615"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -171,7 +189,7 @@
         "DisplayName" = "8:Debug"
         "IsDebugOnly" = "11:TRUE"
         "IsReleaseOnly" = "11:FALSE"
-        "OutputFilename" = "8:Debug\\Setup Report 1.0.13.msi"
+        "OutputFilename" = "8:Debug\\Setup Report 1.0.22.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -203,7 +221,7 @@
         "DisplayName" = "8:Release"
         "IsDebugOnly" = "11:FALSE"
         "IsReleaseOnly" = "11:TRUE"
-        "OutputFilename" = "8:Release\\Setup Report 1.0.13.msi"
+        "OutputFilename" = "8:Release\\Setup Report 1.0.22.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -310,6 +328,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_3563945657DF458C9095708C7C6F7625"
+            {
+            "SourcePath" = "8:..\\Settings\\EnumResource.xml"
+            "TargetName" = "8:EnumResource.xml"
+            "Tag" = "8:"
+            "Folder" = "8:_83F996D4E3934D95B89EE288EE9BF5E3"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_840C244DDAC1491292454400DBCC6215"
             {
             "SourcePath" = "8:..\\додо-48.ico"
@@ -400,6 +438,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A5BF220D634D4AF1ABD851C577D5D615"
+            {
+            "SourcePath" = "8:..\\Settings\\EnumOperation.xml"
+            "TargetName" = "8:EnumOperation.xml"
+            "Tag" = "8:"
+            "Folder" = "8:_83F996D4E3934D95B89EE288EE9BF5E3"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_BCCECB6422D818BC75CD836FA6EBD438"
@@ -627,15 +685,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Report"
-        "ProductCode" = "8:{505C195A-7D3B-4EF8-9D7B-66CD74A500EB}"
-        "PackageCode" = "8:{8FAE300C-9024-4A15-9C88-18868EDC9153}"
+        "ProductCode" = "8:{FD449411-0271-48EC-96DF-4058A2A6AC48}"
+        "PackageCode" = "8:{A05D9D25-FF76-4139-A455-9052538167F0}"
         "UpgradeCode" = "8:{7D76C1E4-5ECA-4611-9F76-38CAA04EF0DA}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.0.13"
+        "ProductVersion" = "8:1.0.22"
         "Manufacturer" = "8:Rusik Edition"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"

@@ -1,0 +1,12 @@
+<Resources>
+  <Resource Id="BendOperator" Name="Оператор гибочного станка" IDTurbo="562235" ResourceType="Труд" Designation=""/>
+  <Resource Id="LaserCutOperator" Name="Оператор лазерной резки" IDTurbo="5612354" ResourceType="Труд" Designation=""/>
+  <Resource Id="Welder" Name="Сварщик" IDTurbo="14141111" ResourceType="Труд" Designation=""/>
+  <Resource Id="PaintOperator" Name="Оператор покрасочной камеры" IDTurbo="5612352" ResourceType="Труд" Designation=""/>
+  <Resource Id="Locksmith" Name="Слесарь" IDTurbo="561238888" ResourceType="Труд" Designation=""/>
+  
+  <Resource Id="BendMachine" Name="Станок гибки" IDTurbo="6234612346" ResourceType="Оборудование" Designation=""/>  
+  <Resource Id="LaserCutMachine1500" Name="Станок лазерной резки 1500" IDTurbo="23523" ResourceType="Оборудование" Designation=""/>
+  <Resource Id="LaserCutMachine3000" Name="Большой cтанок лазерной резки 3000" IDTurbo="623443" ResourceType="Оборудование" Designation=""/>
+  <Resource Id="PaintBooth" Name="Покрасочная камера" IDTurbo="14141444" ResourceType="Оборудование" Designation=""/>
+</Resources>

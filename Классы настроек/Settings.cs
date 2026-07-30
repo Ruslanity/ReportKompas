@@ -45,6 +45,18 @@ namespace ReportKompas
             }
         }
 
+        /// <summary>
+        /// Путь к файлу с сохранённым состоянием колонок TreeListView
+        /// (видимость, ширина и порядок). Лежит рядом с Settings.xml.
+        /// </summary>
+        static public string ColumnsStatePath
+        {
+            get
+            {
+                return Path.Combine(Path.GetDirectoryName(DefaultPathSettings), "ColumnsState.bin");
+            }
+        }
+
         [XmlElement("PathDictionaryMaterials")]
         public string PathDictionaryMaterials { get; set; }
 

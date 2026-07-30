@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
 
@@ -19,6 +20,21 @@ namespace ReportKompas
             this.root = root;
             PopulateDataGrid();
 
+            // Размер подгоняем в Load, когда размеры контролов (в т.ч. toolStrip)
+            // уже рассчитаны, и сразу центрируем относительно родителя.
+            this.Load += (s, e) =>
+            {
+                AdjustFormSize();
+                CenterToParent();
+            };
+
+            // Выводим окно на передний план, чтобы оно не пряталось за родительским.
+            this.Shown += (s, e) =>
+            {
+                this.Activate();
+                this.BringToFront();
+            };
+
             // Подписываемся на событие закрытия формы
             this.FormClosing += Coating_FormClosing;
         }
@@ -33,6 +49,10 @@ namespace ReportKompas
 
         private void SaveDataFromGrid()
         {
+            // Завершаем редактирование текущей ячейки, иначе при нажатии на кнопку
+            // ToolStrip введённое значение не коммитится и читается старое.
+            dataGridView1.EndEdit();
+
             int savedCount = 0;
             foreach (DataGridViewRow row in dataGridView1.Rows)
             {
@@ -118,6 +138,60 @@ namespace ReportKompas
                 // Сохраняем ссылку на объект в Tag строки
                 row.Tag = node;
             }
+        }
+
+        /// <summary>
+        /// Устанавливает размер формы строго по размеру таблицы.
+        /// Горизонтальная прокрутка отключается, чтобы её полоса не перекрывала строки;
+        /// окно подгоняется точно под ширину колонок. Высота ограничивается рабочей
+        /// областью экрана; при нехватке места резервируется ширина вертикальной полосы.
+        /// </summary>
+        private void AdjustFormSize()
+        {
+            // Горизонтальная прокрутка не нужна — иначе её полоса перекрывает строки
+            dataGridView1.ScrollBars = ScrollBars.Vertical;
+
+            // Суммарная ширина видимых колонок
+            int gridWidth = 0;
+            foreach (DataGridViewColumn col in dataGridView1.Columns)
+            {
+                if (col.Visible)
+                    gridWidth += col.Width;
+            }
+
+            // Высота заголовка + всех видимых строк (фактическая суммарная высота)
+            int gridHeight = dataGridView1.ColumnHeadersHeight
+                + dataGridView1.Rows.GetRowsHeight(DataGridViewElementStates.Visible);
+
+            // Рамки DataGridView (по 1px) + небольшой запас, чтобы колонки точно умещались
+            gridWidth += 4;
+            gridHeight += 2;
+
+            // Размеры рамок и заголовка окна
+            int chromeWidth = this.Width - this.ClientSize.Width;
+            int chromeHeight = this.Height - this.ClientSize.Height;
+
+            Rectangle workingArea = Screen.FromControl(this).WorkingArea;
+            int maxClientHeight = workingArea.Height - chromeHeight - 40;
+
+            // Если таблица не помещается по высоте — появится вертикальная прокрутка,
+            // под неё резервируем ширину (горизонтальной прокрутки не будет)
+            int availableForGrid = maxClientHeight - toolStrip1.Height;
+            if (gridHeight > availableForGrid)
+            {
+                gridHeight = availableForGrid;
+                gridWidth += SystemInformation.VerticalScrollBarWidth;
+            }
+
+            int clientWidth = gridWidth;
+            int clientHeight = gridHeight + toolStrip1.Height;
+
+            // Ширина не должна выходить за рабочую область экрана
+            int maxClientWidth = workingArea.Width - chromeWidth;
+            if (clientWidth > maxClientWidth)
+                clientWidth = maxClientWidth;
+
+            this.ClientSize = new Size(clientWidth, clientHeight);
         }
 
         private List<ObjectAssemblyKompas> GetPaintedNodes(ObjectAssemblyKompas node)

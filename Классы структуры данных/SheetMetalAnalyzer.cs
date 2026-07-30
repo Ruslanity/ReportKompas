@@ -54,7 +54,7 @@ namespace ReportKompas
             if (body == null)
                 return;
 
-            double thickness = body.Thickness;
+            double thickness = Math.Round(body.Thickness, 1);
 
             // Подсчёт сгибов
             int bendCount = CountBodyBends(body) +
@@ -103,6 +103,11 @@ namespace ReportKompas
                 // Если есть дети - используем полное обозначение
                 obj.CoilBatch = obj.Designation + " - " + obj.Name;
             }
+            else if (obj.Designation.IndexOf("mm", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                // Если детей нет и обозначение уже содержит "mm" - оно уже в нужном формате
+                obj.CoilBatch = obj.Designation;
+            }
             else if (obj.Designation.StartsWith("АЛ.", StringComparison.OrdinalIgnoreCase) && obj.Designation.Length > 3)
             {
                 // Если детей нет и обозначение начинается на "АЛ." - формируем имя с толщиной
@@ -112,8 +117,9 @@ namespace ReportKompas
             }
             else
             {
-                // Если детей нет и обозначение НЕ начинается на "АЛ." - записываем Designation как есть
-                obj.CoilBatch = obj.Designation;
+                // Если детей нет и обозначение НЕ начинается на "АЛ." - добавляем префикс с толщиной
+                string thicknessStr = thickness.ToString(CultureInfo.CreateSpecificCulture("en-GB"));
+                obj.CoilBatch = $"{thicknessStr}mm_{obj.Designation}";
             }
         }
 
@@ -157,6 +163,7 @@ namespace ReportKompas
             obj.R = GetBendRadius(thickness).ToString();
             obj.V = GetDieGrooveWidth(thickness);
             obj.Q = bendCount.ToString();
+            obj.SheetThickness = thickness;
         }
 
         /// <summary>
@@ -180,6 +187,7 @@ namespace ReportKompas
                 case 0.7:
                 case 0.8:
                 case 1:
+                    return "8";
                 case 1.2:
                     return "8";
                 case 1.5:
@@ -212,7 +220,13 @@ namespace ReportKompas
             FileInfo fi = new FileInfo(partFileName);
             string thicknessWithDot = thickness.ToString(CultureInfo.CreateSpecificCulture("en-GB"));
             string thicknessWithComma = thicknessWithDot.Replace('.', ',');
-            string markingSuffix = marking.Remove(0, 3);
+
+            // Для "1.5mm_XXX" и "1,5mm_XXX" — ищем "mm_" и берём часть после него.
+            // Для "АЛ.XXX" и прочих — старый вариант Remove(0, 3).
+            int mmIdx = marking.IndexOf("mm_", StringComparison.OrdinalIgnoreCase);
+            string markingSuffix = mmIdx > 0
+                ? marking.Substring(mmIdx + 3)
+                : marking.Remove(0, 3);
 
             string[] fileNames =
             {

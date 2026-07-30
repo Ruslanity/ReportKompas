@@ -35,10 +35,23 @@ namespace ReportKompas
         KompasObject kompas;
         ksDocument3D ksDocument3D;
         private static ReportKompas instance;
+        private readonly PlmDialogAutoNo plmDialogAutoNo = new PlmDialogAutoNo();
         private ContextMenuStrip contextMenu;
         public TreeListView treeListView;
 
         public ObjectAssemblyKompas root;
+
+        // Накопитель проблемных при обработке узлов (файл не найден / не удалось открыть).
+        // Заполняется в ParseObjectKompas (с пометкой причины в каждой записи), очищается
+        // в начале обработки и показывается одним общим сообщением в конце, чтобы не прерывать
+        // обработку модальным окном на каждый узел. Также пишется в лог рядом с отчётами.
+        private readonly List<string> problematicNodes = new List<string>();
+
+        // Путь к лог-файлу текущего сканирования. Имя совпадает с именем Excel-отчёта
+        // ("{Обозначение} - {Наименование}.log"), файл пересоздаётся в начале каждого
+        // сканирования (см. InitScanLog). Туда пишутся и проблемные узлы, и диагностика
+        // исполнения/массы по каждому узлу (см. AppendScanLog).
+        private string currentScanLogPath;
 
         [DllImport("user32.dll", SetLastError = true)]
         static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
@@ -58,6 +71,9 @@ namespace ReportKompas
         public ReportKompas()
         {
             InitializeComponent();
+
+            // Сохраняем состояние колонок (видимость/ширина/порядок) при закрытии окна.
+            this.FormClosing += (s, e) => SaveColumnsState();
         }
 
         private void SettingsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -139,6 +155,19 @@ namespace ReportKompas
             ksDocument2D document2D = (ksDocument2D)kompas2.Document2D();
             document2D.ksCreateDocument(documentParam);
 
+            ksTechnicalDemandParam technicalDemandParam = (ksTechnicalDemandParam)kompas2.GetParamStruct(78);
+            technicalDemandParam.Init();
+            int TT = document2D.ksGetReferenceDocumentPart(1);
+            if (TT != 0)
+                document2D.ksDeleteObj(TT);
+
+            ksSpecRoughParam specRoughParam = (ksSpecRoughParam)kompas2.GetParamStruct(79);
+            specRoughParam.Init();
+            specRoughParam.sign = 0;
+            int signRef = (int)document2D.ksSpecRough(specRoughParam);
+            if (signRef != 0)
+                document2D.ksDeleteObj(signRef);
+
             IKompasDocument2D kompasDocument2D = (IKompasDocument2D)application.ActiveDocument;
 
             //Скрываем все сообщения системы - Да
@@ -170,6 +199,16 @@ namespace ReportKompas
             pAssociationView.BendLinesVisible = false;
             pAssociationView.CenterLinesVisible = false;
             pAssociationView.SourceFileName = topPart.FileName;
+
+            IAssociationViewElements assocElems = (IAssociationViewElements)pAssociationView;
+            assocElems.CreateCircularCentres = false;
+            assocElems.CreateLinearCentres = false;
+            assocElems.CreateAxis = false;
+            assocElems.CreateCentresMarkers = false;
+            assocElems.ProjectAxis = false;
+            assocElems.ProjectDesTexts = false;
+            assocElems.ProjectSpecRough = false;
+
             pAssociationView.Update();
             pView.Update();
             IViewDesignation pViewDesignation = pView as IViewDesignation;
@@ -210,23 +249,14 @@ namespace ReportKompas
             string[] stringsToCheck =
             {
                 objectAssemblyKompas.Designation,
+                objectAssemblyKompas.Name,
                 objectAssemblyKompas.Material
             };
 
-            foreach (var str in stringsToCheck)
-            {
-                bool containsIgnoreCase = str.IndexOf("Aisi", StringComparison.OrdinalIgnoreCase) >= 0;
-                if (containsIgnoreCase)
-                {
-                    objectAssemblyKompas.TimeCut = (dxfProcessor.TotalCuttingTime * 2).ToString();
-                    break;
-                }
-                else
-                {
-                    objectAssemblyKompas.TimeCut = dxfProcessor.TotalCuttingTime.ToString();
-                    break;
-                }
-            }
+            bool isAisi = stringsToCheck.Any(s => s != null && s.IndexOf("Aisi", StringComparison.OrdinalIgnoreCase) >= 0);
+            objectAssemblyKompas.TimeCut = isAisi
+                ? (dxfProcessor.TotalCuttingTime * 2).ToString()
+                : dxfProcessor.TotalCuttingTime.ToString();
             #endregion
 
             #region Считаю габаритные размеры DXF            
@@ -239,6 +269,13 @@ namespace ReportKompas
 
         private void toolStripButton4_Click(object sender, EventArgs e)
         {
+            // На время обработки включаем перехватчик диалога PLM "взять на редактирование":
+            // он автоматически нажимает "Нет", чтобы окно не прерывало обработку.
+            plmDialogAutoNo.Start();
+            // Сбрасываем накопитель проблемных узлов перед новой обработкой.
+            problematicNodes.Clear();
+            try
+            {
             this.TopMost = true;
             kompas = (KompasObject)Marshal.GetActiveObject("KOMPAS.Application.5");
             kompas.Visible = true;
@@ -258,6 +295,9 @@ namespace ReportKompas
                 root = null;
             }
             root = PrimaryParse(part7);
+
+            // Заводим отдельный лог текущего сканирования (имя — как у Excel-отчёта).
+            InitScanLog(root);
 
             switch (document3D.DocumentType)
             {
@@ -329,6 +369,14 @@ namespace ReportKompas
                         break;
                     }
             }
+
+            // Один общий отчёт по всем проблемным узлам вместо модального окна на каждый.
+            ShowSkippedReport();
+            }
+            finally
+            {
+                plmDialogAutoNo.Stop();
+            }
         }
 
         private ObjectAssemblyKompas PrimaryParse(IPart7 part7)
@@ -339,7 +387,8 @@ namespace ReportKompas
                 return null;
 
             var ObjectKompas = new ObjectAssemblyKompas();
-            ObjectKompas.FullName = part7.FileName;
+            if (!part7.IsLocal)
+                ObjectKompas.FullName = part7.FileName;
             ObjectKompas.Designation = part7.Marking;
             ObjectKompas.Name = part7.Name;
             ObjectKompas.Quantity++;
@@ -379,7 +428,9 @@ namespace ReportKompas
             }
             else
             {
-                var objectAssemblyKompas = PrimaryParse(Part);
+                var objectAssemblyKompas = Part.IsLocal
+                    ? PrimaryParse(Part, parent)
+                    : PrimaryParse(Part);
                 if (objectAssemblyKompas == null)
                     return;
 
@@ -403,7 +454,9 @@ namespace ReportKompas
                                     {
                                         if (childItem.Detail)
                                         {
-                                            var parsedChild = PrimaryParse(childItem);
+                                            var parsedChild = childItem.IsLocal
+                                                ? PrimaryParse(childItem, objectAssemblyKompas)
+                                                : PrimaryParse(childItem);
                                             if (parsedChild != null)
                                                 objectAssemblyKompas.AddChild(parsedChild);
                                         }
@@ -415,7 +468,9 @@ namespace ReportKompas
                             {
                                 if (item.Detail)
                                 {
-                                    var parsedItem = PrimaryParse(item);
+                                    var parsedItem = item.IsLocal
+                                        ? PrimaryParse(item, objectAssemblyKompas)
+                                        : PrimaryParse(item);
                                     if (parsedItem != null)
                                         objectAssemblyKompas.AddChild(parsedItem);
                                 }
@@ -480,17 +535,120 @@ namespace ReportKompas
             return count;
         }
 
+        // Формирует читаемое описание пропущенного узла для итогового сообщения.
+        private string DescribeSkippedNode(ObjectAssemblyKompas node)
+        {
+            string designation = string.IsNullOrEmpty(node.Designation) ? "" : node.Designation;
+            string name = string.IsNullOrEmpty(node.Name) ? "" : node.Name;
+            string title = (designation + " " + name).Trim();
+            if (string.IsNullOrEmpty(title))
+                title = string.IsNullOrEmpty(node.FullName) ? "(без имени)" : node.FullName;
+            return string.IsNullOrEmpty(node.FullName) ? title : title + "  —  " + node.FullName;
+        }
+
+        // Показывает одно общее сообщение со списком проблемных узлов (если они были)
+        // и дублирует его в лог-файл рядом с отчётами.
+        private void ShowSkippedReport()
+        {
+            if (problematicNodes.Count == 0)
+                return;
+
+            var sb = new StringBuilder();
+            sb.AppendLine("Проблемные узлы:");
+            foreach (var line in problematicNodes)
+                sb.AppendLine("  • " + line);
+
+            string text = sb.ToString().TrimEnd();
+
+            AppendScanLog(Environment.NewLine + text);
+
+            MessageBox.Show(text, "Проблемные узлы",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        // Создаёт (пересоздаёт) лог-файл текущего сканирования. Имя совпадает с именем
+        // Excel-отчёта — "{Обозначение} - {Наименование}.log" в папке отчётов. На каждое
+        // сканирование заводится отдельный файл: если он уже был (повторное сканирование
+        // той же сборки) — перезаписывается, история прошлых прогонов не накапливается.
+        // В файл пишутся и проблемные узлы (не найдены / не открылись), и диагностика
+        // исполнения/массы по каждому обработанному узлу.
+        private void InitScanLog(ObjectAssemblyKompas scanRoot)
+        {
+            currentScanLogPath = null;
+            if (scanRoot == null)
+                return;
+            try
+            {
+                string baseName = scanRoot.Designation + " - " + scanRoot.Name;
+                foreach (char c in Path.GetInvalidFileNameChars())
+                    baseName = baseName.Replace(c, '_');
+
+                currentScanLogPath = Path.Combine(GetReportsPath(), baseName + ".log");
+                File.WriteAllText(currentScanLogPath,
+                    "===== Сканирование " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " =====" +
+                    Environment.NewLine,
+                    System.Text.Encoding.UTF8);
+            }
+            catch
+            {
+                // Логирование не критично — молча игнорируем ошибки создания файла.
+                currentScanLogPath = null;
+            }
+        }
+
+        // Дописывает строку в лог текущего сканирования (см. InitScanLog).
+        private void AppendScanLog(string text)
+        {
+            if (string.IsNullOrEmpty(currentScanLogPath))
+                return;
+            try
+            {
+                File.AppendAllText(currentScanLogPath,
+                    text + Environment.NewLine,
+                    System.Text.Encoding.UTF8);
+            }
+            catch
+            {
+                // Логирование не критично — молча игнорируем ошибки записи.
+            }
+        }
+
         private ObjectAssemblyKompas ParseObjectKompas(ObjectAssemblyKompas ObjectKompas)
         {
             IDocuments document = application.Documents;
             OpenDocumentParam openDocumentParam = document.GetOpenDocumentParam();
+
+            // Файл отсутствует на диске — пропускаем без открытия.
+            if (string.IsNullOrEmpty(ObjectKompas.FullName) || !System.IO.File.Exists(ObjectKompas.FullName))
+            {
+                problematicNodes.Add("Не найден — " + DescribeSkippedNode(ObjectKompas));
+                return ObjectKompas;
+            }
+
+            // Открываем на запись: при экспорте DXF модель сохраняется, поэтому read-only
+            // приводит к диалогу "сохранить под новым именем". Диалог PLM "взять на
+            // редактирование" гасится фоновым перехватчиком (кнопка "PLM авто-Нет").
             openDocumentParam.ReadOnly = false;
             openDocumentParam.Visible = true;
             IKompasDocument kompasDocument = document.OpenDocument(ObjectKompas.FullName, openDocumentParam);
-            IKompasDocument3D kompasDocument3D = (IKompasDocument3D)kompasDocument;
+            IKompasDocument3D kompasDocument3D = kompasDocument as IKompasDocument3D;
+            if (kompasDocument3D == null)
+            {
+                // Документ не открылся (например, PLM отклонил открытие) или не является 3D-документом.
+                // Не прерываем обработку модальным окном — копим в общий список проблемных узлов.
+                problematicNodes.Add("Не удалось открыть — " + DescribeSkippedNode(ObjectKompas));
+                return ObjectKompas;
+            }
             IPart7 part7 = kompasDocument3D.TopPart;
             IEmbodimentsManager embodimentsManager = (IEmbodimentsManager)part7;
-            embodimentsManager.SetCurrentEmbodiment(ObjectKompas.Designation);
+            // Диагностика переключения исполнения: фиксируем индекс текущего исполнения
+            // до и после SetCurrentEmbodiment и его результат, чтобы в логе видеть,
+            // на какое исполнение реально встала модель перед чтением массы.
+            int embIdxBefore = -1, embIdxAfter = -1;
+            object embSetResult = null;
+            try { embIdxBefore = embodimentsManager.CurrentEmbodimentIndex; } catch { }
+            try { embSetResult = embodimentsManager.SetCurrentEmbodiment(ObjectKompas.Designation); } catch { }
+            try { embIdxAfter = embodimentsManager.CurrentEmbodimentIndex; } catch { }
             #region Вытаскиваю текстовые поля
             IPropertyMng propertyMng = (IPropertyMng)application;
             var properties = propertyMng.GetProperties(kompasDocument3D);
@@ -531,7 +689,8 @@ namespace ReportKompas
                     dynamic info;
                     bool source;
                     propertyKeeper.GetPropertyValue((_Property)item, out info, false, out source);
-                    ObjectKompas.Mass = Math.Round(info * 1.2, 2);
+                    ObjectKompas.Mass = Math.Round(info, 2);
+                    ObjectKompas.MassBuhta = Math.Round(info * 1.2, 2);
                 }
                 if (item.Name == "IsPainted")
                 {
@@ -993,6 +1152,21 @@ namespace ReportKompas
             }
             #endregion
 
+            // Диагностика в лог сканирования: по какому обозначению переключали исполнение,
+            // как сместился индекс исполнения и какая в итоге прочитана масса/габариты/гибы.
+            // Помогает ловить случаи, когда у одной модели «плывёт» масса из-за исполнения.
+            AppendScanLog(string.Format(
+                "{0} | {1} | Обозн='{2}' | Исполн idx {3}->{4} SetEmb={5} | Масса={6} | Габ={7} | R={8} V={9} Q={10} | {11}",
+                DateTime.Now.ToString("HH:mm:ss"),
+                ObjectKompas.Name,
+                ObjectKompas.Designation,
+                embIdxBefore, embIdxAfter,
+                embSetResult == null ? "?" : embSetResult.ToString(),
+                ObjectKompas.Mass,
+                ObjectKompas.OverallDimensions,
+                ObjectKompas.R, ObjectKompas.V, ObjectKompas.Q,
+                ObjectKompas.FullName));
+
             if (ObjectKompas.ParentK != null)
             {
                 kompasDocument.Close(DocumentCloseOptions.kdDoNotSaveChanges);
@@ -1002,54 +1176,51 @@ namespace ReportKompas
 
         public void FillCodeMaterial(ObjectAssemblyKompas node)
         {
+            if (node == null) return;
             using (Settings settings = Settings.Load(Settings.DefaultPathSettings))
             {
                 CodeMaterial codeMaterial = CodeMaterial.Load(settings.PathDictionaryMaterials);
-                if (node == null)
-                    return;
-                // Проверка условия: SpecificationSection равен "Детали" или "Прочие изделия" и Material не null
-                if (node.SpecificationSection == "Детали" || node.SpecificationSection == "Прочие изделия" && node.Material != null)
-                {
-                    if (codeMaterial.Keys.Any(kvp => kvp.Values.Contains(node.Material)))
-                    {
-                        node.CodeMaterial = codeMaterial.Keys.First(kvp => kvp.Values.Contains(node.Material)).Key;
-                    }
-                }
-                // Рекурсивный обход детей
-                if (node.Children != null && node.Children.Any())
-                {
-                    foreach (var child in node.Children)
-                    {
-                        FillCodeMaterial(child);
-                    }
-                }
+                FillCodeMaterialRecursive(node, codeMaterial);
             }
+        }
+
+        private void FillCodeMaterialRecursive(ObjectAssemblyKompas node, CodeMaterial codeMaterial)
+        {
+            if (node == null) return;
+            // Проверка условия: SpecificationSection равен "Детали" или "Прочие изделия" и Material не null
+            if ((node.SpecificationSection == "Детали" || node.SpecificationSection == "Прочие изделия") && node.Material != null)
+            {
+                var match = codeMaterial.Keys.FirstOrDefault(kvp => kvp.Values.Contains(node.Material));
+                if (match != null)
+                    node.CodeMaterial = match.Key;
+            }
+            if (node.Children != null && node.Children.Any())
+                foreach (var child in node.Children)
+                    FillCodeMaterialRecursive(child, codeMaterial);
         }
 
         public void FillCodeEquip(ObjectAssemblyKompas node)
         {
+            if (node == null) return;
             using (Settings settings = Settings.Load(Settings.DefaultPathSettings))
             {
                 CodeEquip codeEquip = CodeEquip.Load(settings.PathDictionaryEquipment);
-                if (node == null)
-                    return;
-
-                if (node.SpecificationSection == "Стандартные изделия" || node.SpecificationSection == "Прочие изделия")
-                {
-                    if (codeEquip.Keys.Any(kvp => kvp.Values.Contains(node.Name)))
-                    {
-                        node.CodeEquipment = codeEquip.Keys.First(kvp => kvp.Values.Contains(node.Name)).Key;
-                    }
-                }
-                // Рекурсивный обход детей
-                if (node.Children != null && node.Children.Any())
-                {
-                    foreach (var child in node.Children)
-                    {
-                        FillCodeEquip(child);
-                    }
-                }
+                FillCodeEquipRecursive(node, codeEquip);
             }
+        }
+
+        private void FillCodeEquipRecursive(ObjectAssemblyKompas node, CodeEquip codeEquip)
+        {
+            if (node == null) return;
+            if (node.SpecificationSection == "Стандартные изделия" || node.SpecificationSection == "Прочие изделия")
+            {
+                var match = codeEquip.Keys.FirstOrDefault(kvp => kvp.Values.Contains(node.Name));
+                if (match != null)
+                    node.CodeEquipment = match.Key;
+            }
+            if (node.Children != null && node.Children.Any())
+                foreach (var child in node.Children)
+                    FillCodeEquipRecursive(child, codeEquip);
         }
 
         private void AddControl(ObjectAssemblyKompas objectKompas)
@@ -1067,10 +1238,7 @@ namespace ReportKompas
                 UseCellFormatEvents = true,
             };
 
-            this.Controls.Add(treeListView);
-            // Отправляем TreeListView на задний план Z-order, чтобы ToolStrip
-            // с Dock.Bottom корректно занял своё место и TreeListView заполнил остаток
-            treeListView.SendToBack();
+            treePanel.Controls.Add(treeListView);
             treeListView.GridLines = true;
             treeListView.AllowColumnReorder = true;
 
@@ -1082,6 +1250,7 @@ namespace ReportKompas
             var colSpecSec = new OLVColumn("Раздел спецификации", "SpecificationSection") { Width = 120 };
             var colMaterial = new OLVColumn("Материал", "Material") { Width = 150 };
             var colMass = new OLVColumn("Масса", "Mass") { Width = 50 };
+            var colMassBuhta = new OLVColumn("Масса_Buhta", "MassBuhta") { Width = 50 };
             var colR = new OLVColumn("R", "R") { Width = 50 };
             var colV = new OLVColumn("V", "V") { Width = 50 };
             var colQ = new OLVColumn("Q", "Q") { Width = 50 };
@@ -1110,6 +1279,7 @@ namespace ReportKompas
                                                      colSpecSec,
                                                      colMaterial,
                                                      colMass,
+                                                     colMassBuhta,
                                                      colR,
                                                      colV,
                                                      colQ,
@@ -1133,6 +1303,10 @@ namespace ReportKompas
                                                      colDxfDimensions
                                                      });
             treeListView.RebuildColumns();
+
+            // Восстанавливаем сохранённое состояние колонок (видимость/ширина/порядок).
+            // Сохранение выполняется при закрытии формы (FormClosing, см. конструктор).
+            RestoreColumnsState();
 
             // Обработка видимости наличия детей
             treeListView.CanExpandGetter = model =>
@@ -1208,6 +1382,51 @@ namespace ReportKompas
         }
 
         /// <summary>
+        /// Сохраняет текущее состояние колонок TreeListView (видимость, ширина, порядок)
+        /// в файл рядом с настройками приложения.
+        /// </summary>
+        public void SaveColumnsState()
+        {
+            if (treeListView == null || treeListView.IsDisposed)
+                return;
+
+            try
+            {
+                byte[] state = treeListView.SaveState();
+                if (state != null)
+                    File.WriteAllBytes(Settings.ColumnsStatePath, state);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Не удалось сохранить состояние колонок: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Восстанавливает ранее сохранённое состояние колонок TreeListView, если файл существует.
+        /// </summary>
+        private void RestoreColumnsState()
+        {
+            if (treeListView == null || treeListView.IsDisposed)
+                return;
+
+            try
+            {
+                string path = Settings.ColumnsStatePath;
+                if (File.Exists(path))
+                {
+                    byte[] state = File.ReadAllBytes(path);
+                    if (state != null && state.Length > 0)
+                        treeListView.RestoreState(state);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Не удалось восстановить состояние колонок: " + ex.Message);
+            }
+        }
+
+        /// <summary>
         /// Подсвечивает строки в TreeListView:
         /// - красным: пустой Раздел спецификации
         /// - оранжевым: раздел "Стандартные изделия" и пустой Код СИ
@@ -1231,6 +1450,14 @@ namespace ReportKompas
                     return;
                 }
 
+                // Проверяем условие: пустой Технологический маршрут (приоритет - красный)
+                if (string.IsNullOrEmpty(item.TechnologicalRoute) &&
+                    (item.SpecificationSection == "Детали" || item.SpecificationSection == "Сборочные единицы"))
+                {
+                    e.Item.BackColor = Color.LimeGreen;
+                    return;
+                }
+
                 // Проверяем условие: раздел "Стандартные изделия" и пустой Код СИ
                 bool isStandardWithoutCode = item.SpecificationSection == "Стандартные изделия" &&
                     string.IsNullOrEmpty(item.CodeEquipment);
@@ -1244,6 +1471,52 @@ namespace ReportKompas
                     e.Item.BackColor = Color.Orange;
                 }
             };
+
+            treeListView.CellToolTipShowing += (sender, e) =>
+            {
+                var item = e.Model as ObjectAssemblyKompas;
+                if (item == null)
+                    return;
+
+                if (string.IsNullOrEmpty(item.SpecificationSection))
+                {
+                    e.Text = "Не указан раздел спецификации";
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(item.TechnologicalRoute) &&
+                    (item.SpecificationSection == "Детали" || item.SpecificationSection == "Сборочные единицы"))
+                {
+                    e.Text = "Не указан технологический маршрут";
+                    return;
+                }
+
+                if (item.SpecificationSection == "Стандартные изделия" && string.IsNullOrEmpty(item.CodeEquipment))
+                {
+                    e.Text = "Не указан код стандартного изделия (Код СИ)";
+                    return;
+                }
+
+                if (item.SpecificationSection == "Детали" && string.IsNullOrEmpty(item.CodeMaterial))
+                {
+                    e.Text = "Не указан код материала (Код Мат)";
+                }
+            };
+        }
+
+        private ObjectAssemblyKompas PrimaryParse(IPart7 part7, ObjectAssemblyKompas parentKompas)
+        {
+            var obj = PrimaryParse(part7);
+            if (obj == null || parentKompas == null)
+                return obj;
+
+            obj.ParentK   = parentKompas;
+            obj.Parent    = parentKompas.Designation + " - " + parentKompas.Name;
+            obj.TopParent = root != null
+                ? root.Designation + " - " + root.Name
+                : parentKompas.Designation + " - " + parentKompas.Name;
+
+            return obj;
         }
 
         // Метод для формирования node "Комплект крепежа"
@@ -1256,10 +1529,13 @@ namespace ReportKompas
 
             string parentValue = node.Designation + " - " + node.Name;
 
-            // Создаём узел "Комплект крепежа"
+            // Создаём узел "Комплект крепежа".
+            // Designation намеренно не задаём. Узел кладётся в дерево через AddChildUnique
+            // (без дедупликации), поэтому пустой Designation уже не вызовет ложного слияния.
             var fastenerKit = new ObjectAssemblyKompas
             {
                 Name = "Комплект крепежа " + node.Designation,
+                SpecificationSection = "Комплекты",
                 Quantity = 1,
                 Parent = parentValue,
                 TopParent = parentValue
@@ -1267,17 +1543,22 @@ namespace ReportKompas
 
             // Рекурсивно собираем крепёжные элементы, удаляем их у родителей и добавляем в fastenerKit
 
-            CollectAndRemoveFasteners(node, fastenerKit, parentValue);
+            CollectAndRemoveFasteners(node, fastenerKit, parentValue, 1);
 
-            // Если крепёжные элементы найдены, добавляем "Комплект крепежа" в Children переданного node
+            // Если крепёжные элементы найдены, добавляем "Комплект крепежа" в Children переданного node.
+            // Используем AddChildUnique, чтобы дедупликация AddChild не "съела" собранный комплект.
             if (fastenerKit.Children != null && fastenerKit.Children.Count > 0)
             {
-                node.AddChild(fastenerKit);
+                node.AddChildUnique(fastenerKit);
             }
         }
 
-        // Вспомогательный рекурсивный метод для сбора и удаления крепёжных элементов
-        private void CollectAndRemoveFasteners(ObjectAssemblyKompas node, ObjectAssemblyKompas fastenerKit, string parentValue)
+        // Вспомогательный рекурсивный метод для сбора и удаления крепёжных элементов.
+        // multiplier — во скольких экземплярах существует node в пределах исходного узла:
+        // Quantity у ребёнка задано относительно одного экземпляра родителя, поэтому при
+        // подъёме крепежа наверх его надо умножить на количество экземпляров всех
+        // родительских сборок по цепочке.
+        private void CollectAndRemoveFasteners(ObjectAssemblyKompas node, ObjectAssemblyKompas fastenerKit, string parentValue, int multiplier)
         {
             if (node == null || node.Children == null)
                 return;
@@ -1295,28 +1576,36 @@ namespace ReportKompas
                     child.Parent = fastenerKit.Name;
                     child.TopParent = parentValue;
 
-                    // Проверяем, есть ли уже элемент с таким же Name в коллекции fastenerKit
+                    // Общее количество с учётом вложенности
+                    int totalQuantity = child.Quantity * multiplier;
+
+                    // Ищем уже собранную позицию тем же ключом, что и AddChild (Name+Designation+Color),
+                    // иначе разные позиции с одинаковым Name схлопнулись бы в одну.
                     var existingFastener = fastenerKit.Children?.FirstOrDefault(c =>
-                        c.Name == child.Name);
+                        c.Name == child.Name &&
+                        c.Designation == child.Designation &&
+                        c.Color == child.Color);
+
+                    // Сначала удаляем у родителя (RemoveChild обнуляет ParentK),
+                    // затем добавляем в комплект — иначе ParentK у ребёнка слетит на null.
+                    node.RemoveChild(child);
 
                     if (existingFastener != null)
                     {
                         // Если найден — складываем Quantity
-                        existingFastener.Quantity += child.Quantity;
+                        existingFastener.Quantity += totalQuantity;
                     }
                     else
                     {
                         // Если не найден — добавляем как новый элемент
+                        child.Quantity = totalQuantity;
                         fastenerKit.AddChild(child);
                     }
-
-                    // Удаляем у родителя
-                    node.RemoveChild(child);
                 }
                 else
                 {
-                    // Рекурсивно обрабатываем дочерние элементы
-                    CollectAndRemoveFasteners(child, fastenerKit, parentValue);
+                    // Рекурсивно обрабатываем дочерние элементы, накапливая множитель вложенности
+                    CollectAndRemoveFasteners(child, fastenerKit, parentValue, multiplier * child.Quantity);
                 }
             }
         }
@@ -1382,6 +1671,119 @@ namespace ReportKompas
             return reportsPath;
         }
 
+        /// <summary>
+        /// Рекурсивно дорабатывает свойство TechnologicalRoute по дереву.
+        /// В самом корне (isRoot) код в узле не меняется, но его дети и более
+        /// глубокие узлы обрабатываются.
+        ///
+        /// Узел-сборка (есть Children) делится на две ветки по своему TechnologicalRoute:
+        ///  - Ветка B (есть 26541 или 16961): в самом узле применяются обе замены
+        ///    26541 -> 16961 и 17045 -> 16964; у каждого ребёнка 16961 -> 26541, а если
+        ///    26541 отсутствует — добавляется последним (", 26541"). Дополнительно у детей
+        ///    ветки B удаляются коды 17045 и 16964 (их там быть не должно).
+        ///  - Ветка A (в узле нет 16961/26541): в узле 17045 -> 16964; у каждого ребёнка
+        ///    16964 -> 17045, а если 17045 отсутствует — добавляется последним (", 17045").
+        ///
+        /// Обход идёт сверху вниз, поэтому промежуточные сборки получают «сборочный»
+        /// код (16964/16961), а листовые детали — «детальный» (17045/26541).
+        /// </summary>
+        // Коды технологических маршрутов. В каждой ветке есть «сборочный» код
+        // (промежуточные сборки) и «детальный» код (листовые детали).
+        private const string RouteAssemblyB = "16961"; // ветка B, сборочный
+        private const string RouteDetailB = "26541";   // ветка B, детальный
+        private const string RouteAssemblyA = "16964"; // ветка A, сборочный
+        private const string RouteDetailA = "17045";   // ветка A, детальный
+
+        private void AdjustTechnologicalRoutes(ObjectAssemblyKompas node, bool isRoot)
+        {
+            if (node == null || node.Children == null || node.Children.Count == 0)
+                return;
+
+            string nodeRoute = node.TechnologicalRoute ?? "";
+            bool branchB = nodeRoute.Contains(RouteDetailB) || nodeRoute.Contains(RouteAssemblyB);
+
+            if (branchB)
+            {
+                // Узел-сборка ветки B: к самому узлу применяем обе замены (кроме корня)
+                if (!isRoot)
+                {
+                    if (nodeRoute.Contains(RouteDetailB))
+                        nodeRoute = nodeRoute.Replace(RouteDetailB, RouteAssemblyB);
+                    if (nodeRoute.Contains(RouteDetailA))
+                        nodeRoute = nodeRoute.Replace(RouteDetailA, RouteAssemblyA);
+                    node.TechnologicalRoute = nodeRoute;
+                }
+
+                foreach (var child in node.Children)
+                {
+                    string route = child.TechnologicalRoute ?? "";
+
+                    // 16961 -> 26541; если 26541 нет — добавляем последним
+                    if (route.Contains(RouteAssemblyB))
+                    {
+                        route = route.Replace(RouteAssemblyB, RouteDetailB);
+                    }
+                    if (!route.Contains(RouteDetailB))
+                    {
+                        route = string.IsNullOrEmpty(route) ? RouteDetailB : route + ", " + RouteDetailB;
+                    }
+
+                    // В ветке B у детей не должно быть ни 17045, ни 16964 — убираем их
+                    route = RemoveRouteCodes(route, RouteDetailA, RouteAssemblyA);
+
+                    child.TechnologicalRoute = route;
+
+                    AdjustTechnologicalRoutes(child, false);
+                }
+            }
+            else
+            {
+                // Узел-сборка ветки A: 17045 -> 16964 (сам корень не трогаем)
+                if (!isRoot && nodeRoute.Contains(RouteDetailA))
+                {
+                    node.TechnologicalRoute = nodeRoute.Replace(RouteDetailA, RouteAssemblyA);
+                }
+
+                foreach (var child in node.Children)
+                {
+                    string route = child.TechnologicalRoute ?? "";
+
+                    // Сначала переводим 16964 -> 17045, чтобы не получить дубль при добавлении ниже
+                    if (route.Contains(RouteAssemblyA))
+                    {
+                        route = route.Replace(RouteAssemblyA, RouteDetailA);
+                    }
+
+                    // Если 17045 нет — добавляем его последним
+                    if (!route.Contains(RouteDetailA))
+                    {
+                        route = string.IsNullOrEmpty(route) ? RouteDetailA : route + ", " + RouteDetailA;
+                    }
+
+                    child.TechnologicalRoute = route;
+
+                    AdjustTechnologicalRoutes(child, false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Удаляет указанные коды из строки технологического маршрута
+        /// (коды разделены запятыми), не оставляя висячих запятых.
+        /// </summary>
+        private string RemoveRouteCodes(string route, params string[] codes)
+        {
+            if (string.IsNullOrEmpty(route))
+                return route;
+
+            var tokens = route
+                .Split(',')
+                .Select(t => t.Trim())
+                .Where(t => t.Length > 0 && Array.IndexOf(codes, t) < 0);
+
+            return string.Join(", ", tokens);
+        }
+
         private void StripButtonXML_Click(object sender, EventArgs e)
         {
             string pathForXML = Path.Combine(GetReportsPath(), root.Designation + " - " + root.Name + ".xml");
@@ -1416,7 +1818,7 @@ namespace ReportKompas
             WriteElementOrEmpty(writer, "Quantity", obj.Quantity.ToString());
             WriteElementOrEmpty(writer, "SpecificationSection", obj.SpecificationSection);
             WriteElementOrEmpty(writer, "Material", obj.Material);
-            WriteElementOrEmpty(writer, "Mass", obj.Mass.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
+            WriteElementOrEmpty(writer, "Mass", obj.MassBuhta.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
 
             // Добавляем изображение в формате Base64
             string base64Image = (obj.PreviewImage != null && obj.PreviewImage.Length > 0)
@@ -1437,24 +1839,9 @@ namespace ReportKompas
             WriteElementOrEmpty(writer, "Welding", obj.Welding);
             WriteElementOrEmpty(writer, "LocksmithWork", obj.LocksmithWork);
 
-            // Обработка технологического маршрута
-            string technologicalRoute = obj.TechnologicalRoute ?? "";
-
-            // Если Coating пустое, удаляем указанные коды из TechnologicalRoute
-            if (string.IsNullOrEmpty(obj.Coating))
-            {
-                string[] codesToRemove = { "32281,", "32281", "34492,", "34492", "17139,", "17139", "16963,", "16963" };
-                foreach (string code in codesToRemove)
-                {
-                    technologicalRoute = technologicalRoute.Replace(code, "");
-                }
-                // Очищаем множественные пробелы и запятые
-                technologicalRoute = System.Text.RegularExpressions.Regex.Replace(technologicalRoute, @"\s+", " ");
-                technologicalRoute = System.Text.RegularExpressions.Regex.Replace(technologicalRoute, @",+", ",");
-                technologicalRoute = technologicalRoute.Trim().Trim(',').Trim();
-            }
-
-            WriteElementOrEmpty(writer, "TechnologicalRoute", technologicalRoute);
+            // TechnologicalRoute уже доработан в структуре root (см. ApplyCoatingToRoutes),
+            // поэтому пишем значение объекта напрямую
+            WriteElementOrEmpty(writer, "TechnologicalRoute", obj.TechnologicalRoute);
             WriteElementOrEmpty(writer, "CoilBatch", obj.CoilBatch);
             WriteElementOrEmpty(writer, "Note", obj.Note);
             WriteElementOrEmpty(writer, "Area", obj.Area);
@@ -1483,6 +1870,131 @@ namespace ReportKompas
             writer.WriteElementString(elementName, val);
         }
 
+        private void LoadReportToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (root != null)
+            {
+                var answer = MessageBox.Show(
+                    "Текущие данные будут очищены. Продолжить?",
+                    "Загрузить отчет",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+                if (answer != DialogResult.Yes)
+                    return;
+            }
+
+            using (var dlg = new OpenFileDialog())
+            {
+                dlg.Filter = "XML файлы (*.xml)|*.xml";
+                dlg.Title = "Выберите файл отчета";
+                if (dlg.ShowDialog() != DialogResult.OK)
+                    return;
+
+                LoadXmlReport(dlg.FileName);
+            }
+        }
+
+        private void LoadXmlReport(string filePath)
+        {
+            var allObjects = new List<ObjectAssemblyKompas>();
+
+            var doc = new System.Xml.XmlDocument();
+            doc.Load(filePath);
+
+            foreach (System.Xml.XmlNode rowNode in doc.SelectNodes("/Rows/Row"))
+            {
+                string Get(string tag) => rowNode[tag]?.InnerText ?? "";
+
+                var obj = new ObjectAssemblyKompas
+                {
+                    Designation          = Get("Designation"),
+                    Name                 = Get("Name"),
+                    SpecificationSection = Get("SpecificationSection"),
+                    Material             = Get("Material"),
+                    R                    = Get("R"),
+                    V                    = Get("V"),
+                    Q                    = Get("Q"),
+                    Parent               = Get("Parent"),
+                    TopParent            = Get("TopParent"),
+                    FullName             = Get("FullName"),
+                    PathToDXF            = Get("PathToDXF"),
+                    OverallDimensions    = Get("OverallDimensions"),
+                    Coating              = Get("Coating"),
+                    Welding              = Get("Welding"),
+                    LocksmithWork        = Get("LocksmithWork"),
+                    TechnologicalRoute   = Get("TechnologicalRoute"),
+                    CoilBatch            = Get("CoilBatch"),
+                    Note                 = Get("Note"),
+                    Area                 = Get("Area"),
+                    CodeEquipment        = Get("CodeEquipment"),
+                    CodeMaterial         = Get("CodeMaterial"),
+                    TimeCut              = Get("TimeCut"),
+                    DxfDimensions        = Get("DxfDimensions"),
+                };
+
+                if (int.TryParse(Get("Quantity"), out int qty))
+                    obj.Quantity = qty;
+                if (double.TryParse(Get("Mass"), System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out double mass))
+                    obj.MassBuhta = mass;
+                if (double.TryParse(Get("CoverageArea").Replace(',', '.'), System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out double area))
+                    obj.CoverageArea = area;
+
+                string b64 = Get("PreviewImage");
+                if (!string.IsNullOrEmpty(b64))
+                    obj.PreviewImage = Convert.FromBase64String(b64);
+
+                allObjects.Add(obj);
+            }
+
+            if (allObjects.Count == 0) return;
+
+            // Восстанавливаем иерархию дерева по полю Parent
+            // Parent хранится в формате "Designation - Name", поэтому добавляем оба варианта ключа
+            var lookup = new Dictionary<string, ObjectAssemblyKompas>();
+            foreach (var obj in allObjects)
+            {
+                if (string.IsNullOrEmpty(obj.Designation)) continue;
+                if (!lookup.ContainsKey(obj.Designation))
+                    lookup[obj.Designation] = obj;
+                string fullKey = string.IsNullOrEmpty(obj.Name)
+                    ? obj.Designation
+                    : obj.Designation + " - " + obj.Name;
+                if (!lookup.ContainsKey(fullKey))
+                    lookup[fullKey] = obj;
+            }
+
+            ObjectAssemblyKompas rootObj = allObjects[0];
+            foreach (var obj in allObjects)
+            {
+                if (obj == rootObj) continue;
+
+                if (!string.IsNullOrEmpty(obj.Parent) && lookup.TryGetValue(obj.Parent, out var parentObj))
+                {
+                    obj.ParentK = parentObj;
+                    parentObj.AddChild(obj);
+                }
+                else
+                {
+                    // сироты — добавляем к корню
+                    obj.ParentK = rootObj;
+                    rootObj.AddChild(obj);
+                }
+            }
+
+            root = rootObj;
+            AddControl(rootObj);
+        }
+
+        private void XmlTurboMenuItem_Click(object sender, EventArgs e)
+        {
+            if (root == null) return;
+
+            string pathForXML = Path.Combine(GetReportsPath(), root.Designation + " - " + root.Name + "_turbo.xml");
+            TurboObjectAssemblyKompas.Save(TurboObjectAssemblyKompas.FromTree(root), pathForXML);
+        }
+
         private void StripButtonExcel_Click(object sender, EventArgs e)
         {
             if (treeListView == null)
@@ -1499,6 +2011,7 @@ namespace ReportKompas
             dt.Columns.Add("Раздел спецификации", typeof(string));
             dt.Columns.Add("Материал", typeof(string));
             dt.Columns.Add("Масса", typeof(string));
+            dt.Columns.Add("МассаБухта", typeof(string));
             dt.Columns.Add("R", typeof(string));
             dt.Columns.Add("V", typeof(string));
             dt.Columns.Add("Q", typeof(string));
@@ -1520,10 +2033,17 @@ namespace ReportKompas
             dt.Columns.Add("Время резки", typeof(string));
             dt.Columns.Add("Габариты DXF", typeof(string));
 
+            // Диапазон строк Excel для каждого узла: [строка узла, строка последнего потомка].
+            // Используется ниже для группировки строк по реальной иерархии дерева.
+            var nodeRanges = new Dictionary<ObjectAssemblyKompas, int[]>();
+
             // Рекурсивная функция обхода
             void AddRowFromNode(ObjectAssemblyKompas node)
             {
                 if (node == null) return;
+
+                // Строка Excel текущего узла: dt-строки начинаются с Excel-строки 2 (после заголовка).
+                int startRow = dt.Rows.Count + 2;
 
                 // Создаем новую строку
                 var row = dt.NewRow();
@@ -1535,6 +2055,7 @@ namespace ReportKompas
                 row["Раздел спецификации"] = node.SpecificationSection ?? "";
                 row["Материал"] = node.Material ?? "";
                 row["Масса"] = node.Mass.ToString("F2", CultureInfo.InvariantCulture);
+                row["МассаБухта"] = node.MassBuhta.ToString("F2", CultureInfo.InvariantCulture);
                 row["R"] = node.R ?? "";
                 row["V"] = node.V ?? "";
                 row["Q"] = node.Q ?? "";
@@ -1584,6 +2105,9 @@ namespace ReportKompas
                         AddRowFromNode(child);
                     }
                 }
+
+                // Запоминаем диапазон строк узла: от его строки до строки последнего потомка.
+                nodeRanges[node] = new int[] { startRow, dt.Rows.Count + 1 };
             }
 
             // Основная часть: обход корней
@@ -1675,57 +2199,22 @@ namespace ReportKompas
             }
 
             #region Группирование строк
-            Dictionary<string, List<int>> groups = new Dictionary<string, List<int>>();
-            // Получаем заголовки из первой строки листа
-            var headerRow = worksheet.Row(1);
-            // Количество колонок
-            int totalColumns = worksheet.ColumnsUsed().Count();
-
-            // Создаем список колонок
-            List<string> columnNames = new List<string>();
-            for (int col = 1; col <= totalColumns; col++)
+            // Группируем строки по реальной иерархии дерева: для каждого узла, у которого
+            // есть дети, сворачиваем диапазон его потомков. ClosedXML накапливает уровни
+            // вложенности, поэтому строки внутри "Комплекта крепежа" получают свой подуровень
+            // и сворачиваются отдельной группой, а не сливаются с соседями.
+            // Старый алгоритм группировал по плоскому значению колонки "Узел-1" и давал всем
+            // строкам один уровень — из-за чего вложенные группы (крепёж) не обособлялись.
+            foreach (var kv in nodeRanges)
             {
-                var cellValue = headerRow.Cell(col).GetString();
-                columnNames.Add(cellValue);
-            }
+                ObjectAssemblyKompas node = kv.Key;
+                int startRow = kv.Value[0];
+                int endRow = kv.Value[1];
 
-            // Обрабатываем строки данных начиная со 3-й (индекс 3)
-            int lastDataRow = worksheet.LastRowUsed().RowNumber();
-
-            for (int rowIndex = 3; rowIndex <= lastDataRow; rowIndex++)
-            {
-                var row = worksheet.Row(rowIndex);
-
-                // Получение значения "Parent" из соответствующей колонки
-                string parentValue = "";
-                int parentColIndex = columnNames.IndexOf("Узел-1") + 1; // +1 потому что нумерация LaTeX с 1
-
-                if (parentColIndex > 0)
+                // Дети занимают строки сразу под строкой самого узла.
+                if (node.Children != null && node.Children.Count > 0 && endRow > startRow)
                 {
-                    var val = row.Cell(parentColIndex).Value;
-                    parentValue = val != null ? val.ToString() : "";
-                }
-
-                // Заполняем данные в Excel (если они еще не заполнены)
-                // Предположим, что данные уже есть
-                // Если еще нужно заполнять, то делаете это здесь аналогично вашему коду
-
-                // Добавляем индекс строки к группе
-                if (!groups.ContainsKey(parentValue))
-                    groups[parentValue] = new List<int>();
-
-                // В Excel строки начинаются с 2, и так как мы в 1-based, то rowIndex - текущая строка
-                groups[parentValue].Add(rowIndex);
-            }
-
-            // Группируем строки по группам
-            foreach (var group in groups.Values)
-            {
-                if (group.Count > 1)
-                {
-                    int startRow = group[0];
-                    int endRow = group[group.Count - 1];
-                    worksheet.Rows(startRow, endRow).Group();
+                    worksheet.Rows(startRow + 1, endRow).Group();
                 }
             }
             #endregion
@@ -1759,11 +2248,73 @@ namespace ReportKompas
             coatingForm.StartPosition = FormStartPosition.CenterParent;
             coatingForm.ShowDialog(this);
 
+            // Дорабатываем технологические маршруты по дереву
+            AdjustTechnologicalRoutes(root, true);
+
+            // Покрытие назначено в root — дорабатываем TechnologicalRoute по покрытиям
+            ApplyCoatingToRoutes(root);
+
             // Обновляем TreeListView после закрытия формы покрытий
             if (treeListView != null)
             {
                 // Полностью перестраиваем TreeListView
                 treeListView.RebuildAll(true);
+            }
+        }
+
+
+        /// <summary>
+        /// Рекурсивно дорабатывает свойство TechnologicalRoute в структуре root
+        /// в зависимости от значения Coating каждого узла:
+        ///  - Coating пустой: из маршрута удаляются коды покрытия (32281, 34492, 17139, 16963),
+        ///    затем схлопываются лишние пробелы и запятые;
+        ///  - Coating содержит "RAL": код 16963 заменяется на 34492;
+        ///  - Coating содержит "рекуперат": код 16963 заменяется на 32281.
+        /// Изменения вносятся прямо в объекты, поэтому отражаются и в контроле, и в XML.
+        /// </summary>
+        private void ApplyCoatingToRoutes(ObjectAssemblyKompas node)
+        {
+            if (node == null)
+                return;
+
+            string technologicalRoute = node.TechnologicalRoute ?? "";
+
+            // Если Coating пустое, удаляем указанные коды из TechnologicalRoute
+            if (string.IsNullOrEmpty(node.Coating))
+            {
+                string[] codesToRemove = { "32281,", "32281", "34492,", "34492", "17139,", "17139", "16963,", "16963" };
+                foreach (string code in codesToRemove)
+                {
+                    technologicalRoute = technologicalRoute.Replace(code, "");
+                }
+                // Очищаем множественные пробелы и запятые
+                technologicalRoute = System.Text.RegularExpressions.Regex.Replace(technologicalRoute, @"\s+", " ");
+                technologicalRoute = System.Text.RegularExpressions.Regex.Replace(technologicalRoute, @",+", ",");
+                technologicalRoute = technologicalRoute.Trim().Trim(',').Trim();
+            }
+            else
+            {
+                // ВРЕМЕННО ОТКЛЮЧЕНО: замена кода 16963
+                //// Если Coating содержит "RAL" (в любом регистре) → заменить 16963 на 34492
+                //if (System.Text.RegularExpressions.Regex.IsMatch(node.Coating, @"\bral\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                //{
+                //    technologicalRoute = technologicalRoute.Replace("16963", "34492");
+                //}
+                //// Если Coating содержит "Рекуперат" (в любом регистре) → заменить 16963 на 32281
+                //else if (node.Coating.IndexOf("рекуперат", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                //{
+                //    technologicalRoute = technologicalRoute.Replace("16963", "32281");
+                //}
+            }
+
+            node.TechnologicalRoute = technologicalRoute;
+
+            if (node.Children != null)
+            {
+                foreach (var child in node.Children)
+                {
+                    ApplyCoatingToRoutes(child);
+                }
             }
         }
     }

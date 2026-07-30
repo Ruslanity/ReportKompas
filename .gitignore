@@ -4,3 +4,6 @@ obj/
 .vs/
 packages/
 nul
+docs/
+Setup Report/Debug/
+Setup Report/Release/
